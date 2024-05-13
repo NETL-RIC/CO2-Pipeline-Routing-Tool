@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started &mdash; CO2Pipeline 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Usage" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            CO2Pipeline
+              <img src="../_static/netl_logo_transparent2.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Usage</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#getting-started-from-binary-exe">Getting Started From Binary (.exe)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-started-from-source-code">Getting Started From Source Code</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#troubleshooting-setup">Troubleshooting Setup</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-program">Running the Program</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#point-selection">Point Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#save-locations">Save Locations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#output-folder-and-program-execution">Output Folder and Program Execution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run">Run</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#retrieve-and-review-results">Retrieve and Review Results</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#end-location-shp">end_location.shp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cost-distance-tif">cost_distance.tif</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cost-surface-tif">cost_surface.tif</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#result-tif">result.tif</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#result-pnt-shp">result_pnt.shp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#summary-csv">summary.csv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#result-pre-line-shp">result_pre_line.shp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">result_pre_line.shp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#result-line-shp">result_line.shp</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CO2Pipeline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Usage</a></li>
+      <li class="breadcrumb-item active">Getting Started</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this heading"></a></h1>
+<section id="getting-started-from-binary-exe">
+<h2>Getting Started From Binary (.exe)<a class="headerlink" href="#getting-started-from-binary-exe" title="Permalink to this heading"></a></h2>
+<p>Most users will likely interact with an executable version of the program, rather than interpreting it from source code. These users can simply double-click on the executable, <code class="docutils literal notranslate"><span class="pre">CO2Pipeline.exe</span></code>, to run the program. Skip to <a class="reference internal" href="#running-the-program"><span class="std std-doc">Running the Program</span></a>.</p>
+</section>
+<section id="getting-started-from-source-code">
+<h2>Getting Started From Source Code<a class="headerlink" href="#getting-started-from-source-code" title="Permalink to this heading"></a></h2>
+<p>Developers and testing developers will have a few more steps to run the program.
+Firstly, you must have the correct virtual environment (python versioning and package collection) enabled.
+The following outlines virtual environment creation from the provided .yml file using Conda.</p>
+<p>Open Anaconda and navigate to the <code class="docutils literal notranslate"><span class="pre">exported_venv</span></code> folder in the source directory, and execute the following command:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    conda env create --name co2pipe --file=environment.yml
+</pre></div>
+</div>
+<p>This will create an environment named “co2pipe” using the yaml file. Activate the environment via:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    conda activate co2pipe
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Unix users may simply use Python itself, or other tools, to create virtual environments from yaml files.</p>
+</div>
+<p>With the virtual environment active, navigate back to the root source directory. Then run the main driver script, “CO2pipeline.py” via:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    python CO2pipeline.py
+</pre></div>
+</div>
+<p>or, if you are a Unix user,</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    python3 CO2pipeline.py
+</pre></div>
+</div>
+<p>These commands should start the program akin to double-clicking the .exe as a standard user. See below for troubleshooting if not. It is normal for the program to take up to one minute to render.</p>
+<section id="troubleshooting-setup">
+<h3>Troubleshooting Setup<a class="headerlink" href="#troubleshooting-setup" title="Permalink to this heading"></a></h3>
+<p>Sometimes virtual environments do not want to play nice, based on operating system differences or any conda versioning tomfoolery therein.
+As an internal developer or tester seeking assistance, please reach out to Michael or Stephen with a log file that captures all errors created in a text file so they may more accurately and efficiently assist you. To do this, simply concatonate any command that is preventing progress with ” &gt; error_log.txt”. For example, if your virtual environment setup is not executing successfully, you would want to re-run the command via the following:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    conda env create --name co2pipe --file=environment.yml &gt; error_log.txt
+</pre></div>
+</div>
+<p>and pass along the text file to one of the developers that would be happy to assist you.</p>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="running-the-program">
+<h1>Running the Program<a class="headerlink" href="#running-the-program" title="Permalink to this heading"></a></h1>
+<p>Select the start and endpoint of your desired CO2 Pipeline path, choose output location, and start the program’s path generation sequence.
+Once the Main window has rendered, hover over the main map area of the program and zoom to your desired start point using the scroll wheel.</p>
+<section id="point-selection">
+<h2>Point Selection<a class="headerlink" href="#point-selection" title="Permalink to this heading"></a></h2>
+<p>To place either a start or end point for your pipeline, select <code class="docutils literal notranslate"><span class="pre">Start</span> <span class="pre">Point</span></code> or <code class="docutils literal notranslate"><span class="pre">End</span> <span class="pre">Point</span></code> respectively from the left sidebar under the heading <code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">a</span> <span class="pre">Map</span> <span class="pre">Point</span></code>. Once enabled based on your selection, you may place a point by</p>
+<ul class="simple">
+<li><p>clicking anywhere on the map,</p></li>
+<li><p>entering a precise latitude and longitude (in World Geodetic System 1984 (WGS84) geographic coordinate system),</p></li>
+<li><p>or selecting popular locations from the dropdown menu <code class="docutils literal notranslate"><span class="pre">Optional</span> <span class="pre">Start</span> <span class="pre">Location</span></code>.</p></li>
+</ul>
+<p>These options may be mixed and matched between start point and end point (for example, you may create a start point by clicking on the map area, and your end point by using the dropdown menu). The start point will be denoted in the map area by a point-up cyan triangle, and the destination by a point-down red triangle.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>A point’s apparent location on the map and Lat/Long information will not be updated until the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Locations</span></code> is selected. (When specifying a point via Lat/Long or Optional Location).</p>
+</div>
+</section>
+<section id="save-locations">
+<h2>Save Locations<a class="headerlink" href="#save-locations" title="Permalink to this heading"></a></h2>
+<p>After both points are placed accurately, click the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Locations</span></code> button. You may re-place points and re-click this button safely if you wish to edit your selections. This will not execute the path-generation sequence of the program.</p>
+<p><img alt="Start and End Points" src="../_images/start_end_points.PNG" /></p>
+<p>The above is the result of manually selecting a start point by clicking on the map area, choosing an end point from the <code class="docutils literal notranslate"><span class="pre">Optional</span> <span class="pre">End</span> <span class="pre">Location</span></code> dropdown, and selecting <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Locations</span></code>.</p>
+</section>
+<section id="output-folder-and-program-execution">
+<h2>Output Folder and Program Execution<a class="headerlink" href="#output-folder-and-program-execution" title="Permalink to this heading"></a></h2>
+<p>Then, click “Select Folder Location” to open a file explorer and select the folder you wish the program to output to. Alternatively, enter a folder path in the “Enter an Optional Folder” field and select <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Folder</span> <span class="pre">Path</span></code>.</p>
+<p><img alt="Output Folder Verification" src="../_images/output_folder.PNG" /></p>
+<p>When your folder is selected successfully, the path will appear directly above the <code class="docutils literal notranslate"><span class="pre">Run</span></code> button.</p>
+</section>
+<section id="run">
+<h2>Run<a class="headerlink" href="#run" title="Permalink to this heading"></a></h2>
+<p>If you are satisfied with your points and output folder, click <code class="docutils literal notranslate"><span class="pre">Run</span></code> to execute the path-generation sequence of the program.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="retrieve-and-review-results">
+<h1>Retrieve and Review Results<a class="headerlink" href="#retrieve-and-review-results" title="Permalink to this heading"></a></h1>
+<p>When the program has completed running, eight different files will be exported to the output directory specified earlier. This concludes the program’s path creation functionality; new start and end points may be selected, or you may safely exit the program by closing the window conventionally. What follows is an explanation of each individual ouptut file.</p>
+<section id="end-location-shp">
+<h2>end_location.shp<a class="headerlink" href="#end-location-shp" title="Permalink to this heading"></a></h2>
+<p>Shapefile of the end location (sink) in the North America Equidistant Conic projected coordinate system.</p>
+</section>
+<section id="cost-distance-tif">
+<h2>cost_distance.tif<a class="headerlink" href="#cost-distance-tif" title="Permalink to this heading"></a></h2>
+<p>Distance raster showing distance (in meters) from the sink location in the North America Equidistant Conic projected coordinate system.</p>
+</section>
+<section id="cost-surface-tif">
+<h2>cost_surface.tif<a class="headerlink" href="#cost-surface-tif" title="Permalink to this heading"></a></h2>
+<p>Product of the original weighteds surface (fed on the backend of the tool), multiplied by the cost_distance.tif raster surface. This raster is also in the North America Equidistant Conic projected coordinate system.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Initial runs use solely the state regulations layer; future versions will use a more comprehensive weighted surface based on the data within the input geodatabase (Schooley et al. 2023).</p>
+</div>
+</section>
+<section id="result-tif">
+<h2>result.tif<a class="headerlink" href="#result-tif" title="Permalink to this heading"></a></h2>
+<p>Binary raster representing least cost path where raster grid value equals 1. This raster is in the North America Equidistant Conic projected coordinate system.</p>
+</section>
+<section id="result-pnt-shp">
+<h2>result_pnt.shp<a class="headerlink" href="#result-pnt-shp" title="Permalink to this heading"></a></h2>
+<p>Least cost path, as a conversion from the result.tif to point shapefile, where the result.tif grid value equals 1. This shapefile is in the North America Equidistant Conic projected coordinate system.</p>
+</section>
+<section id="summary-csv">
+<h2>summary.csv<a class="headerlink" href="#summary-csv" title="Permalink to this heading"></a></h2>
+<p>Table of weighted values crossed, based on where result_pnt.shp overlaps with the original weighted surface.</p>
+</section>
+<section id="result-pre-line-shp">
+<h2>result_pre_line.shp<a class="headerlink" href="#result-pre-line-shp" title="Permalink to this heading"></a></h2>
+<p>Least cost path, as a conversaion from result.tif toa line shpaefile, where the result.tif grid value quals 1. The shapefile is in the North American Equidistant Conic projected coordinate system.</p>
+</section>
+<section id="id1">
+<h2>result_pre_line.shp<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>Least cost path, as a conversion from result.tif to a line shapefile, where the result.tif grid value equals 1. This shapefile is in the North America Equidistant Conic projected coordinate system.</p>
+</section>
+<section id="result-line-shp">
+<h2>result_line.shp<a class="headerlink" href="#result-line-shp" title="Permalink to this heading"></a></h2>
+<p>Least cost path, as a conversion from result.tif to a line shapefile, where the result.tif grid value equals 1. This shapefile is in the World Geodetic System 1984 geographic coordinate system.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, NETL-RIC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

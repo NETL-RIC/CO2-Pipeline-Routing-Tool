@@ -1,0 +1,546 @@
+import { React, useState } from 'react';
+import { DropdownList } from "react-widgets";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, ScaleControl, Polyline } from "react-leaflet";
+import { Icon } from "leaflet";
+import { Link } from 'react-router-dom';
+import axios from "axios";
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import netlLogo from "./NETL_Square_GREEN_E.png";
+import doeLogo from "./DOE_Logo_Color.png";
+import discoverLogo from "./discover.jpg";
+import bilLogo from "./BIL.png"
+
+
+global.Buffer = require('buffer').Buffer;
+let linevals = []
+let start = [0,0]
+let laststart = -999
+let lastend = -999  
+let end = [0,0]
+let prevstart = 'Select known CCS project as start location'
+let prevend = 'Select known CCS project as destination location'
+let a = true;
+const limeOptions = { color: 'lime' }
+
+
+export default function MyApp(){
+  
+  const [finished, setFinished] = useState('')
+
+  const customIcon1 = new Icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
+    iconSize: [30,30]
+  })
+
+  const customIcon2 = new Icon({
+    iconUrl: require("./placeholder.png"),
+    iconSize: [30,30]
+  })
+
+  function ShowPipeline(){
+
+    if (finished){
+    console.log("Returning line data as Polyline for map")
+    return <Polyline pathOptions={limeOptions} positions={linevals} />
+    }
+  }
+
+
+  function sendData() {
+
+    setFinished(false)
+
+    axios({
+      method: "POST",
+      url:"/token",
+      data: {s: start, e:end}
+    })
+    .then((response) => {
+      linevals =response.data
+      console.log("Got line data")
+      setFinished(true)
+
+    }).catch((error) => {
+      if (error.response) {
+        console.log(error.response)
+        console.log(error.response.status)
+        console.log(error.response.headers)
+        }
+    })
+  }
+
+  const [show, setShowloc] = useState(false);
+  
+  const [srclat, setSrcLat] = useState('')
+  const [updateSrcLat, setupdateSrcLat] = useState(srclat)
+
+  const [srclon, setSrcLon] = useState('')
+  const [updateSrcLon, setupdateSrcLon] = useState(srclon)
+
+  const [destlat, setDestLat] = useState('')
+  const [updateDestLat, setupdateDestLat] = useState(destlat)
+
+  const [destlon, setDestLon] = useState('')
+  const [updateDestLon, setupdateDestLon] = useState(destlon)
+
+
+  const [value1, setValue1] = useState('Select known CCS project as start location')
+  const [value2, setValue2] = useState('Select known CCS project as destination location')
+
+  function DisclaimerPopup() {
+
+    
+    const [showz, setShow] = useState(a);
+    a = false;
+    const handleClose = () => setShow(a);
+
+
+      return (
+        <>
+          <Modal
+            show={showz}
+            onHide={handleClose}
+            backdrop="static"
+            keyboard={false}
+          >
+            
+            <Modal.Header >
+              <Modal.Title>Disclaimer</Modal.Title>
+              <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
+             <img src={bilLogo} alt='BIL Logo' />
+            </Modal.Header>
+            <Modal.Body>
+          
+            This project was funded by the United States Department of Energy, 
+            National Energy Technology Laboratory, in part, through a site 
+            support contract. Neither the United States Government nor any 
+            agency thereof, nor any of their employees, nor the support contractor, 
+            nor any of their employees, makes any warranty, express or implied, 
+            or assumes any legal liability or responsibility for the accuracy,
+             completeness, or usefulness of any information, apparatus, product, 
+             or process disclosed, or represents that its use would not infringe 
+             privately owned rights.  Reference herein to any specific commercial 
+             product, process, or service by trade name, trademark, manufacturer, 
+             or otherwise does not necessarily constitute or imply its endorsement, 
+             recommendation, or favoring by the United States Government or any agency 
+             thereof. The views and opinions of authors expressed herein do not necessarily
+              state or reflect those of the United States Government or any agency thereof.
+              Parts of this technical effort were performed in support of the National Energy 
+            Technology Laboratory's ongoing research under the Energy Data eXchange for 
+            Carbon Capture and Storage (EDX4CCS) Field Work Proposal 1025007 by 
+            NETL's Research and Innovation Center, including work performed by Leidos
+             Research Support Team staff under the RSS contract 326663.00.0.2.00.00.2050.033.0.
+ 
+            </Modal.Body>
+            <Modal.Footer>
+              <Button onClick={handleClose}>Understood</Button>
+            </Modal.Footer>
+          </Modal>
+        </>
+      );
+  }
+
+  
+function InvalidLocation() {
+  
+  const handleClose = () => setShowloc(false);
+
+
+  return (
+    <>
+
+      <Modal
+        show={show}
+        onHide={handleClose}
+        backdrop="static"
+        keyboard={false}
+        aria-labelledby="contained-modal-title-vcenter"
+      centered
+      >
+        <Modal.Header>
+          <Modal.Title>Invalid Location!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+        Please select a point within the USA or Alaska.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={handleClose}>Understood</Button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );    
+}
+  
+
+  const handleChange1 = (event) =>{
+    setSrcLat(event.target.value)
+  }
+
+  const handleChange2 = (event) =>{
+    setSrcLon(event.target.value)
+  }
+
+  const handleChange3 = (event) => {
+    setDestLat(event.target.value)
+  }
+
+  const handleChange4 = (event) => {
+    setDestLon(event.target.value)
+  }
+
+  const StartMarkers = () => {
+
+    if (prevstart !== value1  && laststart === 1){
+      prevstart = value1
+      laststart = 1
+      start[0] = value1['id'][0]
+      start[1] = value1['id'][1]
+    }
+
+    const initialMarkers= [0,0]
+    const [markers, setMarkers] = useState(initialMarkers);
+  
+    const map = useMapEvents({
+      click(e) {
+        if (location ==='start'){
+        let s1 =  e.latlng['lat']
+        let s2 = e.latlng['lng']
+
+        let pt = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+s1+"&lon="+s2;
+        
+
+        axios({
+          method: "GET",
+          url: pt,
+        })
+        .then((response) => {
+
+          let startdata = response.data['address']
+
+
+          if((startdata === undefined) ||(startdata["state"] === "Hawaii") || (startdata["country"] !== "United States")){
+            setShowloc(true)
+            
+          }else{
+            start[0] = e.latlng['lat']
+            start[1] = e.latlng['lng']
+            markers.push(e.latlng);
+            setMarkers((prevValue) => [...prevValue, e.latlng]);
+
+          }
+
+        }).catch((error) => {
+          if (error.response) {
+            console.log(error.response)
+            console.log(error.response.status)
+            console.log(error.response.headers)
+            }
+        })
+        }
+      }
+    })
+    
+
+    return (
+      <Marker position={[start[0], start[1]]} icon={customIcon1}>
+        <Popup>Start Location ({(start[0].toFixed(6))}, {start[1].toFixed(6)})</Popup>
+      </Marker>
+    ) 
+  }
+
+  const EndMarkers = () => {
+   
+    if (prevend !== value2 && lastend === 1){
+      prevend = value2
+      lastend = 1
+      end[0] = value2['id'][0]
+      end[1] = value2['id'][1]
+    }
+
+    const endMarkers= [0,0]
+    const [emarkers, seteMarkers] = useState(endMarkers);
+  
+    const maps = useMapEvents({
+      click(f) {
+        if (location === 'end'){
+        let e1 =  f.latlng['lat']
+        let e2 = f.latlng['lng']
+
+        let pt2 = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+e1+"&lon="+e2;
+       
+        axios({
+          method: "GET",
+          url: pt2,
+        })
+        .then((response) => {
+          let enddata = response.data['address']
+
+
+          if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
+            setShowloc(true)
+
+          }else{
+            end[0] = f.latlng['lat']
+            end[1] = f.latlng['lng']
+            emarkers.push(f.latlng);
+            seteMarkers((prevValue) => [...prevValue, f.latlng]);
+          }
+    
+        }).catch((error) => {
+          if (error.response) {
+            console.log(error.response)
+            console.log(error.response.status)
+            console.log(error.response.headers)
+            }
+        })
+        }
+      }
+    })
+
+
+    return (
+      <Marker position={[end[0], end[1]]} icon={customIcon2}>
+        <Popup>End Location ({(end[0].toFixed(6))}, {end[1].toFixed(6)})</Popup>
+      </Marker>
+    )
+  }
+
+
+  const HandleClick1 = () => {
+    laststart = 0
+    setupdateSrcLat(srclat)
+    setupdateSrcLon(srclon)
+    start[0] = Number(srclat)
+    start[1] = Number(srclon)
+  }
+
+  const HandleClick2 = () =>{
+    lastend = 0
+    setupdateDestLat(destlat)
+    setupdateDestLon(destlon)
+    end[0] = Number(destlat)
+    end[1] = Number(destlon)
+  }
+
+  
+  let colors1 = [
+    { id: [39.87, -88.89], name: 'Illinois Industrial Carbon Capture and Storage Project'},
+    { id: [45, -85], name: 'MRCSP Development Phase - Michigan Basin Project' },
+    { id: [35, -98], name: 'PurdySho-Vel-Tum EOR Project'},
+    { id: [30, -101], name: 'Val Verde NG Plants'},
+    { id: [39.863, -88.913], name: 'Illinois Industrial Carbon Capture and Storage'},
+    { id: [37.106767, -100.7977], name: 'Arkalon'},
+    { id: [37.959112, -100.83676], name: 'Bonanza BioEnergy'},
+    { id: [37.047329, -95.604094], name: 'Coffeyville Plant'},
+    { id: [45.113, -84.652], name: 'Core Energy CO2-EOR'},
+    { id: [46.8839, -102.3157], name: 'Red Trail'},
+    { id: [36.378636, -97.762739], name: 'Enid Fertilizer'},
+    { id: [29.866, -93.967], name: 'Air Products Port Arthur Facility'},
+    { id: [30.3718, -101.8449], name: 'Terrell Gas Processing'},
+    { id: [31.009, -88.025], name: 'SECARB Development Phase - Citronelle Project'},
+    { id: [37.536, -105.104], name: 'Oakdale NG Processing'},
+    { id: [40.530, -89.682], name: 'NRG Powerton Station'},
+    { id: [38.272, -89.668], name: 'Prairie State Energy Campus'},
+    { id: [37.046, -95.604], name: 'CO2 Capture from Coffeyville Fertilizer Plant'},
+    { id: [37.7903, -84.7144], name: 'EW Brown Generating Station'},
+    { id: [39.594529, -78.745292], name: 'AES Warrior Run'},
+    { id: [42.0916, -71.48352], name: 'Bellingham Cogeneration Facility'},
+    { id: [47.3727, -101.15679], name: 'Great River Energy'},
+    { id: [40.90214, -82.03784], name: 'Touchstone Bioconversion Pilot Plant'},
+    { id: [36.37858, -97.76379], name: 'Purdy Sho-Vel-Tum EOR Project'},
+    { id: [29.86493, -93.966697], name: 'Air Products and Chemicals Inc. CCS Project'},
+    { id: [31, -103], name: 'Century Plant Gas Processing'},
+    { id: [33.216456, -97.772382], name: 'Mitchell Energy Bridgeport Plant'},
+    { id: [29.47678, -95.637769], name: 'W.A. Parish Post-Combustion CO2 Capture and Sequestration Project'},
+    { id: [39.501027, -112.581819], name: 'Intermountain Power Agency'},
+    { id: [42.535541, -87.903483], name: 'We Energies Pleasant Prairie Field Pilot'},
+    { id: [35.760591, -117.379211], name: 'Searles Valley Minerals'},
+    { id: [41.88568, -110.0926], name: 'Shute Creek Plant'},
+    { id: [30.692226, -88.042569], name: 'Fuel Cell Carbon Capture Pilot Plant'},
+    { id: [31.01124, -88.024597], name: 'Linde/BASF FEED'},
+    { id: [33.2343, -86.4836], name: 'National Carbon Capture Center (NCCC)'},
+    { id: [33.417905, -111.928358], name: 'Center for Negative Carbon Emissions'},
+    { id: [35.27444, -119.32301], name: 'Elk Hills CCS'},
+    { id: [37.510632, -121.997288], name: 'Membrane Technology & Research, Inc.'},
+    { id: [37.458009, -122.175774], name: 'SRI International Post-combustion Sorbent'},
+    { id: [39.79121, -105.137092], name: 'TDA Research Post-combustion'},
+    { id: [39.791215, -105.136744], name: 'TDA Research Pre-combustion'},
+    { id: [31.006474, -88.008697], name: 'Gas Technology Institute'},
+    { id: [40.116306, -88.243522], name: 'Linde/Illinois'},
+    { id: [38.24935, -89.75296], name: 'Prairie State Generating Station CCS'},
+    { id: [37.106778, -100.799611], name: 'Arkalon Bioethanol'},
+    { id: [37.958806, -100.836556], name: 'Bonanza Bioethanol'},
+    { id: [37.050663, -95.604763], name: 'Coffeyville Fertilizer'},
+    { id: [38.03501, -84.504821], name: 'University of Kentucky Center for Applied Energy Research'},
+    { id: [38.03501, -84.504821], name: 'University of Kentucky Research Foundation'},
+    { id: [30.218533, -91.052119], name: 'PCS Nitrogen'},
+    { id: [39.594529, -78.745292], name: 'Warrior Run'},
+    { id: [45.1, -84.65], name: 'Core Energy'},
+    { id: [41.0809508, -101.1433768], name: 'Gerald Gentleman Coal Power Plant'},
+    { id: [40.764619, -73.971056], name: 'Global Thermostat'},
+    { id: [40.71217, -74.007155], name: 'Infinitree'},
+    { id: [35.905909, -78.863898], name: 'Research Triangle Institute'},
+    { id: [47.11495, -101.1725], name: 'Project Tundra'},
+    { id: [47.9198, -97.0605], name: 'University of North Dakota Energy and Environmental Research Center'},
+    { id: [35.194006, -94.646982], name: 'Shady Point'},
+    { id: [29.865806, -93.967361], name: 'Air Products Steam Methane Reformer'},
+    { id: [30.608764, -102.57876], name: 'Century Plant'},
+    { id: [29.646611, -95.055917], name: 'NET Power'},
+    { id: [33.63559, -96.60902], name: 'Panda Energy Fund'},
+    { id: [29.477964, -95.635209], name: 'Petra Nova'},
+    { id: [29.477964, -95.635209], name: 'Petra Nova'},
+    { id: [32.972554, -102.74361], name: 'University of Texas'},
+    { id: [44.388212, -105.459617], name: 'Dry Fork Power Plant CCS'},
+    { id: [43.280518, -107.6022], name: 'Lost Cabin'},
+    { id: [44.388212, -105.45961], name: 'Wyoming Integrated Test Center'},
+    { id: [47.361953, -101.838103], name: 'Great Plains Synfuel Plant'},
+  ];
+
+  let colors2 = [
+    { id: [39.87, -88.89], name: 'Illinois Industrial Carbon Capture and Storage Project'},
+    { id: [43, -106], name: 'LINC Energy - Wyoming EOR'},
+    { id: [45, -85], name: 'MRCSP Development Phase - Michigan Basin Project' },
+    { id: [35, -98], name: 'PurdySho-Vel-Tum EOR Project'},
+    { id: [40, -109], name: 'Rangely-Webber EOR'},
+    { id: [42, -109], name: 'Salt CreekMonellSussex Unit EOR'},
+    { id: [36, -101], name: 'SWP Development Phase - Farnsworth Unit Ochiltree Project'},
+    { id: [30, -101], name: 'Val Verde NG Plants'},
+    { id: [31, -102], name: 'Yates Oil Field EOR Operations'},
+  ];
+
+  function Footer() {
+
+    return (
+      <p>
+      <img src={bilLogo} alt='BIL Logo' />
+      <Link to="https://www.netl.doe.gov/home/disclaimer">Disclaimer</Link>
+      </p>
+      
+    )
+  }
+
+  function DropdownStart() {
+
+    laststart = 1
+
+    return (
+      <DropdownList
+        containerClassName='dropdown'
+        data={colors1}
+        datakey = 'id'
+        textField='name'
+        value={value1}
+        onChange={value1 => setValue1(value1)}
+      />
+    )
+  }
+
+
+  const Header = () => {
+
+    return (
+      <div className="header">
+        <img src={netlLogo} width={50} height={50}  alt='NETL Logo' />
+        <img src={doeLogo}  alt='DOE Logo' />
+        <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
+        <h1>Smart CO2 Transport-Routing Tool</h1>
+      </div>
+    );
+  };
+
+  function DropdownEnd() {
+
+    lastend = 1
+
+    return (
+      <DropdownList
+        containerClassName='dropdown'
+        data={colors2}
+        datakey = 'id'
+        textField='name'
+        value={value2}
+        onChange={value2 => setValue2(value2)}
+      />
+    )
+  }
+
+  const [location, setLocation] = useState("")
+  const onOptionChange = e => {
+    setLocation(e.target.value)
+  }
+
+  return(
+
+    <div>
+
+      <DisclaimerPopup/>
+      <InvalidLocation/>
+
+      <Header/>
+
+    
+      <MapContainer center={[39.8283, -98.5795]} zoom={5}>
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      
+      <StartMarkers/>
+      <EndMarkers/>
+      <ScaleControl position="bottomright" />
+      <ShowPipeline/>
+      </MapContainer>
+
+      <div>
+
+      <input type="radio" 
+      name="location" 
+      value="start" 
+      id="start" 
+      checked={location === "start"} 
+      onChange={onOptionChange}/>
+      <label htmlFor="start">Start</label>
+
+      <input type="radio" 
+      name="location" 
+      value="end" 
+      id="end" 
+      checked={location === "end"} 
+      onChange={onOptionChange}/>
+      <label htmlFor="end">End</label>
+    </div>
+      
+      <h4>Add Start Location (in World Geodetic System WGS 1984(WGS 84))</h4>
+
+      
+
+      <p> Latitude:   <input name="myInput1"  onChange={handleChange1} value={srclat}/> 
+          Longitude:  <input name="myInput2"  onChange={handleChange2} value={srclon} />  
+                       <Button size="sm" onClick={HandleClick1}> Save Start </Button >                      
+      </p> 
+
+      <div><DropdownStart/></div>
+      
+     
+
+      <h4>Add End Location (in World Geodetic System WGS 1984(WGS 84))</h4>
+
+      <p> Latitude:   <input name="myInput3" onChange={handleChange3} value={destlat}/> 
+          Longitude:  <input name="myInput4" onChange={handleChange4} value={destlon}/>
+                       <Button size="sm"  onClick={HandleClick2}> Save Destination </Button >            
+      </p>
+
+      <div><DropdownEnd/></div>
+
+      <br></br>
+
+      <p><Button onClick={sendData}> Generate Pipeline </Button > </p>
+
+      <p><Footer/></p>
+ 
+   
+    </div>
+    
+  )
+}
