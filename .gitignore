@@ -1,5 +1,9 @@
 # Gitingore
 
+# Ignore vscode folder except for common project settings (linters etc)
+.vscode/*
+!.vscode/settings.json
+
 # rasters
 *.tif
 
