@@ -5,8 +5,9 @@
 !.vscode/settings.json
 
 # shapefile output
-./Flask/route_*.*
-./Flask/shapefile_output/*
+/route_*.*
+/Flask/route_*.*
+/Flask/shapefile_output/*
 
 # pycharm settings folder
 .idea/*
