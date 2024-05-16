@@ -8,6 +8,7 @@ from osgeo import gdal, ogr, osr
 import numpy as np
 
 from controller import PipelineController
+from line_builder import line_builder
 
 api = Flask(__name__)
 
@@ -40,6 +41,7 @@ def a():
         route = generate_line_ml(start, end)    # using dummy values until translation is fixed
 
         print("Sending route to frontend...")
+        line_builder(route)
         return route
 
 def generate_line_ml(start, dest):
