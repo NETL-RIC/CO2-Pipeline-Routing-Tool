@@ -1,6 +1,6 @@
 import os.path
 import sys
-
+from pathlib import Path
 from flask import Flask, request
 import fiona
 import torch
@@ -20,6 +20,45 @@ def my_profile():
     }
 
     return response_body
+
+@api.route('/uploads', methods = ['POST'])
+def uploads_file():
+    print('hello')
+    name = ''
+    file = request.files
+    print(file)
+    for i in file:
+
+        name = file[i].filename
+        file[i].save(name)
+    
+    ret = []
+    p = Path(name).stem + '.shp'
+
+    print(p)
+    c = fiona.open(p)
+    shptype = c.schema["geometry"]
+    print(shptype)
+    
+    with fiona.open(p) as lines:
+        for line in lines:
+            v = line['geometry']['coordinates']
+
+            if type(v[0]) == list:
+                new_list = [(y, x)  for x, y in v[0]]
+            else:
+                new_list = [(y, x)  for x, y in v]
+
+            ret.append(new_list)
+    
+    #print(ret)
+    v = {
+        'array': ret,
+        'typ': shptype
+    }
+    print(type(ret))
+    
+    return v
 
 
 @api.route('/token', methods=['GET', 'POST'])
@@ -240,5 +279,5 @@ def test_ml():
     print("Last point from list of points, translated back to wgs84: " + str(route_wgs[-1]))
     print("\n")
 
-test_ml()
+#test_ml()
 

@@ -1,6 +1,6 @@
 import { React, useState } from 'react';
 import { DropdownList } from "react-widgets";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, ScaleControl, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, ScaleControl, Polyline, Polygon } from "react-leaflet";
 import { Icon } from "leaflet";
 import { Link } from 'react-router-dom';
 import axios from "axios";
@@ -14,6 +14,7 @@ import bilLogo from "./BIL.png"
 
 global.Buffer = require('buffer').Buffer;
 let linevals = []
+let shpvals = []
 let start = [0,0]
 let laststart = -999
 let lastend = -999  
@@ -22,11 +23,14 @@ let prevstart = 'Select known CCS project as start location'
 let prevend = 'Select known CCS project as destination location'
 let a = true;
 const limeOptions = { color: 'lime' }
+const purpleOptions = { color: 'purple' }
+let shptyp = ''
 
 
 export default function MyApp(){
   
   const [finished, setFinished] = useState('')
+  const [finished2, setFinished2] = useState('')
 
   const customIcon1 = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
@@ -45,6 +49,21 @@ export default function MyApp(){
     return <Polyline pathOptions={limeOptions} positions={linevals} />
     }
   }
+
+  function Showshp(){
+
+    if (finished2){
+      if (shptyp === 'Polygon'){
+        return <Polygon pathOptions={purpleOptions} positions={shpvals} />
+      }
+      else if (shptyp === 'LineString'){
+        return <Polyline pathOptions={purpleOptions} positions={shpvals} />
+      }
+    
+  }
+
+   
+}
 
 
   function sendData() {
@@ -470,6 +489,35 @@ function InvalidLocation() {
     setLocation(e.target.value)
   }
 
+  const [files, setFiles] = useState([]);
+
+  function handleMultipleChange(event) {
+    setFiles([...event.target.files]);
+  } 
+
+  function handleMultipleSubmit(event) {
+    event.preventDefault();
+    setFinished2(false)
+    
+    const formData = new FormData();
+    files.forEach((file, index) => {
+      formData.append(`file${index}`, file);
+    });
+
+
+    axios
+    .post("/uploads", formData)
+    .then((response) => {
+      shpvals =response.data['array']
+      shptyp = response.data['typ']
+      console.log(response)
+      console.log(response.data)
+      setFinished2(true)
+
+    })
+    .catch(err => console.warn(err));
+  }
+
   return(
 
     <div>
@@ -490,6 +538,7 @@ function InvalidLocation() {
       <EndMarkers/>
       <ScaleControl position="bottomright" />
       <ShowPipeline/>
+      <Showshp/>
       </MapContainer>
 
       <div>
@@ -537,7 +586,21 @@ function InvalidLocation() {
 
       <p><Button onClick={sendData}> Generate Pipeline </Button > </p>
 
-      <p><Footer/></p>
+      <form onSubmit={handleMultipleSubmit}>
+        <h4> Upload Shapefiles</h4>
+        <input type="file" multiple onChange={handleMultipleChange} />
+        <button type="submit">Upload</button>
+      </form>
+      <br/>
+      <p><a href={"robots.zip"} target="_blank" rel="noopener noreferrer" download>
+        <Button>
+          <i className="fas fa-download"/>
+          Download File
+          </Button>
+      </a></p>
+      <br/>
+      
+      <Footer/>
  
    
     </div>
