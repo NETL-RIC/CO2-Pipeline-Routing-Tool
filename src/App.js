@@ -222,7 +222,7 @@ function InvalidLocation() {
   
     const map = useMapEvents({
       click(e) {
-        if (location ==='start'){
+        if(uploaz==="points"){if (location ==='start'){
         let s1 =  e.latlng['lat']
         let s2 = e.latlng['lng']
 
@@ -256,17 +256,25 @@ function InvalidLocation() {
             console.log(error.response.headers)
             }
         })
-        }
+        }}
       }
     })
     
-
+    if (uploaz==="points"){
     return (
       <Marker position={[start[0], start[1]]} icon={customIcon1}>
         <Popup>Start Location ({(start[0].toFixed(6))}, {start[1].toFixed(6)})</Popup>
       </Marker>
     ) 
-  }
+  }else if(uploaz==="upld"){
+    return (
+      <Marker position={[0, 0]} icon={customIcon1}>
+        <Popup>Start Location ({(0)}, {0})</Popup>
+      </Marker>
+    ) 
+
+  }}
+  
 
   const EndMarkers = () => {
    
@@ -282,7 +290,7 @@ function InvalidLocation() {
   
     const maps = useMapEvents({
       click(f) {
-        if (location === 'end'){
+        if(uploaz==="points"){if (location === 'end'){
         let e1 =  f.latlng['lat']
         let e2 = f.latlng['lng']
 
@@ -313,17 +321,26 @@ function InvalidLocation() {
             console.log(error.response.headers)
             }
         })
-        }
+        }}
       }
     })
 
-
+    if(uploaz === "points"){
     return (
       <Marker position={[end[0], end[1]]} icon={customIcon2}>
         <Popup>End Location ({(end[0].toFixed(6))}, {end[1].toFixed(6)})</Popup>
       </Marker>
     )
-  }
+    }
+    else if(uploaz === "uploads"){
+      return (
+      <Marker position={[0,0]} icon={customIcon2}>
+        <Popup>End Location ({(0)}, {0})</Popup>
+      </Marker>
+    )}
+
+    }
+  
 
 
   const HandleClick1 = () => {
@@ -451,6 +468,7 @@ function InvalidLocation() {
         textField='name'
         value={value1}
         onChange={value1 => setValue1(value1)}
+        disabled={uploaz!=="points"}
       />
     )
   }
@@ -480,13 +498,22 @@ function InvalidLocation() {
         textField='name'
         value={value2}
         onChange={value2 => setValue2(value2)}
+        disabled={uploaz!=="points"}
       />
     )
   }
 
   const [location, setLocation] = useState("")
+  const [uploaz, setUploaz] = useState("")
+
+  const onvalChange = e => {
+    setUploaz(e.target.value)
+    console.log(uploaz)
+  }
+
   const onOptionChange = e => {
     setLocation(e.target.value)
+    console.log(location)
   }
 
   const [files, setFiles] = useState([]);
@@ -542,13 +569,35 @@ function InvalidLocation() {
       </MapContainer>
 
       <div>
+        <input type="radio"
+        name="selectpoints"
+        value="points"
+        id="points"
+        checked={uploaz=== "points"}
+        onChange={onvalChange}/>
+        <label htmlFor="points">Select Points</label>
+
+        <input type="radio"
+        name="selectpoints"
+        value="upld"
+        id="upld"
+        checked={uploaz=== "upld"}
+        onChange={onvalChange}/>
+        <label htmlFor="upld">Upload Shapefile</label>
+
+      </div>
+
+
+
+      <div>
 
       <input type="radio" 
       name="location" 
       value="start" 
       id="start" 
       checked={location === "start"} 
-      onChange={onOptionChange}/>
+      onChange={onOptionChange}
+      disabled={uploaz!=="points"}/>
       <label htmlFor="start">Start</label>
 
       <input type="radio" 
@@ -556,7 +605,8 @@ function InvalidLocation() {
       value="end" 
       id="end" 
       checked={location === "end"} 
-      onChange={onOptionChange}/>
+      onChange={onOptionChange}
+      disabled={uploaz!=="points"}/>
       <label htmlFor="end">End</label>
     </div>
       
@@ -564,9 +614,9 @@ function InvalidLocation() {
 
       
 
-      <p> Latitude:   <input name="myInput1"  onChange={handleChange1} value={srclat}/> 
-          Longitude:  <input name="myInput2"  onChange={handleChange2} value={srclon} />  
-                       <Button size="sm" onClick={HandleClick1}> Save Start </Button >                      
+      <p> Latitude:   <input name="myInput1"  onChange={handleChange1} value={srclat} disabled={uploaz!=="points"}/> 
+          Longitude:  <input name="myInput2"  onChange={handleChange2} value={srclon} disabled={uploaz!=="points"}/>  
+                       <Button size="sm" onClick={HandleClick1} disabled={uploaz!=="points"}> Save Start </Button >                      
       </p> 
 
       <div><DropdownStart/></div>
@@ -575,27 +625,36 @@ function InvalidLocation() {
 
       <h4>Add End Location (in World Geodetic System WGS 1984(WGS 84))</h4>
 
-      <p> Latitude:   <input name="myInput3" onChange={handleChange3} value={destlat}/> 
-          Longitude:  <input name="myInput4" onChange={handleChange4} value={destlon}/>
-                       <Button size="sm"  onClick={HandleClick2}> Save Destination </Button >            
+      <p> Latitude:   <input name="myInput3" onChange={handleChange3} value={destlat} disabled={uploaz!=="points"}/> 
+          Longitude:  <input name="myInput4" onChange={handleChange4} value={destlon} disabled={uploaz!=="points"}/>
+                       <Button size="sm"  onClick={HandleClick2} disabled={uploaz!=="points"}> Save Destination </Button >            
       </p>
 
       <div><DropdownEnd/></div>
 
       <br></br>
 
-      <p><Button onClick={sendData}> Generate Pipeline </Button > </p>
-
-      <form onSubmit={handleMultipleSubmit}>
-        <h4> Upload Shapefiles</h4>
-        <input type="file" multiple onChange={handleMultipleChange} />
-        <button type="submit">Upload</button>
-      </form>
+      <p><Button onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button > </p>
       <br/>
       <p><a href={"robots.zip"} target="_blank" rel="noopener noreferrer" download>
-        <Button>
+        <Button disabled={uploaz!=="points"}>
           <i className="fas fa-download"/>
-          Download File
+          Export PDF and Shapefiles
+          </Button>
+      </a></p>
+      <br/>
+
+      <form onSubmit={handleMultipleSubmit} disabled={uploaz!=="upld"}>
+        <h4> Upload Shapefiles</h4>
+        <input type="file" multiple onChange={handleMultipleChange} disabled={uploaz!=="upld"} />
+        <button type="submit" disabled={uploaz!=="upld"}>Upload</button>
+      </form>
+      <br></br>
+      <p><Button disabled={uploaz!=="upld"}>Perform Analysis</Button></p>
+      <p><a href={"robots.zip"} target="_blank" rel="noopener noreferrer" download>
+        <Button disabled={uploaz!=="upld"}>
+          <i className="fas fa-download"/>
+          Export Shapefile
           </Button>
       </a></p>
       <br/>
