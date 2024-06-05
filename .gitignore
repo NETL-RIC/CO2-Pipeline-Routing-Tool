@@ -4,6 +4,13 @@
 .vscode/*
 !.vscode/settings.json
 
+# the inputs for the pdfreader include some large tables and shapefile
+/Flask/report_builder/inputs/*.csv
+/Flask/report_builder/inputs/*.shp
+
+# General outputs
+*.pdf
+
 # shapefile output
 /route_*.*
 /Flask/route_*.*

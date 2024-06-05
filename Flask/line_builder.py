@@ -1,3 +1,5 @@
+import os
+
 from osgeo import ogr, osr
 from datetime import datetime
 
@@ -22,14 +24,16 @@ def line_builder(coords):
     Creates a line shapefile in WGS84
 
     :param coords: list of coordinates as tuples in WGS 84
-    :return:
+    :return: name of the output shape file (string)
     """
     # Set line geometry
     line = ogr.Geometry(ogr.wkbLineString)
     for c in coords:
         line.AddPoint(c[1], c[0])
 
-    out_shp = f"route_{CleanDatetime(str(datetime.now()))}.shp"
+    out_shp = os.path.abspath("output_shapefiles")
+    out_shp = os.path.join(out_shp, f"route_{CleanDatetime(str(datetime.now()))}.shp")
+    print("\t" + out_shp)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326) #WGS84
 
@@ -43,8 +47,10 @@ def line_builder(coords):
     lyr.CreateFeature(feature)
 
     ds.Destroy()
+    return out_shp
 
 # Input coordinates as ordered list of tuples in WGS84
+# This is just test data
 coords = [(38.79021683721502, -106.6822230701482), (38.79021683721502, -106.52931842587321),
           (38.79021683721502, -106.37641378159823), (38.79021683721502, -106.22350913732326),
           (38.79021683721502, -106.07060449304828), (38.79021683721502, -105.9176998487733),
