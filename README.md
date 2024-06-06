@@ -53,3 +53,13 @@ The flask folder having few meaningful subdirectories is because of the way the 
 and therein has some NameError issues whose best fix currently is to keep it in the same directory as the Flask code (base.py being
 the entrypoint). This can likely be changed in the future, and may already be able to be changed due to recent fixes, but at time of writing
 (03/24) must be kept in one directory due to time constraints.
+
+## Desktop Packaging
+### Flask
+The flask server can be bundled with pyInstaller by running `python -m pyinstaller packCO2PRT.spec` which bundles via the *CO2PRT.py* file and dependencies /definitions in the spec file.
+
+Additional dependencies should be picked up automatically by pyinstaller, if they are missed they can be included in the `hiddenimports` list within the spec file.
+
+PyInstaller can be asked to copy necessary data via the `more_datas` list of tuples in the spec file. Format is `('<source location>', '<packaged destination>')`.
+
+### Electron
