@@ -43,3 +43,5 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+Flask/report_builder/inputs/10km_SpatialJoin_42_51_55_59_28.csv
+Flask/report_builder/inputs/tract_base.shp
