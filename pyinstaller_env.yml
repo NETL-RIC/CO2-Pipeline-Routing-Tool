@@ -1,0 +1,21 @@
+name: mlpipeline
+channels:
+  - defaults
+  - conda-forge
+  - pytorch
+dependencies:
+  - python==3.11.*
+  - flask
+  - fiona
+  - pytorch
+  - torchvision
+  - pyinstaller
+  - scikit-image
+  - gdal
+  - gymnasium
+  - pip
+  - pip:
+    - pygame
+    - pandas
+    - fpdf
+prefix: C:\Users\zaengled\.conda\envs\mlpipeline
