@@ -18,7 +18,11 @@ a = Analysis(
     # Add any imports that show up as missing once bundled
     hiddenimports=[
         'fiona.enums',
-        'scipy.special._cdflib'
+        'scipy.special._cdflib',
+        'skimage.data._fetchers',
+        'skimage.graph.mcp',
+        'skimage.transform._warps',
+        'skimage.measure.block'
         ],
     hookspath=[],
     hooksconfig={},
