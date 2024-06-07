@@ -6,19 +6,23 @@ block_cipher = None
 
 # Add any data that need to be copied into the pyinstaller bundle
 more_datas = [
-    ('Flask/cost_surfaces', './Flask/cost_surfaces'),
-    ('Flask/raster','./Flask/raster')
+    ('Flask/cost_surfaces', 'cost_surfaces'),
+    ('Flask/raster','raster')
     ]
 
 a = Analysis(
     ['CO2PRT.py'],
     pathex=['./Flask'],
     binaries=[],
-    datas=[],
+    datas=more_datas,
     # Add any imports that show up as missing once bundled
     hiddenimports=[
         'fiona.enums',
-        'scipy.special._cdflib'
+        'scipy.special._cdflib',
+        'skimage.data._fetchers',
+        'skimage.graph.mcp',
+        'skimage.transform._warps',
+        'skimage.measure.block'
         ],
     hookspath=[],
     hooksconfig={},
