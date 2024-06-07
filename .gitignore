@@ -14,7 +14,8 @@
 # shapefile output
 /route_*.*
 /Flask/route_*.*
-/Flask/shapefile_output/*
+/Flask/output_shapefiles/*
+/Flask/output_pdf/*
 
 # pycharm settings folder
 .idea/*
