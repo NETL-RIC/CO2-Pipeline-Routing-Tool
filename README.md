@@ -62,4 +62,6 @@ Additional dependencies should be picked up automatically by pyinstaller, if the
 
 PyInstaller can be asked to copy necessary data via the `more_datas` list of tuples in the spec file. Format is `('<source location>', '<packaged destination>')`.
 
+If the dev environment doesn't agree with pyinstaller there is a `pyinstaller_env.yml` included that should bundle without issue.
+
 ### Electron
