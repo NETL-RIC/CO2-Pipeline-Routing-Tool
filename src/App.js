@@ -636,11 +636,11 @@ function InvalidLocation() {
 
       <p><Button onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button > </p>
       <br/>
-      <p><a href={"robots.zip"} target="_blank" rel="noopener noreferrer" download>
+      <p><a href={"route_shapefile_and_report.zip"} target="_blank" rel="noopener noreferrer" download>
         <Button disabled={uploaz!=="points"}>
           <i className="fas fa-download"/>
-          Export PDF and Shapefiles
-          </Button>
+          Download Report and Shapefiles
+        </Button>
       </a></p>
       <br/>
 

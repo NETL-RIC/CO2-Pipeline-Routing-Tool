@@ -3,6 +3,13 @@ import os
 from osgeo import ogr, osr
 from datetime import datetime
 
+def get_file_name(file_path):
+    """ Gets filename (no extension) from path with \\ not /
+    """
+    file_path_split = file_path.split('\\')
+    file_name_and_extension = file_path_split[-1].rsplit('.', 1)
+    return file_name_and_extension[0]
+
 def CleanDatetime(datestring):
     """
     Replace unwanted characters in string with an underscore as needed
@@ -21,19 +28,19 @@ def CleanDatetime(datestring):
 
 def line_builder(coords):
     """
-    Creates a line shapefile in WGS84
+    Creates line shapefiles in WGS84 and saves to Flask/output_shapefiles
+    These are used by the PDF report builder, and turned into a zip for user-download in _____
 
     :param coords: list of coordinates as tuples in WGS 84
-    :return: name of the output shape file (string)
+    :return: out_shp: string with 'output_shapefiles' + name of the file
     """
     # Set line geometry
     line = ogr.Geometry(ogr.wkbLineString)
     for c in coords:
         line.AddPoint(c[1], c[0])
 
-    out_shp = os.path.abspath("output_shapefiles")
+    out_shp = os.path.abspath("output")     # name of dir to save shapefiles to
     out_shp = os.path.join(out_shp, f"route_{CleanDatetime(str(datetime.now()))}.shp")
-    print("\t" + out_shp)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326) #WGS84
 
@@ -47,7 +54,10 @@ def line_builder(coords):
     lyr.CreateFeature(feature)
 
     ds.Destroy()
-    return out_shp
+
+    out_shp_abspath = out_shp
+    out_shp_filename = get_file_name(out_shp_abspath)
+    return [out_shp_filename, out_shp_abspath]
 
 # Input coordinates as ordered list of tuples in WGS84
 # This is just test data
