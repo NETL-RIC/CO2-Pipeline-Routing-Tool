@@ -16,7 +16,8 @@ a = Analysis(
     binaries=[],
     datas=more_datas,
     # Add any imports that show up as missing once bundled
-    hiddenimports=[
+    hiddenimports=['fiona._shim',
+        'fiona.schema',
         'fiona.enums',
         'scipy.special._cdflib',
         'skimage.data._fetchers',
