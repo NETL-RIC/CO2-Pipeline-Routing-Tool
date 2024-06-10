@@ -11,11 +11,10 @@
 # General outputs
 *.pdf
 
-# shapefile output
+# tool output
 /route_*.*
 /Flask/route_*.*
-/Flask/output_shapefiles/*
-/Flask/output_pdf/*
+/Flask/output/*
 
 # pycharm settings folder
 .idea/*
