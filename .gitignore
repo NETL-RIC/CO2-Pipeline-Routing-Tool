@@ -15,6 +15,8 @@
 /route_*.*
 /Flask/route_*.*
 /Flask/output/*
+/Flask/output
+output
 
 # pycharm settings folder
 .idea/*
