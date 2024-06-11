@@ -194,9 +194,6 @@ class MLWrapper:
             self.cost_surface.load_rasters('./cost_surfaces/AL_10km_112nat_336reg_672loc/')
         game_start = self.cost_surface.to_game_coordiantes(*start)
         game_target = self.cost_surface.to_game_coordiantes(*target)
-        print("In MLWrapper.route():")
-        print('\tgame_start (Ben Raster System): ' + str(game_start))
-        print('\tgame_target (Ben Raster System): ' + str(game_target))
         results = self.agent.route(
             self.cost_surface,
             game_start,

@@ -21,8 +21,6 @@ codecs = ['utf_8','windows-1252','utf_32','utf_32_be','utf_32_le','utf_16','utf_
 replacers = [' ', '-', '(', ')', '%', ',', '.', '=', '>', '/']
 decimal_places = 2
 
-curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
-print(curr_date)
 
 def GetIDsAndLengthOrArea(new_shp, grid_shp, tracts_shp):
     """
@@ -87,10 +85,8 @@ def GetIDsAndLengthOrArea_old(line, vg, tracts):
     :param tracts: census tract shapefile
     :return: list of ids where vg intersects with line, list of ids where tract intersects with line, line length (m)
     """
-    print("/Flask/report_builder/report_builder:")
     # Open shapefiles as layers
     driver = ogr.GetDriverByName("ESRI Shapefile")
-    print("\t" + line)
     ds = driver.Open(line, 0)
     input_lyr = ds.GetLayer()
 
@@ -162,7 +158,6 @@ def CleanDF(df, nulls, id_fld, ids):
     :return: cleaned df
     """
 
-    print(df.shape)
     df = df[df[id_fld].isin(ids)]
 
     for c in df.columns.tolist():
@@ -193,12 +188,12 @@ def PrettyNumber(value):
         value = round(value, decimal_places)
         return f'{value:,}'
     else:
-        print(type(value))
         return value
 
 
 class PDF(FPDF):
     def header(self):
+        curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
         # Logo
         self.image(r"report_builder/images/DOE_NETL_Logos.png", 10, 10, 60)
         # Arial bold 15
@@ -239,6 +234,7 @@ def report_builder(shapefile, start_coordinates, end_coordinates, out_path):
     :param out_path: output location to save pdf report
     :return: pdf report file
     """
+    curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
 
     # Hardcoded data for evaluation
     vg_shp = r"report_builder\inputs\vg_base.shp"
@@ -273,7 +269,6 @@ def report_builder(shapefile, start_coordinates, end_coordinates, out_path):
     # shapefile = "../" + shapefile   # need to prefix ../ to go back out of report_builder directory to get .shp file
     # shapefile = Path.absolute("../" + shapefile)
     shapefile = os.path.abspath(shapefile)
-    print("\t" + shapefile)
     # Run intersection and pull intersecting ids and line length from shapefiles
     vg_ids, tract_ids, statistic, geometry_type = GetIDsAndLengthOrArea(shapefile, vg_shp, tract_shp)
 
@@ -487,50 +482,6 @@ def report_builder(shapefile, start_coordinates, end_coordinates, out_path):
             counties.append(c)
             states.append(tract_df['STATE_NAME'].tolist()[tract_df['CNTY_NAME'].tolist().index(c)])
 
-    #
-    # with open("example_report.txt", 'w') as writer:
-    #     # Write report header
-    #     header = f"Smart CO2 Transport-Route Planning Tool (alpha) - Route Evaluation\n\n" \
-    #              f"Start Location: {start_coordinates}\n" \
-    #              f"End Location: {end_coordinates}\n" \
-    #              f"Route Length: {PrettyNumber(length/1000.0)} km\n\n" \
-    #              f"Counties Intersected by State:\n"
-    #
-    #     for s in list(set(states)):
-    #         header = header + f"\t{s}\n"
-    #         for c in counties:
-    #             if s == states[counties.index(c)]:
-    #                 header = header + f"\t\t{c}\n"
-    #     header = header + f"\n\nSpatially Intersecting Features by Category\n" \
-    #                       f"\tNOTE: Results based on where route intersects tract or 10 km grid cell that also intersects spatial data.\n\n"
-    #     writer.write(header)
-    #
-    #     # Loop through def_dicts to build reports
-    #     for c in categories:
-    #         writer.write(f"{c}\n")
-    #
-    #         # Pull dicts for c
-    #         c_dicts = [dd for dd in def_dicts if dd[category] == c]
-    #
-    #         # Get list of datasets
-    #         datasets_by_orig = list(set([cd[orig_dataset_name] for cd in c_dicts]))
-    #         datasets_by_orig.sort()
-    #
-    #         for d in datasets_by_orig:
-    #             intersect_check = False
-    #             writer.write(f"\t{d}\n")
-    #
-    #             for cd in c_dicts:
-    #                 if cd[orig_dataset_name] == d:
-    #                     if cd['printable_values'] != '':
-    #                         if cd[orig_dataset_name] in multiple_measurements:
-    #                             writer.write(f"\t\t{cd[title_2]}\n")
-    #                         writer.write(f"\t\t{cd['printable_values']}\n")
-    #                         intersect_check = True
-    #             if intersect_check == False:
-    #                 writer.write(f"\t\t\t{'No intersections found'}\n")
-    #
-    #                     #TODO: add handling if none of the national monuments or national parks intersect
 
     # Write to PDF
     pdf = PDF()
@@ -604,6 +555,7 @@ def report_builder(shapefile, start_coordinates, end_coordinates, out_path):
                 pdf.cell(0, 5, f"No intersections found", 0, 1)
             pdf.cell(0, 5, f"", 0, 1)
     out_pdf = os.path.join(out_path, f"Report_{curr_date.replace('/', '').replace(' ','_').replace(':','')}.pdf")
+    # out_pdf = os.path.join(out_path, "report.pdf")          #TEMPORARY SOLUTION TO GET DOWNLOADS WORKING
     pdf.output(out_pdf, 'F')
 
 if __name__ == "__main__" :
