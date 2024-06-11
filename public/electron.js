@@ -2,9 +2,32 @@
 const { app, BrowserWindow, protocol } = require("electron");
 const path = require("path");
 const url = require("url");
- 
+let backend;
+backend = path.join(process.cwd(), 'dist/CO2PRT_Flask.exe') 
+var execfile = require('child_process').execFile;
+
+execfile(
+  backend,
+  {
+   windowsHide: false,
+  },
+  (err, stdout, stderr) => {
+   if (err) {
+   console.log(err);
+   }
+   if (stdout) {
+   console.log(stdout);
+   }
+   if (stderr) {
+   console.log(stderr);
+   }
+  }
+ )
+
 // Create the native browser window.
 function createWindow() {
+  // var exePath = './dist/CO2PRT_Flask.exe'
+  // var child = require('child_process').spawn(exePath);
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -68,6 +91,15 @@ app.whenReady().then(() => {
 // There, it's common for applications and their menu bar to stay active until
 // the user quits  explicitly with Cmd + Q.
 app.on("window-all-closed", function () {
+  const { exec } = require('child_process');
+  exec("taskkill /f /t /im CO2PRT_Flask.exe", (err, stdout, stderr) => {
+  if (err) {
+    console.log(err)
+  return;
+  }
+  console.log(`stdout: ${stdout}`);
+  console.log(`stderr: ${stderr}`);
+  });
   if (process.platform !== "darwin") {
     app.quit();
   }
