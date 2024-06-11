@@ -1,6 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-import sys ; sys.setrecursionlimit(sys.getrecursionlimit() * 5)
+import os
+import sys 
+sys.setrecursionlimit(sys.getrecursionlimit() * 5)
 
 block_cipher = None
 
@@ -16,10 +18,10 @@ a = Analysis(
     binaries=[],
     datas=more_datas,
     # Add any imports that show up as missing once bundled
-    hiddenimports=['fiona._shim',
+    hiddenimports=[
+        'fiona._shim',
         'fiona.schema',
         'fiona.enums',
-        'fiona._shim',
         'fiona.schema',
         'scipy.special._cdflib',
         'skimage.data._fetchers',
@@ -41,8 +43,11 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=True,
+    exclude_binaries=False, # by setting to false and removing call to COLLECT this bundles in onefile mode
     name='CO2PRT_Flask',
     debug=False,
     bootloader_ignore_signals=False,
@@ -55,13 +60,13 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='CO2PRT_Flask',
-)
+# coll = COLLECT(
+#     exe,
+#     a.binaries,
+#     a.zipfiles,
+#     a.datas,
+#     strip=False,
+#     upx=True,
+#     upx_exclude=[],
+#     name='CO2PRT_Flask',
+# )
