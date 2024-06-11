@@ -56,7 +56,7 @@ the entrypoint). This can likely be changed in the future, and may already be ab
 
 ## Desktop Packaging
 ### Flask
-The flask server can be bundled with pyInstaller by running `python -m pyinstaller packCO2PRT.spec` which bundles via the *CO2PRT.py* file and dependencies /definitions in the spec file.
+The flask server can be bundled with pyInstaller by running `python -m PyInstaller packCO2PRT.spec` which bundles via the *CO2PRT.py* file and dependencies /definitions in the spec file.
 
 Additional dependencies should be picked up automatically by pyinstaller, if they are missed they can be included in the `hiddenimports` list within the spec file.
 
