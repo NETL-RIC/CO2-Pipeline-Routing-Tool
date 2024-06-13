@@ -4,6 +4,7 @@ import fiona
 
 from rout import leastCostPath
 from agent import ml_least_cost_path
+from mc_agent import least_cost_path_ml
 # from backendml.grid import agent
 
 
@@ -12,12 +13,12 @@ class PipelineController():
     """
     def __init__(self, x,y):
         self.start = x
-        self.end = y
+        self.dest = y
 
     def ml_run(self):
         """Machine-learning informed routing logic
         """
-        return ml_least_cost_path(self.start, self.end)
+        return least_cost_path_ml(self.start, self.dest)
 
     def run(self):
         """Old routing logic - not machine learning

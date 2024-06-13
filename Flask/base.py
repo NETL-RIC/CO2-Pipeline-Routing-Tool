@@ -15,8 +15,6 @@ from controller import PipelineController
 from line_builder import line_builder
 from report_builder.report_builder import report_builder
 
-
-
 api = Flask(__name__)
 APP_ROOT = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = os.path.join(APP_ROOT, 'user_uploads')
