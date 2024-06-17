@@ -31,24 +31,25 @@ def my_profile():
 @api.route('/uploads', methods = ['POST'])
 def uploads_file():
     print('hello')
+    delete_dir_contents('user_uploads')     #clear out stuff from a previous tool run
     name = ''
     file = request.files
     print(file)
     for i in file:
-
         name = file[i].filename
         print(name)
-        file[i].save(os.path.join(UPLOAD_FOLDER, name))
+        # file[i].save(os.path.join(UPLOAD_FOLDER, name))
+        cur_dir = os.path.dirname(__file__)
+        file_path = os.path.join('./user_uploads', name)
+        file[i].save(file_path)
     
     ret = []
-    p = Path(name).stem + '.shp'
-
-    print(p)
-    c = fiona.open(p)
+    c = fiona.open(file_path)
     shptype = c.schema["geometry"]
-    print(shptype)
+    print('The uploaded shapefile is of type:')
+    print('\t'+shptype)
     
-    with fiona.open(p) as lines:
+    with fiona.open(file_path) as lines:
         for line in lines:
             v = line['geometry']['coordinates']
 
@@ -59,14 +60,44 @@ def uploads_file():
 
             ret.append(new_list)
     
-    #print(ret)
     v = {
         'array': ret,
         'typ': shptype
     }
-    print(type(ret))
+    print('The uploaded shapefile is of type:')
+    print('\t'+shptype)
+
+    if shptype == "LineString":
+        print("Creating PDF report for LineString shapefile")
+        run_line_eval_mode(v['array'][0], v['array'][-1])
+    elif shptype == "Polygon":
+        print("Creating PDF report for Polygon shapefile")
+        run_line_eval_mode(v['array'][0], v['array'][-1])
+    else:
+        print("Uploaded shapefile is neither a polygon or a line. Please upload an appropriate shapefile.")
     
     return v
+
+def run_line_eval_mode(first_point, last_point):
+    """ Create eval report from user-uploaded LINE shapefiles on button click
+    Connected to 'Perform Analysis' in the evaluation mode section of the webpage
+    Params: shp_type(string): if the user's shapefile is a line or polygon
+    Returns: none
+    """
+    shp_extension_file = None
+    for file in os.listdir(os.path.join(os.path.dirname(__file__), "user_uploads")):
+        if file.endswith(".shp"):
+            shp_extension_file = file
+            print(f"Found user-uploaded file: {shp_extension_file}")
+
+    if shp_extension_file == None:
+        print('No .shp file found in user_uploads')
+    else:
+        output_shp_abspath = os.path.join(os.path.dirname(__file__), "user_uploads", shp_extension_file)
+        delete_prev_zips_pdfs()
+        public_abspath = os.path.realpath('../public')
+        pdfname = report_builder(output_shp_abspath, first_point, last_point, public_abspath)    # create pdf report in '../public' so front-end can grab it easily
+        os.rename(os.path.join(public_abspath, pdfname), os.path.join(public_abspath, "route_report.pdf"))
 
 
 def delete_dir_contents(rel_path):
@@ -88,7 +119,7 @@ def delete_dir_contents(rel_path):
             count = count + 1
         print(f'\tdeleted all {count} contents of {rel_path}.')
 
-def delete_prev_zips():
+def delete_prev_zips_pdfs():
     """ Delete *.zip from ../public
     params: none
     returns: none
@@ -97,8 +128,8 @@ def delete_prev_zips():
     dircontents = os.listdir('../public')
 
     for file in dircontents:
-        if file.endswith(".zip"):
-            print(f"\t delete_prev_zips: deleting old zip {file}")
+        if file.endswith(".zip") or file.endswith(".pdf"):
+            print(f"\t delete_prev_zips: deleting old file {file}")
             os.remove(os.path.join('../public', file))
 
 def create_output_zip(zipname):
@@ -111,14 +142,6 @@ def create_output_zip(zipname):
     print("\tcreate_output_shp_zip: created zipfile at ../public")
 
 
-def run_evaluation_mode():
-    """ Create eval report from user-uploaded files on button click
-    Connected to 'Perform Analysis' in the evaluation mode section of the webpage
-    Params: none
-    Returns: none
-    """
-    # report_builder()
-    delete_dir_contents('user_uploads')
 
 
 @api.route('/token', methods=['GET', 'POST'])
@@ -135,7 +158,6 @@ def a():
 
         route = generate_line_ml(start, end)    # calculate line with ML
 
-        # not the same as start/end above after translation and coarse ML model granularity 
         first_point = route[0]
         last_point = route[-1]  
         print(f"After ML, start point is {first_point}")
@@ -147,8 +169,8 @@ def a():
         output_shp_abspath = shpinfo[1]
         output_shp_filename = shpinfo[0]
        
-        report_builder(output_shp_abspath, first_point, last_point, "output")    # create pdf report in './output
-        delete_prev_zips()                   # delete zip from last run if exist
+        pdf_name = report_builder(output_shp_abspath, first_point, last_point, "output")    # create pdf report in './output
+        delete_prev_zips_pdfs()                   # delete zip from last run if exist
         create_output_zip(output_shp_filename) # create zip of pdf/shp files in ../public so front-end can easily grab
         return route
 
@@ -159,8 +181,8 @@ def generate_line_ml(start, dest):
     Returns: route: list, the list of coordinates that composes the line
     """
 
-    raspath = './raster/ras_10km_resampled_071323_WGS84.tif'
-    
+    raspath = './raster/ras_10km_resampled_071323_WGS84.tif'    # old raster
+    # raspath = './cost_surfaces/raw_cost_10km_aea/cost_10km_aea.tif' # new raster for new ml. needs translation functions from Lucy
     print("/Flask/base.generate_line_ml:")
     print("\tOriginal wgs84 start: " + str(start))
     print("\tOriginal wgs84 dest: " + str(dest))
@@ -168,19 +190,19 @@ def generate_line_ml(start, dest):
 
     startlocal = CoordinatesToIndices(raspath, start)   # translate WGS84 coords into local raster index coords for ML processing
     destlocal = CoordinatesToIndices(raspath, dest)
-
-    # print("Translated start into local coords (as x,y): " + str(startlocal))
-    # print("Translated dest into local coords (as x,y):" + str(destlocal))
-    # print("\n")
+    print("Start Coord passed to ML:" + str(startlocal))
+    print("Dest Coord passed to ML:" + str(destlocal))
 
     pipecontrol = PipelineController(startlocal, destlocal)
     route_local = pipecontrol.ml_run()
-    # print("\n")
-    # print("Length of list:" + str(len(route_local)))
 
-    # print("First point in list of points, as Lucy Local System:" + str(route_local[0]))
-    # print("Last point in list of points, as Lucy Local System:" + str(route_local[-1]))
-    # print("\n")
+    print("First point in list of points, as Lucy Local System:" + str(route_local[0]))
+    print("Last point in list of points, as Lucy Local System:" + str(route_local[-1]))
+
+    # write post-ml route list to a file for Ben to troubleshoot... remove later
+    with open('post-ml-line.txt','w') as f:
+        for line in route_local:
+            f.write(f"{line}\n")
 
     route_wgs = translateLine(raspath, route_local)
     print("\troute_wgs[0]: " + str(route_wgs[0]))

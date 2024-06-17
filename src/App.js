@@ -647,15 +647,14 @@ function InvalidLocation() {
       <form onSubmit={handleMultipleSubmit} disabled={uploaz!=="upld"}>
         <h4> Upload Shapefiles</h4>
         <input type="file" multiple onChange={handleMultipleChange} disabled={uploaz!=="upld"} />
-        <button type="submit" disabled={uploaz!=="upld"}>Upload</button>
+        <button type="submit" disabled={uploaz!=="upld"}>Upload and Evaluate</button>
       </form>
       <br></br>
-      <p><Button disabled={uploaz!=="upld"}>Perform Analysis</Button></p>
-      <p><a href={"robots.zip"} target="_blank" rel="noopener noreferrer" download>
+      <p><a href={"route_report.pdf"} target="_blank" rel="noopener noreferrer" download>
         <Button disabled={uploaz!=="upld"}>
           <i className="fas fa-download"/>
-          Export Shapefile
-          </Button>
+          Download Report
+        </Button>
       </a></p>
       <br/>
       

@@ -554,9 +554,12 @@ def report_builder(shapefile, start_coordinates, end_coordinates, out_path):
                 pdf.cell(30)
                 pdf.cell(0, 5, f"No intersections found", 0, 1)
             pdf.cell(0, 5, f"", 0, 1)
-    out_pdf = os.path.join(out_path, f"Report_{curr_date.replace('/', '').replace(' ','_').replace(':','')}.pdf")
+    output_file_name = f"Report_{curr_date.replace('/', '').replace(' ','_').replace(':','')}.pdf"
+    out_pdf = os.path.join(out_path, output_file_name)
     # out_pdf = os.path.join(out_path, "report.pdf")          #TEMPORARY SOLUTION TO GET DOWNLOADS WORKING
     pdf.output(out_pdf, 'F')
+    print("PDF created.")
+    return output_file_name
 
 if __name__ == "__main__" :
     # IN-SCRIPT TESTING 

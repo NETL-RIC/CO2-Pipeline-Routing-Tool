@@ -3,7 +3,6 @@ import sys
 import fiona
 
 from rout import leastCostPath
-from agent import ml_least_cost_path
 from mc_agent import least_cost_path_ml
 # from backendml.grid import agent
 
