@@ -273,12 +273,14 @@ def report_builder(shapefile, start_coordinates, end_coordinates, out_path):
     vg_ids, tract_ids, statistic, geometry_type = GetIDsAndLengthOrArea(shapefile, vg_shp, tract_shp)
 
     # Pull data by FID into dataframe for report
-    if vg_ids:
-        vg_df = CleanDF(pd.read_csv(vg_table), null_list, vg_id, vg_ids)
-        print(vg_df.shape)
+   # if vg_ids:
+    vg_df = CleanDF(pd.read_csv(vg_table), null_list, vg_id, vg_ids)
+    print(vg_df.shape)
+    """
     else:
         print(
             f"No intersections found when comparing route to 10km multivariate grid across CONUS or AK")  # TODO: Raise as warning in tool
+    """
 
     # Pull data by FID into dataframe for report
     if tract_ids:

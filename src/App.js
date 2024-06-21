@@ -46,6 +46,8 @@ export default function MyApp(){
 
     if (finished){
     console.log("Returning line data as Polyline for map")
+    console.log("Line array in front end: ")
+    console.log(linevals)
     return <Polyline pathOptions={limeOptions} positions={linevals} />
     }
   }

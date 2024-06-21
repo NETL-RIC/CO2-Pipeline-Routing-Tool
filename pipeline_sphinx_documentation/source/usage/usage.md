@@ -1,6 +1,11 @@
 # Operation
-Select the start and endpoint of your desired CO2 Pipeline path, choose output location, and start the program's path generation sequence. 
-Once the Main window has rendered, hover over the main map area of the program and zoom to your desired start point using the scroll wheel.
+The CO2 Pipeline-Routing Tool has two primary modes: Identification and Evaluation. 
+Identification mode allows the user to select two points, generate a proposed pipeline route, and download a shapefile of the route and relevant PDF report on route details.
+Evaluation mode allows the user to upload a shapefile of an existing route, and generate a PDF report on route details.
+
+# Identification Mode
+
+# Evaluation Mode
 
 ## Point Selection
 There are three ways to input a start or end point on the map:

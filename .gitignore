@@ -17,6 +17,7 @@
 /Flask/output/*
 /Flask/output
 output
+Flask/user_uploads
 
 # pycharm settings folder
 .idea/*

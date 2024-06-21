@@ -28,6 +28,38 @@ def CleanDatetime(datestring):
 
 def line_builder(coords):
     """
+    Creates a line shapefile in WGS84
+    :param coords: list of coordinates as tuples in WGS 84
+    :return:
+    """
+    # Set line geometry
+    line = ogr.Geometry(ogr.wkbLineString)
+    for c in coords:
+        line.AddPoint(c[0], c[1])
+    driver = ogr.GetDriverByName('Esri Shapefile')
+    out_shp = os.path.abspath("output")     # name of dir to save shapefiles to
+    out_shp = os.path.join(out_shp, f"route_{CleanDatetime(str(datetime.now()))}.shp")
+    ds = driver.CreateDataSource(out_shp)
+    srs = osr.SpatialReference()
+    srs.ImportFromEPSG(4326) #WGS84
+    lyr = ds.CreateLayer(out_shp, srs, geom_type=ogr.wkbLineString)
+    # Add an ID field
+    idField = ogr.FieldDefn("id", ogr.OFTInteger)
+    lyr.CreateField(idField)
+    # Create the feature and set values
+    featureDefn = lyr.GetLayerDefn()
+    feature = ogr.Feature(featureDefn)
+    feature.SetGeometry(line)
+    feature.SetField("id", 1)
+    lyr.CreateFeature(feature)
+    feature.Destroy()
+    ds.Destroy()
+    out_shp_abspath = out_shp
+    out_shp_filename = get_file_name(out_shp_abspath)
+    return [out_shp_filename, out_shp_abspath]
+
+def line_builder_old(coords):
+    """
     Creates line shapefiles in WGS84 and saves to Flask/output_shapefiles
     These are used by the PDF report builder, and turned into a zip for user-download in _____
 
