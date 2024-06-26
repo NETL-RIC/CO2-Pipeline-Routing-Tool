@@ -1,4 +1,4 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import { DropdownList } from "react-widgets";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, ScaleControl, Polyline, Polygon } from "react-leaflet";
 import { Icon } from "leaflet";
@@ -68,7 +68,8 @@ export default function MyApp(){
 }
 
 
-  function sendData() {
+  function sendData(e) {
+    e.preventDefault();
 
     setFinished(false)
 
@@ -89,6 +90,18 @@ export default function MyApp(){
         console.log(error.response.headers)
         }
     })
+  }
+
+  // creates "are you sure" dialogue box on page refresh
+  useEffect(() => {
+    window.addEventListener("beforeunload", alertUser);
+    return () => {
+      window.removeEventListener("beforeunload", alertUser);
+    };
+  }, []);
+  const alertUser = (e) => {
+    e.preventDefault();
+    e.returnValue = "";
   }
 
   const [show, setShowloc] = useState(false);
@@ -239,7 +252,6 @@ function InvalidLocation() {
 
           let startdata = response.data['address']
 
-
           if((startdata === undefined) ||(startdata["state"] === "Hawaii") || (startdata["country"] !== "United States")){
             setShowloc(true)
             
@@ -248,7 +260,6 @@ function InvalidLocation() {
             start[1] = e.latlng['lng']
             markers.push(e.latlng);
             setMarkers((prevValue) => [...prevValue, e.latlng]);
-
           }
 
         }).catch((error) => {
@@ -547,6 +558,7 @@ function InvalidLocation() {
     .catch(err => console.warn(err));
   }
 
+
   return(
 
     <div>
@@ -636,8 +648,10 @@ function InvalidLocation() {
 
       <br></br>
 
-      <p><Button onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button > </p>
-      <br/>
+      <p>
+        <Button type="button" onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button>
+      </p>
+
       <p><a href={"route_shapefile_and_report.zip"} target="_blank" rel="noopener noreferrer" download>
         <Button disabled={uploaz!=="points"}>
           <i className="fas fa-download"/>

@@ -69,16 +69,18 @@ def uploads_file():
 
     if shptype == "LineString":
         print("Creating PDF report for LineString shapefile")
-        run_line_eval_mode(v['array'][0], v['array'][-1])
+        # first_point = v['array'][0] # unnessecary right now, but in case it's needed later
+        # last_point = v['array'][-1] # unnessecary right now, but in case it's needed later
+        run_line_eval_mode()
     elif shptype == "Polygon":
         print("Creating PDF report for Polygon shapefile")
-        run_line_eval_mode(v['array'][0], v['array'][-1])
+        run_line_eval_mode()
     else:
         print("Uploaded shapefile is neither a polygon or a line. Please upload an appropriate shapefile.")
     
     return v
 
-def run_line_eval_mode(first_point, last_point):
+def run_line_eval_mode():
     """ Create eval report from user-uploaded LINE shapefiles on button click
     Connected to 'Perform Analysis' in the evaluation mode section of the webpage
     Params: shp_type(string): if the user's shapefile is a line or polygon
@@ -96,7 +98,7 @@ def run_line_eval_mode(first_point, last_point):
         output_shp_abspath = os.path.join(os.path.dirname(__file__), "user_uploads", shp_extension_file)
         delete_prev_zips_pdfs()
         public_abspath = os.path.realpath('../public')
-        pdfname = report_builder(output_shp_abspath, first_point, last_point, public_abspath)    # create pdf report in '../public' so front-end can grab it easily
+        pdfname = report_builder(shapefile=output_shp_abspath, out_path=public_abspath)    # create pdf report in '../public' so front-end can grab it easily
         os.rename(os.path.join(public_abspath, pdfname), os.path.join(public_abspath, "route_report.pdf"))
 
 

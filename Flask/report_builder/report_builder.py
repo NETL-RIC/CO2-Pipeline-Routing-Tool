@@ -225,7 +225,7 @@ class PDF(FPDF):
         self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'R')
 
 
-def report_builder(shapefile, start_coordinates, end_coordinates, out_path):
+def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_path="output"):
     """
 
     :param shapefile: polygon or line shapefile from tool output OR user input, must be in WGS84
@@ -493,8 +493,10 @@ def report_builder(shapefile, start_coordinates, end_coordinates, out_path):
     # for i in range(1, 41):
     #     pdf.cell(0, 10, 'Printing line number ' + str(i), 0, 1)
     # Write basic stats information
-    pdf.cell(0, 5, f"Start Location: {start_coordinates}", 0, 1)
-    pdf.cell(0, 5, f"End Location: {end_coordinates}", 0, 1)
+    if start_coordinates is not None:
+        pdf.cell(0, 5, f"Start Location: {start_coordinates}", 0, 1)
+    if end_coordinates is not None:
+        pdf.cell(0, 5, f"End Location: {end_coordinates}", 0, 1)
     if geometry_type == 2:
         pdf.cell(0, 5, f"Route Length: {PrettyNumber(statistic / 1000.0)} km", 0, 1)
     else:
