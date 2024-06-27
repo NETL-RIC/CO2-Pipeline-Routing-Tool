@@ -98,7 +98,7 @@ def run_line_eval_mode():
     else:
         output_shp_abspath = os.path.join(os.path.dirname(__file__), "user_uploads", shp_extension_file)
         delete_prev_zips_pdfs()
-        public_abspath = os.path.realpath('../public')
+        public_abspath = resource_path('../public')
         pdfname = report_builder(shapefile=output_shp_abspath, out_path=public_abspath)    # create pdf report in '../public' so front-end can grab it easily
         os.rename(os.path.join(public_abspath, pdfname), os.path.join(public_abspath, "route_report.pdf"))
 

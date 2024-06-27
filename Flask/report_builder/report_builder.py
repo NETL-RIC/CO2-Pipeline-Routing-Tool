@@ -197,7 +197,7 @@ class PDF(FPDF):
     def header(self):
         curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
         # Logo
-        self.image(r"report_builder/images/DOE_NETL_Logos.png", 10, 10, 60)
+        self.image(resource_path("report_builder/images/DOE_NETL_Logos.png"), 10, 10, 60)
         # Arial bold 15
         self.set_font('Helvetica', 'B', 14)
         # Move to the right
@@ -561,7 +561,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
                 pdf.cell(0, 5, f"No intersections found", 0, 1)
             pdf.cell(0, 5, f"", 0, 1)
     output_file_name = f"Report_{curr_date.replace('/', '').replace(' ','_').replace(':','')}.pdf"
-    out_pdf = os.path.join(out_path, output_file_name)
+    out_pdf = resource_path(os.path.join(out_path, output_file_name))
     # out_pdf = os.path.join(out_path, "report.pdf")          #TEMPORARY SOLUTION TO GET DOWNLOADS WORKING
     pdf.output(out_pdf, 'F')
     print("PDF created.")
