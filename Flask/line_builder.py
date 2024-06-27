@@ -2,6 +2,7 @@ import os
 
 from osgeo import ogr, osr
 from datetime import datetime
+from extra_utils import resource_path
 
 def get_file_name(file_path):
     """ Gets filename (no extension) from path with \\ not /
@@ -37,7 +38,7 @@ def line_builder(coords):
     for c in coords:
         line.AddPoint(c[0], c[1])
     driver = ogr.GetDriverByName('Esri Shapefile')
-    out_shp = os.path.abspath("output")     # name of dir to save shapefiles to
+    out_shp = resource_path("output")     # name of dir to save shapefiles to
     out_shp = os.path.join(out_shp, f"route_{CleanDatetime(str(datetime.now()))}.shp")
     ds = driver.CreateDataSource(out_shp)
     srs = osr.SpatialReference()
