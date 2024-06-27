@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operation &mdash; CO2Pipeline 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Usage" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            CO2Pipeline
+              <img src="../_static/netl_logo_transparent2.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Usage</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Operation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#identification-mode">Identification Mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#start-and-end-points">Start and End Points</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#clicking-on-the-map">Clicking On The Map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#entering-coordinates">Entering Coordinates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#selecting-known-locations">Selecting Known Locations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#generate-pipeline">Generate Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-report">Download Report</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluation-mode">Evaluation Mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#upload-shapefile">Upload Shapefile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Download Report</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CO2Pipeline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Usage</a></li>
+      <li class="breadcrumb-item active">Operation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="operation">
+<h1>Operation<a class="headerlink" href="#operation" title="Permalink to this heading"></a></h1>
+<p>The CO2 Pipeline-Routing Tool has two primary modes: Identification and Evaluation.
+Identification mode allows the user to select two points, generate a proposed pipeline route, and download a shapefile of the route and relevant PDF report on route details.
+Evaluation mode allows the user to upload a shapefile of an existing route, and generate a PDF report on route details.</p>
+</section>
+<section id="identification-mode">
+<h1>Identification Mode<a class="headerlink" href="#identification-mode" title="Permalink to this heading"></a></h1>
+<p>To start evaluation mode, click on the <code class="docutils literal notranslate"><span class="pre">Identify</span> <span class="pre">Route</span></code> radio button below the map. This enables all Identification Mode buttons and fields that are otherwise greyed-out.</p>
+<section id="start-and-end-points">
+<h2>Start and End Points<a class="headerlink" href="#start-and-end-points" title="Permalink to this heading"></a></h2>
+<p>There are two ways to enter the start and end points of the desired pipeline route.</p>
+<section id="clicking-on-the-map">
+<h3>Clicking On The Map<a class="headerlink" href="#clicking-on-the-map" title="Permalink to this heading"></a></h3>
+<p>Select <code class="docutils literal notranslate"><span class="pre">Start</span></code> or <code class="docutils literal notranslate"><span class="pre">End</span></code> radio button, and then click on the map to place a marker representing the chosen type of point.</p>
+<p>Selecting <code class="docutils literal notranslate"><span class="pre">Start</span></code> and clicking on the map will create a black marker to represent the point.</p>
+<p>Selecting <code class="docutils literal notranslate"><span class="pre">End</span></code> and clicking on the map will create a red marker to represent the end of the pipeline route.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You do not need to click the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Start</span></code> button, as those are only for entering points manually via coordinates.</p>
+</div>
+</section>
+<section id="entering-coordinates">
+<h3>Entering Coordinates<a class="headerlink" href="#entering-coordinates" title="Permalink to this heading"></a></h3>
+<p>You may also enter pipeline start and end points via the Latitude and Longitude World Geodetic System 1984 (WGS84) coordinates.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Start</span></code> point, or the beginning of the proposed pipeline, can be created by entering the coordinate in the first pair of Latitude and Longitude text boxes, and clicking the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Start</span></code> button. This will create a black marker on the map to represent the point.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">End</span></code> point can similarly be created by entering the coordinate components in the relevant fields and clicking the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Destination</span></code> button. This will create a red marker on the map to represent the end point.</p>
+</section>
+<section id="selecting-known-locations">
+<h3>Selecting Known Locations<a class="headerlink" href="#selecting-known-locations" title="Permalink to this heading"></a></h3>
+<p>Alternatively, you may select a point from the <code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">known</span> <span class="pre">CCS</span> <span class="pre">project</span> <span class="pre">as</span> <span class="pre">start</span></code> or <code class="docutils literal notranslate"><span class="pre">end</span></code> location dropdown menus. Selecting a location from either of these will create a black or red marker on the map, for start and end points respectively.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You do not need to select <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Points</span></code> as that button is only for manual coordinate entry via the text fields above the dropdown menu. Selecting a location from the dropdown menu will save the point automatically.</p>
+</div>
+</section>
+</section>
+<section id="generate-pipeline">
+<h2>Generate Pipeline<a class="headerlink" href="#generate-pipeline" title="Permalink to this heading"></a></h2>
+<p>If you are satisfied with your selected points, click <code class="docutils literal notranslate"><span class="pre">Generate</span> <span class="pre">Pipeline</span></code> to execute the path-generation sequence of the program. The result proposed route displayed as a red line on the map, and a zip file containing a shapefile of the route and a relevant report. The map may be scaled and moved with by dragging and scrolling with the mouse, similar to Google Maps.</p>
+</section>
+<section id="download-report">
+<h2>Download Report<a class="headerlink" href="#download-report" title="Permalink to this heading"></a></h2>
+<p>After the Generate Pipeline button has been pressed, the tool will create two kinds of outputs, that can be downloaded by clicking the <code class="docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Report</span> <span class="pre">and</span> <span class="pre">Shapefile</span></code> button. The first is the proposed route displayed on the map, and the second is a downloadable zip file containing:
+*A shapefile representing the proposed line
+*A PDF report outlining relevant statistics and details of the generated line</p>
+</section>
+</section>
+<section id="evaluation-mode">
+<h1>Evaluation Mode<a class="headerlink" href="#evaluation-mode" title="Permalink to this heading"></a></h1>
+<p>To initiate evaluation mode, click on the <code class="docutils literal notranslate"><span class="pre">Evaluate</span> <span class="pre">Corridor</span></code> radio button directly beneath the map. This will enable the otherwise greyed-out Evaluation Mode buttons to be interacted with.</p>
+<section id="upload-shapefile">
+<h2>Upload Shapefile<a class="headerlink" href="#upload-shapefile" title="Permalink to this heading"></a></h2>
+<p>To upload a shapefile for evaluation, click the <code class="docutils literal notranslate"><span class="pre">Choose</span> <span class="pre">Files</span></code> button, select the desired shapefile in the new file explorer window, and click “Open”. Sucessfully uploaded files will be represented with a filecount directly to the right of the Choose Files button.</p>
+<p>Once files are uploaded, click <code class="docutils literal notranslate"><span class="pre">Evaluate</span></code> to run the evaluation portion of the tool and generate a PDF report about your shapefile.</p>
+</section>
+<section id="id1">
+<h2>Download Report<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>Clicking <code class="docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Report</span></code> will open a file-saving window where you’ll choose a destination for the PDF report and click “Save”.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, NETL-RIC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
