@@ -49,7 +49,11 @@
     "productName": "CO2Pipeline",
     "files": [
       "build/**/*",
-      "node_modules/**/*"
+      "node_modules/**/*",
+      "pipeline_sphinx_documentation/_build/**/*"
+    ],
+    "extraFiles": [
+      "dist/CO2PRT_Flask.exe"
     ],
     "directories": {
       "buildResources": "public"

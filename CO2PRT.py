@@ -6,5 +6,8 @@
 """
 
 from Flask import base
+import multiprocessing
 
-base.api.run()
+if __name__ == '__main__':
+    multiprocessing.freeze_support()
+    base.api.run()

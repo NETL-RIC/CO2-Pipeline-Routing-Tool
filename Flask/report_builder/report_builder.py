@@ -8,6 +8,8 @@ import numpy as np
 import collections
 from fpdf import FPDF
 
+from extra_utils import resource_path
+
 codecs = ['utf_8','windows-1252','utf_32','utf_32_be','utf_32_le','utf_16','utf_7','utf_8_sig','ascii','big5',
           'big5hkscs','cp037','cp273','cp424','cp437','cp500','cp720','cp737','cp775','cp850','cp852','cp855', 'cp856',
           'cp857','cp858','cp860','cp861','cp862','cp863','cp864','cp865','cp866','cp869','cp874','cp875','cp932',
@@ -235,21 +237,21 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     :return: pdf report file
     """
     curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
-
+    report_input = resource_path('report_builder\inputs')
     # Hardcoded data for evaluation
-    vg_shp = r"report_builder\inputs\vg_base.shp"
+    vg_shp = os.path.join(report_input, "vg_base.shp")
     vg_id = 'OID_'
-    vg_table = r"report_builder\inputs\10km_SpatialJoin_42_51_55_59_28.csv"
+    vg_table = os.path.join(report_input, "10km_SpatialJoin_42_51_55_59_28.csv")
 
-    tract_shp = r"report_builder\inputs\tract_base.shp"
+    tract_shp = os.path.join(report_input, "tract_base.shp")
     tract_id = 'OID_'
     state_fld = "STATE_NAME"
     county_fld = "CNTY_NAME"
     tract_fld = "TRACTCE_1"
 
-    tract_table = r"report_builder\inputs\census_tract_boundaries_USA_AK.csv"
+    tract_table = os.path.join(report_input, "census_tract_boundaries_USA_AK.csv")
 
-    def_table = r"report_builder\inputs\report_base.csv"
+    def_table = os.path.join(report_input, "report_base.csv")
     category = "Category"
     orig_table = "table"
     measurement = "Report Measurement"

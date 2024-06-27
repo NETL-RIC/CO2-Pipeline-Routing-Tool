@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from IPython import display
 
+from extra_utils import resource_path
+
 def least_cost_path_ml(start, dest):
     """Simple wrapper function to return just the list that composes the ML-generated line
     """
@@ -402,7 +404,7 @@ class MCAgent:
 
 class MLWrapper:
 
-    def __init__(self, trajectories=100, num_workers=1, raster_dir='./cost_surfaces/10km_448us_448al'):
+    def __init__(self, trajectories=100, num_workers=1, raster_dir=resource_path('cost_surfaces/10km_448us_448al')):
         self.cost_surface = CostSurface()
         self.cost_surface.load_rasters(raster_dir)
         self.agent = MCAgent(trajectories=trajectories, num_workers=num_workers)

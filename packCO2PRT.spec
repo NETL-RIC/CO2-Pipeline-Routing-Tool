@@ -23,11 +23,13 @@ a = Analysis(
         'fiona.schema',
         'fiona.enums',
         'fiona.schema',
+        'six',
         'scipy.special._cdflib',
         'skimage.data._fetchers',
         'skimage.graph.mcp',
         'skimage.transform._warps',
-        'skimage.measure.block'
+        'skimage.measure.block',
+        'tqdm'
         ],
     hookspath=["."],
     hooksconfig={},
@@ -43,9 +45,9 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
+    a.binaries, # Comment in for singlefile
+    a.zipfiles, # Comment in for singlefile
+    a.datas, # Comment in for singlefile
     [],
     exclude_binaries=False, # by setting to false and removing call to COLLECT this bundles in onefile mode
     name='CO2PRT_Flask',
@@ -60,6 +62,8 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
+
+# Comment out below for singlefile
 # coll = COLLECT(
 #     exe,
 #     a.binaries,

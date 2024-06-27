@@ -14,6 +14,7 @@ import numpy as np
 from controller import PipelineController
 from line_builder import line_builder
 from report_builder.report_builder import report_builder
+from extra_utils import resource_path
 
 api = Flask(__name__)
 APP_ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -40,7 +41,7 @@ def uploads_file():
         print(name)
         # file[i].save(os.path.join(UPLOAD_FOLDER, name))
         cur_dir = os.path.dirname(__file__)
-        file_path = os.path.join('./user_uploads', name)
+        file_path = os.path.join(resource_path('user_uploads'), name)
         file[i].save(file_path)
     
     ret = []
@@ -108,6 +109,8 @@ def delete_dir_contents(rel_path):
     Params: rel_path: a path relative to Flask/
     Returns: none
     """
+    if not os.path.exists(rel_path):
+        os.mkdir(rel_path)
     if (len(os.listdir((rel_path)))) == 0:
         print(f"Directory {rel_path} is already empty, no need to delete.")
     else:
@@ -166,7 +169,7 @@ def a():
         print(f"After ML, start point is {first_point}")
         print(f"After ML, dest: point is {last_point}")
 
-        delete_dir_contents('output')   # delete the shapefiles/pdfs from the last tool run
+        delete_dir_contents(resource_path('output'))   # delete the shapefiles/pdfs from the last tool run
 
         shpinfo = line_builder(route)  # create shapefile(s) in ./output, based on line, return filename of output .shp file
         output_shp_abspath = shpinfo[1]
@@ -189,7 +192,7 @@ def generate_line_ml_old(start, dest):
     Returns: route: list, the list of coordinates that composes the line
     """
 
-    raspath = './raster/ras_10km_resampled_071323_WGS84.tif'    # old raster
+    raspath = resource_path('raster/ras_10km_resampled_071323_WGS84.tif')    # old raster
     # raspath = './cost_surfaces/raw_cost_10km_aea/cost_10km_aea.tif' # new raster for new ml. needs translation functions
 
     print("/Flask/base.generate_line_ml:")
@@ -418,15 +421,13 @@ def generate_line_ml(start, dest):
        Paramters: start, dest: tuple, the start and end points of the line that will be generated, passed in as WGS84 coords
        Returns: route: list, the list of coordinates that composes the line
        """
-    raspath = './raster/cost_10km_aea.tif' 
-
+    raspath = resource_path('raster/cost_10km_aea.tif' )
 
     startlocal = CoordinatesToIndices(raspath,
                                       start)  # translate WGS84 coords into local raster index coords for ML processing
     destlocal = CoordinatesToIndices(raspath, dest)
     pipecontrol = PipelineController(startlocal, destlocal)
     route_local = pipecontrol.ml_run()
-
     route_wgs = translateLine(raspath, route_local)
     # write post-ml route list to a file for Ben to troubleshoot... remove later
     with open('report_builder_input.txt','w') as f:
@@ -646,7 +647,7 @@ if __name__ == "__main__":
     def test_ml():
         """ Dummy function to test point translation and ml function without needing to interact with frontend
         """
-        raspath = './raster/ras_10km_resampled_071323_WGS84.tif'
+        raspath = resource_path('raster/ras_10km_resampled_071323_WGS84.tif')
 
         startwgs = (35.23, -101.71) # amarillo, tx
         destwgs =(31.9973, -102.0779) # midland, tx
