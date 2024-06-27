@@ -98,6 +98,11 @@ export default function MyApp(){
     e.returnValue = "";
   }
 
+  function openDocs(){
+    // all assets for 
+    window.open("documentation/_build/html/index.html", "_blank", "noreferrer")
+  }
+
   const [show, setShowloc] = useState(false);
   
   const [srclat, setSrcLat] = useState('')
@@ -490,7 +495,9 @@ function InvalidLocation() {
         <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
         <h1>Smart CO2 Transport-Routing Tool</h1>
         <div id="docButton">
-          <Button>Help Documentation</Button>
+            <Button onClick={openDocs}>
+              Help Documentation
+            </Button>
         </div>
       </div>
     );
@@ -618,7 +625,7 @@ function InvalidLocation() {
         <label htmlFor="end">End</label>
     </div>
       
-      <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
+      <h4>Add Start Location in World Geodetic System WGS 1984 (WGS84)</h4>
 
       <p> Latitude:   <input name="myInput1"  onChange={handleChange1} value={srclat} disabled={uploaz!=="points"}/> 
           Longitude:  <input name="myInput2"  onChange={handleChange2} value={srclon} disabled={uploaz!=="points"}/>  
@@ -647,7 +654,7 @@ function InvalidLocation() {
       <p><a href={"route_shapefile_and_report.zip"} target="_blank" rel="noopener noreferrer" download>
         <Button disabled={uploaz!=="points"}>
           <i className="fas fa-download"/>
-          Download Report and Shapefile
+          Download Report and Shapefiles
         </Button>
       </a></p>
       <br/>
@@ -655,7 +662,7 @@ function InvalidLocation() {
       <form onSubmit={handleMultipleSubmit} disabled={uploaz!=="upld"}>
         <h4> Upload Shapefiles</h4>
         <input type="file" multiple onChange={handleMultipleChange} disabled={uploaz!=="upld"} />
-        <button type="submit" disabled={uploaz!=="upld"}>Evaluate</button>
+        <button type="submit" disabled={uploaz!=="upld"}>Upload and Evaluate</button>
       </form>
       <br></br>
       <p><a href={"route_report.pdf"} target="_blank" rel="noopener noreferrer" download>
