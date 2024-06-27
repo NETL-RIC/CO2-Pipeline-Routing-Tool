@@ -1,113 +1,54 @@
-# Getting Started
+# Operation
+The CO2 Pipeline-Routing Tool has two primary modes: Identification and Evaluation. 
+Identification mode allows the user to select two points, generate a proposed pipeline route, and download a shapefile of the route and relevant PDF report on route details.
+Evaluation mode allows the user to upload a shapefile of an existing route, and generate a PDF report on route details.
 
-## Getting Started From Binary (.exe)
-Most users will likely interact with an executable version of the program, rather than interpreting it from source code. These users can simply double-click on the executable, `CO2Pipeline.exe`, to run the program. Skip to [](#running-the-program).
+# Identification Mode
+To start evaluation mode, click on the `Identify Route` radio button below the map. This enables all Identification Mode buttons and fields that are otherwise greyed-out.
 
+## Start and End Points
+There are two ways to enter the start and end points of the desired pipeline route.
 
+### Clicking On The Map
+Select `Start` or `End` radio button, and then click on the map to place a marker representing the chosen type of point. 
 
+Selecting `Start` and clicking on the map will create a black marker to represent the point. 
 
-## Getting Started From Source Code
-Developers and testing developers will have a few more steps to run the program. 
-Firstly, you must have the correct virtual environment (python versioning and package collection) enabled. 
-The following outlines virtual environment creation from the provided .yml file using Conda. 
-
-Open Anaconda and navigate to the `exported_venv` folder in the source directory, and execute the following command:
-        
-        conda env create --name co2pipe --file=environment.yml
-
-This will create an environment named "co2pipe" using the yaml file. Activate the environment via:
-       
-        conda activate co2pipe
-
-:::{note}
-Unix users may simply use Python itself, or other tools, to create virtual environments from yaml files.
-:::
-
-With the virtual environment active, navigate back to the root source directory. Then run the main driver script, "CO2pipeline.py" via:
-
-        python CO2pipeline.py
-
-or, if you are a Unix user,
-
-        python3 CO2pipeline.py
-
-These commands should start the program akin to double-clicking the .exe as a standard user. See below for troubleshooting if not. It is normal for the program to take up to one minute to render. 
-
-### Troubleshooting Setup
-Sometimes virtual environments do not want to play nice, based on operating system differences or any conda versioning tomfoolery therein. 
-As an internal developer or tester seeking assistance, please reach out to Michael or Stephen with a log file that captures all errors created in a text file so they may more accurately and efficiently assist you. To do this, simply concatonate any command that is preventing progress with " > error_log.txt". For example, if your virtual environment setup is not executing successfully, you would want to re-run the command via the following:
-
-        conda env create --name co2pipe --file=environment.yml > error_log.txt
-
-and pass along the text file to one of the developers that would be happy to assist you. 
-
-***
-# Running the Program
-Select the start and endpoint of your desired CO2 Pipeline path, choose output location, and start the program's path generation sequence. 
-Once the Main window has rendered, hover over the main map area of the program and zoom to your desired start point using the scroll wheel.
-
-## Point Selection
-
-To place either a start or end point for your pipeline, select `Start Point` or `End Point` respectively from the left sidebar under the heading `Select a Map Point`. Once enabled based on your selection, you may place a point by 
-* clicking anywhere on the map,
-* entering a precise latitude and longitude (in World Geodetic System 1984 (WGS84) geographic coordinate system),
-* or selecting popular locations from the dropdown menu `Optional Start Location`. 
-
-These options may be mixed and matched between start point and end point (for example, you may create a start point by clicking on the map area, and your end point by using the dropdown menu). The start point will be denoted in the map area by a point-up cyan triangle, and the destination by a point-down red triangle.
+Selecting `End` and clicking on the map will create a red marker to represent the end of the pipeline route.
 
 :::{tip}
-A point's apparent location on the map and Lat/Long information will not be updated until the `Save Locations` is selected. (When specifying a point via Lat/Long or Optional Location).
+You do not need to click the `Save Start` button, as those are only for entering points manually via coordinates.
 :::
 
-## Save Locations
-After both points are placed accurately, click the `Save Locations` button. You may re-place points and re-click this button safely if you wish to edit your selections. This will not execute the path-generation sequence of the program. 
+### Entering Coordinates
+You may also enter pipeline start and end points via the Latitude and Longitude World Geodetic System 1984 (WGS84) coordinates. 
 
-![Start and End Points](../_static/start_end_points.PNG)
+The `Start` point, or the beginning of the proposed pipeline, can be created by entering the coordinate in the first pair of Latitude and Longitude text boxes, and clicking the `Save Start` button. This will create a black marker on the map to represent the point.
 
-The above is the result of manually selecting a start point by clicking on the map area, choosing an end point from the `Optional End Location` dropdown, and selecting `Save Locations`.
+The `End` point can similarly be created by entering the coordinate components in the relevant fields and clicking the `Save Destination` button. This will create a red marker on the map to represent the end point.
 
-## Output Folder and Program Execution
-Then, click "Select Folder Location" to open a file explorer and select the folder you wish the program to output to. Alternatively, enter a folder path in the "Enter an Optional Folder" field and select `Save Folder Path`.
+### Selecting Known Locations
+Alternatively, you may select a point from the `Select known CCS project as start` or `end` location dropdown menus. Selecting a location from either of these will create a black or red marker on the map, for start and end points respectively. 
 
-![Output Folder Verification](../_static/output_folder.PNG)
-
-When your folder is selected successfully, the path will appear directly above the `Run` button. 
-
-
-## Run
-If you are satisfied with your points and output folder, click `Run` to execute the path-generation sequence of the program. 
-
-***
-# Retrieve and Review Results
-When the program has completed running, eight different files will be exported to the output directory specified earlier. This concludes the program's path creation functionality; new start and end points may be selected, or you may safely exit the program by closing the window conventionally. What follows is an explanation of each individual ouptut file.
-
-## end_location.shp
-Shapefile of the end location (sink) in the North America Equidistant Conic projected coordinate system.
-
-## cost_distance.tif
-Distance raster showing distance (in meters) from the sink location in the North America Equidistant Conic projected coordinate system.
-
-## cost_surface.tif
-Product of the original weighteds surface (fed on the backend of the tool), multiplied by the cost_distance.tif raster surface. This raster is also in the North America Equidistant Conic projected coordinate system. 
-:::{note}
-Initial runs use solely the state regulations layer; future versions will use a more comprehensive weighted surface based on the data within the input geodatabase (Schooley et al. 2023).
+:::{tip}
+You do not need to select `Save Points` as that button is only for manual coordinate entry via the text fields above the dropdown menu. Selecting a location from the dropdown menu will save the point automatically.
 :::
 
-## result.tif
-Binary raster representing least cost path where raster grid value equals 1. This raster is in the North America Equidistant Conic projected coordinate system. 
+## Generate Pipeline
+If you are satisfied with your selected points, click `Generate Pipeline` to execute the path-generation sequence of the program. The result proposed route displayed as a red line on the map, and a zip file containing a shapefile of the route and a relevant report. The map may be scaled and moved with by dragging and scrolling with the mouse, similar to Google Maps.
 
-## result_pnt.shp
-Least cost path, as a conversion from the result.tif to point shapefile, where the result.tif grid value equals 1. This shapefile is in the North America Equidistant Conic projected coordinate system.
+## Download Report 
+After the Generate Pipeline button has been pressed, the tool will create two kinds of outputs, that can be downloaded by clicking the `Download Report and Shapefile` button. The first is the proposed route displayed on the map, and the second is a downloadable zip file containing:
+*A shapefile representing the proposed line
+*A PDF report outlining relevant statistics and details of the generated line
 
-## summary.csv
-Table of weighted values crossed, based on where result_pnt.shp overlaps with the original weighted surface. 
+# Evaluation Mode
+To initiate evaluation mode, click on the `Evaluate Corridor` radio button directly beneath the map. This will enable the otherwise greyed-out Evaluation Mode buttons to be interacted with.
 
-## result_pre_line.shp 
-Least cost path, as a conversaion from result.tif toa line shpaefile, where the result.tif grid value quals 1. The shapefile is in the North American Equidistant Conic projected coordinate system. 
+## Upload Shapefile
+To upload a shapefile for evaluation, click the `Choose Files` button, select the desired shapefile in the new file explorer window, and click "Open". Sucessfully uploaded files will be represented with a filecount directly to the right of the Choose Files button.
 
-## result_pre_line.shp
-Least cost path, as a conversion from result.tif to a line shapefile, where the result.tif grid value equals 1. This shapefile is in the North America Equidistant Conic projected coordinate system. 
+Once files are uploaded, click `Evaluate` to run the evaluation portion of the tool and generate a PDF report about your shapefile.
 
-## result_line.shp
-Least cost path, as a conversion from result.tif to a line shapefile, where the result.tif grid value equals 1. This shapefile is in the World Geodetic System 1984 geographic coordinate system. 
-
+## Download Report
+Clicking `Download Report` will open a file-saving window where you'll choose a destination for the PDF report and click "Save".

@@ -4,56 +4,51 @@ Identification mode allows the user to select two points, generate a proposed pi
 Evaluation mode allows the user to upload a shapefile of an existing route, and generate a PDF report on route details.
 
 # Identification Mode
+To start evaluation mode, click on the `Identify Route` radio button below the map. This enables all Identification Mode buttons and fields that are otherwise greyed-out.
 
-# Evaluation Mode
+## Start and End Points
+There are two ways to enter the start and end points of the desired pipeline route.
 
-## Point Selection
-There are three ways to input a start or end point on the map:
-* Select `Start` or `End` respectively from the left sidebar, and click anywhere on the map.
-* Enter a lat/long WGS84-compliant coordinate in the relevant text field and click `Save Start` or `Save Destination`
-* Or selecting popular locations from the dropdown menu `Select Known CCS Project As Location`
+### Clicking On The Map
+Select `Start` or `End` radio button, and then click on the map to place a marker representing the chosen type of point. 
 
-These options may be mixed and matched between start point and end point (for example, you may create a start point by clicking on the map area, and your end point by using the dropdown menu). The start point will be denoted in the map area by a black Google Maps-style pin, and the destination by a red one
+Selecting `Start` and clicking on the map will create a black marker to represent the point. 
+
+Selecting `End` and clicking on the map will create a red marker to represent the end of the pipeline route.
 
 :::{tip}
-A point's apparent location on the map and lat/long information will not be updated until the `Save Start` or `Save Destination` is selected. (When specifying a point via Lat/Long or Optional Location).
+You do not need to click the `Save Start` button, as those are only for entering points manually via coordinates.
+:::
+
+### Entering Coordinates
+You may also enter pipeline start and end points via the Latitude and Longitude World Geodetic System 1984 (WGS84) coordinates. 
+
+The `Start` point, or the beginning of the proposed pipeline, can be created by entering the coordinate in the first pair of Latitude and Longitude text boxes, and clicking the `Save Start` button. This will create a black marker on the map to represent the point.
+
+The `End` point can similarly be created by entering the coordinate components in the relevant fields and clicking the `Save Destination` button. This will create a red marker on the map to represent the end point.
+
+### Selecting Known Locations
+Alternatively, you may select a point from the `Select known CCS project as start` or `end` location dropdown menus. Selecting a location from either of these will create a black or red marker on the map, for start and end points respectively. 
+
+:::{tip}
+You do not need to select `Save Points` as that button is only for manual coordinate entry via the text fields above the dropdown menu. Selecting a location from the dropdown menu will save the point automatically.
 :::
 
 ## Generate Pipeline
-If you are satisfied with your selected, click `Generate Pipeline` to execute the path-generation sequence of the program. The result will be a machine-learning-generated green line displayed on the map portion of the page. The page may be interacted with by dragging and scrolling with the mouse,
-similar to Google Maps.
+If you are satisfied with your selected points, click `Generate Pipeline` to execute the path-generation sequence of the program. The result proposed route displayed as a red line on the map, and a zip file containing a shapefile of the route and a relevant report. The map may be scaled and moved with by dragging and scrolling with the mouse, similar to Google Maps.
 
-***
-# Retrieve and Review Results (Forthcoming Webtool Feature)
-When the program has completed running, eight different files will be exported to the output directory specified earlier. This concludes the program's path creation functionality; new start and end points may be selected, or you may safely exit the program by closing the window conventionally. What follows is an explanation of each individual ouptut file.
+## Download Report 
+After the Generate Pipeline button has been pressed, the tool will create two kinds of outputs, that can be downloaded by clicking the `Download Report and Shapefile` button. The first is the proposed route displayed on the map, and the second is a downloadable zip file containing:
+*A shapefile representing the proposed line
+*A PDF report outlining relevant statistics and details of the generated line
 
-## end_location.shp
-Shapefile of the end location (sink) in the North America Equidistant Conic projected coordinate system.
+# Evaluation Mode
+To initiate evaluation mode, click on the `Evaluate Corridor` radio button directly beneath the map. This will enable the otherwise greyed-out Evaluation Mode buttons to be interacted with.
 
-## cost_distance.tif
-Distance raster showing distance (in meters) from the sink location in the North America Equidistant Conic projected coordinate system.
+## Upload Shapefile
+To upload a shapefile for evaluation, click the `Choose Files` button, select the desired shapefile in the new file explorer window, and click "Open". Sucessfully uploaded files will be represented with a filecount directly to the right of the Choose Files button.
 
-## cost_surface.tif
-Product of the original weighteds surface (fed on the backend of the tool), multiplied by the cost_distance.tif raster surface. This raster is also in the North America Equidistant Conic projected coordinate system. 
-:::{note}
-Initial runs use solely the state regulations layer; future versions will use a more comprehensive weighted surface based on the data within the input geodatabase (Schooley et al. 2023).
-:::
+Once files are uploaded, click `Evaluate` to run the evaluation portion of the tool and generate a PDF report about your shapefile.
 
-## result.tif
-Binary raster representing least cost path where raster grid value equals 1. This raster is in the North America Equidistant Conic projected coordinate system. 
-
-## result_pnt.shp
-Least cost path, as a conversion from the result.tif to point shapefile, where the result.tif grid value equals 1. This shapefile is in the North America Equidistant Conic projected coordinate system.
-
-## summary.csv
-Table of weighted values crossed, based on where result_pnt.shp overlaps with the original weighted surface. 
-
-## result_pre_line.shp 
-Least cost path, as a conversaion from result.tif toa line shpaefile, where the result.tif grid value quals 1. The shapefile is in the North American Equidistant Conic projected coordinate system. 
-
-## result_pre_line.shp
-Least cost path, as a conversion from result.tif to a line shapefile, where the result.tif grid value equals 1. This shapefile is in the North America Equidistant Conic projected coordinate system. 
-
-## result_line.shp
-Least cost path, as a conversion from result.tif to a line shapefile, where the result.tif grid value equals 1. This shapefile is in the World Geodetic System 1984 geographic coordinate system. 
-
+## Download Report
+Clicking `Download Report` will open a file-saving window where you'll choose a destination for the PDF report and click "Save".

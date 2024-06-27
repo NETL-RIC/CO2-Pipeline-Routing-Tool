@@ -1,4 +1,4 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import { DropdownList } from "react-widgets";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, ScaleControl, Polyline, Polygon } from "react-leaflet";
 import { Icon } from "leaflet";
@@ -6,11 +6,11 @@ import { Link } from 'react-router-dom';
 import axios from "axios";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+
 import netlLogo from "./NETL_Square_GREEN_E.png";
 import doeLogo from "./DOE_Logo_Color.png";
 import discoverLogo from "./discover.jpg";
 import bilLogo from "./BIL.png"
-
 
 global.Buffer = require('buffer').Buffer;
 let linevals = []
@@ -25,7 +25,6 @@ let a = true;
 const limeOptions = { color: 'lime' }
 const purpleOptions = { color: 'purple' }
 let shptyp = ''
-
 
 export default function MyApp(){
   
@@ -61,12 +60,8 @@ export default function MyApp(){
       else if (shptyp === 'LineString'){
         return <Polyline pathOptions={purpleOptions} positions={shpvals} />
       }
-    
   }
-
-   
 }
-
 
   function sendData() {
 
@@ -91,6 +86,18 @@ export default function MyApp(){
     })
   }
 
+  // creates "are you sure" dialogue box on page refresh
+  useEffect(() => {
+    window.addEventListener("beforeunload", alertUser);
+    return () => {
+      window.removeEventListener("beforeunload", alertUser);
+    };
+  }, []);
+  const alertUser = (e) => {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+
   const [show, setShowloc] = useState(false);
   
   const [srclat, setSrcLat] = useState('')
@@ -110,29 +117,32 @@ export default function MyApp(){
   const [value2, setValue2] = useState('Select known CCS project as destination location')
 
   function DisclaimerPopup() {
-
-    
     const [showz, setShow] = useState(a);
     a = false;
     const handleClose = () => setShow(a);
 
-
       return (
         <>
           <Modal
+            dialogClassName="dis-modal"
             show={showz}
             onHide={handleClose}
             backdrop="static"
             keyboard={false}
           >
-            
             <Modal.Header >
-              <Modal.Title>Disclaimer</Modal.Title>
-              <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
-             <img src={bilLogo} alt='BIL Logo' />
+              <Modal.Title></Modal.Title>
+                <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
+                <img src={bilLogo} alt='BIL Logo' />
+                <img src={netlLogo} width={50} height={50}  alt='NETL Logo' />
+                <img src={doeLogo}  alt='DOE Logo' />
             </Modal.Header>
+            <div id="disTitle" class="modal-body">
+              <label id="disTitleText">
+                Disclaimer
+              </label>
+            </div>
             <Modal.Body>
-          
             This project was funded by the United States Department of Energy, 
             National Energy Technology Laboratory, in part, through a site 
             support contract. Neither the United States Government nor any 
@@ -152,7 +162,6 @@ export default function MyApp(){
             Carbon Capture and Storage (EDX4CCS) Field Work Proposal 1025007 by 
             NETL's Research and Innovation Center, including work performed by Leidos
              Research Support Team staff under the RSS contract 326663.00.0.2.00.00.2050.033.0.
- 
             </Modal.Body>
             <Modal.Footer>
               <Button onClick={handleClose}>Understood</Button>
@@ -164,9 +173,7 @@ export default function MyApp(){
 
   
 function InvalidLocation() {
-  
   const handleClose = () => setShowloc(false);
-
 
   return (
     <>
@@ -239,7 +246,6 @@ function InvalidLocation() {
 
           let startdata = response.data['address']
 
-
           if((startdata === undefined) ||(startdata["state"] === "Hawaii") || (startdata["country"] !== "United States")){
             setShowloc(true)
             
@@ -248,7 +254,6 @@ function InvalidLocation() {
             start[1] = e.latlng['lng']
             markers.push(e.latlng);
             setMarkers((prevValue) => [...prevValue, e.latlng]);
-
           }
 
         }).catch((error) => {
@@ -484,6 +489,9 @@ function InvalidLocation() {
         <img src={doeLogo}  alt='DOE Logo' />
         <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
         <h1>Smart CO2 Transport-Routing Tool</h1>
+        <div id="docButton">
+          <Button>Help Documentation</Button>
+        </div>
       </div>
     );
   };
@@ -547,6 +555,7 @@ function InvalidLocation() {
     .catch(err => console.warn(err));
   }
 
+
   return(
 
     <div>
@@ -577,7 +586,7 @@ function InvalidLocation() {
         id="points"
         checked={uploaz=== "points"}
         onChange={onvalChange}/>
-        <label htmlFor="points">Select Points</label>
+        <label id="modeRadioText" htmlFor="points">Identify Route</label>
 
         <input type="radio"
         name="selectpoints"
@@ -585,36 +594,31 @@ function InvalidLocation() {
         id="upld"
         checked={uploaz=== "upld"}
         onChange={onvalChange}/>
-        <label htmlFor="upld">Upload Shapefile</label>
+        <label id="modeRadioText" htmlFor="upld">Evaluate Corridor</label>
 
       </div>
 
-
-
       <div>
+        <input type="radio" 
+        name="location" 
+        value="start" 
+        id="start" 
+        checked={location === "start"} 
+        onChange={onOptionChange}
+        disabled={uploaz!=="points"}/>
+        <label htmlFor="start">Start</label>
 
-      <input type="radio" 
-      name="location" 
-      value="start" 
-      id="start" 
-      checked={location === "start"} 
-      onChange={onOptionChange}
-      disabled={uploaz!=="points"}/>
-      <label htmlFor="start">Start</label>
-
-      <input type="radio" 
-      name="location" 
-      value="end" 
-      id="end" 
-      checked={location === "end"} 
-      onChange={onOptionChange}
-      disabled={uploaz!=="points"}/>
-      <label htmlFor="end">End</label>
+        <input type="radio" 
+        name="location" 
+        value="end" 
+        id="end" 
+        checked={location === "end"} 
+        onChange={onOptionChange}
+        disabled={uploaz!=="points"}/>
+        <label htmlFor="end">End</label>
     </div>
       
-      <h4>Add Start Location (in World Geodetic System WGS 1984(WGS 84))</h4>
-
-      
+      <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
 
       <p> Latitude:   <input name="myInput1"  onChange={handleChange1} value={srclat} disabled={uploaz!=="points"}/> 
           Longitude:  <input name="myInput2"  onChange={handleChange2} value={srclon} disabled={uploaz!=="points"}/>  
@@ -625,7 +629,7 @@ function InvalidLocation() {
       
      
 
-      <h4>Add End Location (in World Geodetic System WGS 1984(WGS 84))</h4>
+      <h4>Add End Location in WGS84</h4>
 
       <p> Latitude:   <input name="myInput3" onChange={handleChange3} value={destlat} disabled={uploaz!=="points"}/> 
           Longitude:  <input name="myInput4" onChange={handleChange4} value={destlon} disabled={uploaz!=="points"}/>
@@ -636,12 +640,14 @@ function InvalidLocation() {
 
       <br></br>
 
-      <p><Button onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button > </p>
-      <br/>
+      <p>
+        <Button type="button" onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button>
+      </p>
+
       <p><a href={"route_shapefile_and_report.zip"} target="_blank" rel="noopener noreferrer" download>
         <Button disabled={uploaz!=="points"}>
           <i className="fas fa-download"/>
-          Download Report and Shapefiles
+          Download Report and Shapefile
         </Button>
       </a></p>
       <br/>
@@ -649,7 +655,7 @@ function InvalidLocation() {
       <form onSubmit={handleMultipleSubmit} disabled={uploaz!=="upld"}>
         <h4> Upload Shapefiles</h4>
         <input type="file" multiple onChange={handleMultipleChange} disabled={uploaz!=="upld"} />
-        <button type="submit" disabled={uploaz!=="upld"}>Upload and Evaluate</button>
+        <button type="submit" disabled={uploaz!=="upld"}>Evaluate</button>
       </form>
       <br></br>
       <p><a href={"route_report.pdf"} target="_blank" rel="noopener noreferrer" download>

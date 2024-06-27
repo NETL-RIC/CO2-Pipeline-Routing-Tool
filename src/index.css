@@ -48,3 +48,27 @@ code {
   height: 65vh;
   border-radius: 15px;
 }
+
+#docButton{
+  margin:12px;
+  margin-left:auto;
+}
+
+#modeRadioText{
+  font-size:22px;
+}
+
+.dis-modal{
+  max-width: 40% !important;
+}
+
+#disTitleText{
+  font-size:22px;
+  font-weight: bold;
+
+}
+#disTitle{
+  max-width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+ }

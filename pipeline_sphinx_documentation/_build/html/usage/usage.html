@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Getting Started &mdash; CO2Pipeline 0.0.1 documentation</title>
+  <title>Operation &mdash; CO2Pipeline 0.0.1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
@@ -49,31 +49,21 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Usage</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Getting Started</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#getting-started-from-binary-exe">Getting Started From Binary (.exe)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#getting-started-from-source-code">Getting Started From Source Code</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#troubleshooting-setup">Troubleshooting Setup</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Operation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#identification-mode">Identification Mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#start-and-end-points">Start and End Points</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#clicking-on-the-map">Clicking On The Map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#entering-coordinates">Entering Coordinates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#selecting-known-locations">Selecting Known Locations</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#generate-pipeline">Generate Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-report">Download Report</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#running-the-program">Running the Program</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#point-selection">Point Selection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#save-locations">Save Locations</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#output-folder-and-program-execution">Output Folder and Program Execution</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#run">Run</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#retrieve-and-review-results">Retrieve and Review Results</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#end-location-shp">end_location.shp</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#cost-distance-tif">cost_distance.tif</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#cost-surface-tif">cost_surface.tif</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#result-tif">result.tif</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#result-pnt-shp">result_pnt.shp</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#summary-csv">summary.csv</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#result-pre-line-shp">result_pre_line.shp</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id1">result_pre_line.shp</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#result-line-shp">result_line.shp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluation-mode">Evaluation Mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#upload-shapefile">Upload Shapefile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Download Report</a></li>
 </ul>
 </li>
 </ul>
@@ -96,7 +86,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Usage</a></li>
-      <li class="breadcrumb-item active">Getting Started</li>
+      <li class="breadcrumb-item active">Operation</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -105,128 +95,65 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="getting-started">
-<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this heading"></a></h1>
-<section id="getting-started-from-binary-exe">
-<h2>Getting Started From Binary (.exe)<a class="headerlink" href="#getting-started-from-binary-exe" title="Permalink to this heading"></a></h2>
-<p>Most users will likely interact with an executable version of the program, rather than interpreting it from source code. These users can simply double-click on the executable, <code class="docutils literal notranslate"><span class="pre">CO2Pipeline.exe</span></code>, to run the program. Skip to <a class="reference internal" href="#running-the-program"><span class="std std-doc">Running the Program</span></a>.</p>
+  <section id="operation">
+<h1>Operation<a class="headerlink" href="#operation" title="Permalink to this heading"></a></h1>
+<p>The CO2 Pipeline-Routing Tool has two primary modes: Identification and Evaluation.
+Identification mode allows the user to select two points, generate a proposed pipeline route, and download a shapefile of the route and relevant PDF report on route details.
+Evaluation mode allows the user to upload a shapefile of an existing route, and generate a PDF report on route details.</p>
 </section>
-<section id="getting-started-from-source-code">
-<h2>Getting Started From Source Code<a class="headerlink" href="#getting-started-from-source-code" title="Permalink to this heading"></a></h2>
-<p>Developers and testing developers will have a few more steps to run the program.
-Firstly, you must have the correct virtual environment (python versioning and package collection) enabled.
-The following outlines virtual environment creation from the provided .yml file using Conda.</p>
-<p>Open Anaconda and navigate to the <code class="docutils literal notranslate"><span class="pre">exported_venv</span></code> folder in the source directory, and execute the following command:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    conda env create --name co2pipe --file=environment.yml
-</pre></div>
-</div>
-<p>This will create an environment named “co2pipe” using the yaml file. Activate the environment via:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    conda activate co2pipe
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Unix users may simply use Python itself, or other tools, to create virtual environments from yaml files.</p>
-</div>
-<p>With the virtual environment active, navigate back to the root source directory. Then run the main driver script, “CO2pipeline.py” via:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    python CO2pipeline.py
-</pre></div>
-</div>
-<p>or, if you are a Unix user,</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    python3 CO2pipeline.py
-</pre></div>
-</div>
-<p>These commands should start the program akin to double-clicking the .exe as a standard user. See below for troubleshooting if not. It is normal for the program to take up to one minute to render.</p>
-<section id="troubleshooting-setup">
-<h3>Troubleshooting Setup<a class="headerlink" href="#troubleshooting-setup" title="Permalink to this heading"></a></h3>
-<p>Sometimes virtual environments do not want to play nice, based on operating system differences or any conda versioning tomfoolery therein.
-As an internal developer or tester seeking assistance, please reach out to Michael or Stephen with a log file that captures all errors created in a text file so they may more accurately and efficiently assist you. To do this, simply concatonate any command that is preventing progress with ” &gt; error_log.txt”. For example, if your virtual environment setup is not executing successfully, you would want to re-run the command via the following:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    conda env create --name co2pipe --file=environment.yml &gt; error_log.txt
-</pre></div>
-</div>
-<p>and pass along the text file to one of the developers that would be happy to assist you.</p>
-</section>
-</section>
-</section>
-<hr class="docutils" />
-<section id="running-the-program">
-<h1>Running the Program<a class="headerlink" href="#running-the-program" title="Permalink to this heading"></a></h1>
-<p>Select the start and endpoint of your desired CO2 Pipeline path, choose output location, and start the program’s path generation sequence.
-Once the Main window has rendered, hover over the main map area of the program and zoom to your desired start point using the scroll wheel.</p>
-<section id="point-selection">
-<h2>Point Selection<a class="headerlink" href="#point-selection" title="Permalink to this heading"></a></h2>
-<p>To place either a start or end point for your pipeline, select <code class="docutils literal notranslate"><span class="pre">Start</span> <span class="pre">Point</span></code> or <code class="docutils literal notranslate"><span class="pre">End</span> <span class="pre">Point</span></code> respectively from the left sidebar under the heading <code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">a</span> <span class="pre">Map</span> <span class="pre">Point</span></code>. Once enabled based on your selection, you may place a point by</p>
-<ul class="simple">
-<li><p>clicking anywhere on the map,</p></li>
-<li><p>entering a precise latitude and longitude (in World Geodetic System 1984 (WGS84) geographic coordinate system),</p></li>
-<li><p>or selecting popular locations from the dropdown menu <code class="docutils literal notranslate"><span class="pre">Optional</span> <span class="pre">Start</span> <span class="pre">Location</span></code>.</p></li>
-</ul>
-<p>These options may be mixed and matched between start point and end point (for example, you may create a start point by clicking on the map area, and your end point by using the dropdown menu). The start point will be denoted in the map area by a point-up cyan triangle, and the destination by a point-down red triangle.</p>
+<section id="identification-mode">
+<h1>Identification Mode<a class="headerlink" href="#identification-mode" title="Permalink to this heading"></a></h1>
+<p>To start evaluation mode, click on the <code class="docutils literal notranslate"><span class="pre">Identify</span> <span class="pre">Route</span></code> radio button below the map. This enables all Identification Mode buttons and fields that are otherwise greyed-out.</p>
+<section id="start-and-end-points">
+<h2>Start and End Points<a class="headerlink" href="#start-and-end-points" title="Permalink to this heading"></a></h2>
+<p>There are two ways to enter the start and end points of the desired pipeline route.</p>
+<section id="clicking-on-the-map">
+<h3>Clicking On The Map<a class="headerlink" href="#clicking-on-the-map" title="Permalink to this heading"></a></h3>
+<p>Select <code class="docutils literal notranslate"><span class="pre">Start</span></code> or <code class="docutils literal notranslate"><span class="pre">End</span></code> radio button, and then click on the map to place a marker representing the chosen type of point.</p>
+<p>Selecting <code class="docutils literal notranslate"><span class="pre">Start</span></code> and clicking on the map will create a black marker to represent the point.</p>
+<p>Selecting <code class="docutils literal notranslate"><span class="pre">End</span></code> and clicking on the map will create a red marker to represent the end of the pipeline route.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>A point’s apparent location on the map and Lat/Long information will not be updated until the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Locations</span></code> is selected. (When specifying a point via Lat/Long or Optional Location).</p>
+<p>You do not need to click the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Start</span></code> button, as those are only for entering points manually via coordinates.</p>
 </div>
 </section>
-<section id="save-locations">
-<h2>Save Locations<a class="headerlink" href="#save-locations" title="Permalink to this heading"></a></h2>
-<p>After both points are placed accurately, click the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Locations</span></code> button. You may re-place points and re-click this button safely if you wish to edit your selections. This will not execute the path-generation sequence of the program.</p>
-<p><img alt="Start and End Points" src="../_images/start_end_points.PNG" /></p>
-<p>The above is the result of manually selecting a start point by clicking on the map area, choosing an end point from the <code class="docutils literal notranslate"><span class="pre">Optional</span> <span class="pre">End</span> <span class="pre">Location</span></code> dropdown, and selecting <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Locations</span></code>.</p>
+<section id="entering-coordinates">
+<h3>Entering Coordinates<a class="headerlink" href="#entering-coordinates" title="Permalink to this heading"></a></h3>
+<p>You may also enter pipeline start and end points via the Latitude and Longitude World Geodetic System 1984 (WGS84) coordinates.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Start</span></code> point, or the beginning of the proposed pipeline, can be created by entering the coordinate in the first pair of Latitude and Longitude text boxes, and clicking the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Start</span></code> button. This will create a black marker on the map to represent the point.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">End</span></code> point can similarly be created by entering the coordinate components in the relevant fields and clicking the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Destination</span></code> button. This will create a red marker on the map to represent the end point.</p>
 </section>
-<section id="output-folder-and-program-execution">
-<h2>Output Folder and Program Execution<a class="headerlink" href="#output-folder-and-program-execution" title="Permalink to this heading"></a></h2>
-<p>Then, click “Select Folder Location” to open a file explorer and select the folder you wish the program to output to. Alternatively, enter a folder path in the “Enter an Optional Folder” field and select <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Folder</span> <span class="pre">Path</span></code>.</p>
-<p><img alt="Output Folder Verification" src="../_images/output_folder.PNG" /></p>
-<p>When your folder is selected successfully, the path will appear directly above the <code class="docutils literal notranslate"><span class="pre">Run</span></code> button.</p>
-</section>
-<section id="run">
-<h2>Run<a class="headerlink" href="#run" title="Permalink to this heading"></a></h2>
-<p>If you are satisfied with your points and output folder, click <code class="docutils literal notranslate"><span class="pre">Run</span></code> to execute the path-generation sequence of the program.</p>
-</section>
-</section>
-<hr class="docutils" />
-<section id="retrieve-and-review-results">
-<h1>Retrieve and Review Results<a class="headerlink" href="#retrieve-and-review-results" title="Permalink to this heading"></a></h1>
-<p>When the program has completed running, eight different files will be exported to the output directory specified earlier. This concludes the program’s path creation functionality; new start and end points may be selected, or you may safely exit the program by closing the window conventionally. What follows is an explanation of each individual ouptut file.</p>
-<section id="end-location-shp">
-<h2>end_location.shp<a class="headerlink" href="#end-location-shp" title="Permalink to this heading"></a></h2>
-<p>Shapefile of the end location (sink) in the North America Equidistant Conic projected coordinate system.</p>
-</section>
-<section id="cost-distance-tif">
-<h2>cost_distance.tif<a class="headerlink" href="#cost-distance-tif" title="Permalink to this heading"></a></h2>
-<p>Distance raster showing distance (in meters) from the sink location in the North America Equidistant Conic projected coordinate system.</p>
-</section>
-<section id="cost-surface-tif">
-<h2>cost_surface.tif<a class="headerlink" href="#cost-surface-tif" title="Permalink to this heading"></a></h2>
-<p>Product of the original weighteds surface (fed on the backend of the tool), multiplied by the cost_distance.tif raster surface. This raster is also in the North America Equidistant Conic projected coordinate system.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Initial runs use solely the state regulations layer; future versions will use a more comprehensive weighted surface based on the data within the input geodatabase (Schooley et al. 2023).</p>
+<section id="selecting-known-locations">
+<h3>Selecting Known Locations<a class="headerlink" href="#selecting-known-locations" title="Permalink to this heading"></a></h3>
+<p>Alternatively, you may select a point from the <code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">known</span> <span class="pre">CCS</span> <span class="pre">project</span> <span class="pre">as</span> <span class="pre">start</span></code> or <code class="docutils literal notranslate"><span class="pre">end</span></code> location dropdown menus. Selecting a location from either of these will create a black or red marker on the map, for start and end points respectively.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You do not need to select <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Points</span></code> as that button is only for manual coordinate entry via the text fields above the dropdown menu. Selecting a location from the dropdown menu will save the point automatically.</p>
 </div>
 </section>
-<section id="result-tif">
-<h2>result.tif<a class="headerlink" href="#result-tif" title="Permalink to this heading"></a></h2>
-<p>Binary raster representing least cost path where raster grid value equals 1. This raster is in the North America Equidistant Conic projected coordinate system.</p>
 </section>
-<section id="result-pnt-shp">
-<h2>result_pnt.shp<a class="headerlink" href="#result-pnt-shp" title="Permalink to this heading"></a></h2>
-<p>Least cost path, as a conversion from the result.tif to point shapefile, where the result.tif grid value equals 1. This shapefile is in the North America Equidistant Conic projected coordinate system.</p>
+<section id="generate-pipeline">
+<h2>Generate Pipeline<a class="headerlink" href="#generate-pipeline" title="Permalink to this heading"></a></h2>
+<p>If you are satisfied with your selected points, click <code class="docutils literal notranslate"><span class="pre">Generate</span> <span class="pre">Pipeline</span></code> to execute the path-generation sequence of the program. The result proposed route displayed as a red line on the map, and a zip file containing a shapefile of the route and a relevant report. The map may be scaled and moved with by dragging and scrolling with the mouse, similar to Google Maps.</p>
 </section>
-<section id="summary-csv">
-<h2>summary.csv<a class="headerlink" href="#summary-csv" title="Permalink to this heading"></a></h2>
-<p>Table of weighted values crossed, based on where result_pnt.shp overlaps with the original weighted surface.</p>
+<section id="download-report">
+<h2>Download Report<a class="headerlink" href="#download-report" title="Permalink to this heading"></a></h2>
+<p>After the Generate Pipeline button has been pressed, the tool will create two kinds of outputs, that can be downloaded by clicking the <code class="docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Report</span> <span class="pre">and</span> <span class="pre">Shapefile</span></code> button. The first is the proposed route displayed on the map, and the second is a downloadable zip file containing:
+*A shapefile representing the proposed line
+*A PDF report outlining relevant statistics and details of the generated line</p>
 </section>
-<section id="result-pre-line-shp">
-<h2>result_pre_line.shp<a class="headerlink" href="#result-pre-line-shp" title="Permalink to this heading"></a></h2>
-<p>Least cost path, as a conversaion from result.tif toa line shpaefile, where the result.tif grid value quals 1. The shapefile is in the North American Equidistant Conic projected coordinate system.</p>
+</section>
+<section id="evaluation-mode">
+<h1>Evaluation Mode<a class="headerlink" href="#evaluation-mode" title="Permalink to this heading"></a></h1>
+<p>To initiate evaluation mode, click on the <code class="docutils literal notranslate"><span class="pre">Evaluate</span> <span class="pre">Corridor</span></code> radio button directly beneath the map. This will enable the otherwise greyed-out Evaluation Mode buttons to be interacted with.</p>
+<section id="upload-shapefile">
+<h2>Upload Shapefile<a class="headerlink" href="#upload-shapefile" title="Permalink to this heading"></a></h2>
+<p>To upload a shapefile for evaluation, click the <code class="docutils literal notranslate"><span class="pre">Choose</span> <span class="pre">Files</span></code> button, select the desired shapefile in the new file explorer window, and click “Open”. Sucessfully uploaded files will be represented with a filecount directly to the right of the Choose Files button.</p>
+<p>Once files are uploaded, click <code class="docutils literal notranslate"><span class="pre">Evaluate</span></code> to run the evaluation portion of the tool and generate a PDF report about your shapefile.</p>
 </section>
 <section id="id1">
-<h2>result_pre_line.shp<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
-<p>Least cost path, as a conversion from result.tif to a line shapefile, where the result.tif grid value equals 1. This shapefile is in the North America Equidistant Conic projected coordinate system.</p>
-</section>
-<section id="result-line-shp">
-<h2>result_line.shp<a class="headerlink" href="#result-line-shp" title="Permalink to this heading"></a></h2>
-<p>Least cost path, as a conversion from result.tif to a line shapefile, where the result.tif grid value equals 1. This shapefile is in the World Geodetic System 1984 geographic coordinate system.</p>
+<h2>Download Report<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>Clicking <code class="docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Report</span></code> will open a file-saving window where you’ll choose a destination for the PDF report and click “Save”.</p>
 </section>
 </section>
 
