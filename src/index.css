@@ -72,3 +72,20 @@ code {
   margin-left: auto;
   margin-right: auto;
  }
+
+
+.footer {
+  padding: 20px;
+  display: flex ;
+  flex-direction: row;
+  align-items: center ;
+}
+
+.footer-links{
+  margin-right: 50px;
+}
+
+#gen-button{
+  background-color:green;
+  border-color:#035703;
+}

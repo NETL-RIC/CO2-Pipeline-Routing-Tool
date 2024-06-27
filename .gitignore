@@ -16,6 +16,11 @@
 /Flask/route_*.*
 /Flask/output/*
 /Flask/output
+/public/*.dbf
+/public/*.prj
+/public/*.shp
+/public/*.shx
+/public/*.zip
 output
 Flask/user_uploads
 

@@ -460,11 +460,22 @@ function InvalidLocation() {
   function Footer() {
 
     return (
-      <p>
-      <img src={bilLogo} alt='BIL Logo' />
-      <Link to="https://www.netl.doe.gov/home/disclaimer">Disclaimer</Link>
-      </p>
-      
+      <div class="footer">
+
+          <img src={bilLogo} alt='BIL Logo' />
+
+          <div class="footer-links">
+            <Link to="https://www.netl.doe.gov/home/disclaimer">Disclaimer</Link>
+          </div>
+
+          <div class="footer-links">
+            <Link to="https://edx.netl.doe.gov/dataset/ccs-pipeline-route-planning-database-v1">Dataset</Link>
+          </div>
+
+          <div class="footer-links">
+            <Link to="https://www.sciencedirect.com/science/article/pii/S2352340923010144?via%3Dihub">Publication</Link>
+          </div>
+      </div>
     )
   }
 
@@ -648,7 +659,7 @@ function InvalidLocation() {
       <br></br>
 
       <p>
-        <Button type="button" onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button>
+        <Button id="gen-button" type="button" onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button>
       </p>
 
       <p><a href={"route_shapefile_and_report.zip"} target="_blank" rel="noopener noreferrer" download>
