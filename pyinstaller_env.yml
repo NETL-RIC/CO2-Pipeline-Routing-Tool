@@ -18,4 +18,6 @@ dependencies:
     - pygame
     - pandas
     - fpdf
+    - matplotlib
+    - tqdm
 prefix: C:\Users\zaengled\.conda\envs\mlpipeline
