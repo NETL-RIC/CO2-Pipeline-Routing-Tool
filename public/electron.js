@@ -2,27 +2,36 @@
 const { app, BrowserWindow, protocol } = require("electron");
 const path = require("path");
 const url = require("url");
-let backend;
-backend = path.join(process.cwd(), 'dist/CO2PRT_Flask.exe') 
-var execfile = require('child_process').execFile;
+// let backend;
+// backend = path.join(process.cwd(), 'dist/CO2PRT_Flask.exe') 
+// var execfile = require('child_process').execFile;
 
-execfile(
-  backend,
-  {
-   windowsHide: false,
-  },
-  (err, stdout, stderr) => {
-   if (err) {
-   console.log(err);
-   }
-   if (stdout) {
-   console.log(stdout);
-   }
-   if (stderr) {
-   console.log(stderr);
-   }
+// execfile(
+//   backend,
+//   {
+//    windowsHide: false,
+//   },
+//   (err, stdout, stderr) => {
+//    if (err) {
+//    console.log(err);
+//    }
+//    if (stdout) {
+//    console.log(stdout);
+//    }
+//    if (stderr) {
+//    console.log(stderr);
+//    }
+//   }
+//  )
+let backend = require('child_process').execFile;
+let exePath = 'dist/CO2PRT_Flask.exe';
+
+let backendProcess = backend(exePath, function(err, data) {
+  if(err){
+    console.error(err);
+    return;
   }
- )
+});
 
 // Create the native browser window.
 function createWindow() {
@@ -91,15 +100,16 @@ app.whenReady().then(() => {
 // There, it's common for applications and their menu bar to stay active until
 // the user quits  explicitly with Cmd + Q.
 app.on("window-all-closed", function () {
-  const { exec } = require('child_process');
-  exec("taskkill /f /t /im CO2PRT_Flask.exe", (err, stdout, stderr) => {
-  if (err) {
-    console.log(err)
-  return;
-  }
-  console.log(`stdout: ${stdout}`);
-  console.log(`stderr: ${stderr}`);
-  });
+  // const { exec } = require('child_process');
+  // exec("taskkill /f /t /im CO2PRT_Flask.exe", (err, stdout, stderr) => {
+  // if (err) {
+  //   console.log(err)
+  // return;
+  // }
+  // console.log(`stdout: ${stdout}`);
+  // console.log(`stderr: ${stderr}`);
+  // });
+  backendProcess.kill()
   if (process.platform !== "darwin") {
     app.quit();
   }
