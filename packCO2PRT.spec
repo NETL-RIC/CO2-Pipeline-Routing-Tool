@@ -2,6 +2,7 @@
 
 import os
 import sys 
+from PyInstaller.compat import is_win,is_darwin
 sys.setrecursionlimit(sys.getrecursionlimit() * 5)
 
 block_cipher = None
@@ -14,6 +15,23 @@ more_datas = [
     ('Flask/report_builder/images','report_builder/images')
     ]
 
+
+if hasattr(sys, 'real_prefix'):  # check if in a virtual environment
+    root_path = sys.real_prefix
+else:
+    root_path = sys.prefix
+# - conda-specific
+if is_win:
+    tgt_proj_data = os.path.join('Library', 'share', 'proj')
+    src_proj_data = os.path.join(root_path, 'Library', 'share', 'proj')
+else:  # both linux and darwin
+    tgt_proj_data = os.path.join('share', 'proj')
+    src_proj_data = os.path.join(root_path, 'share', 'proj')
+print(src_proj_data,'--->',tgt_proj_data)
+if os.path.exists(src_proj_data):
+    more_datas.append((src_proj_data, tgt_proj_data))
+
+
 a = Analysis(
     ['CO2PRT.py'],
     pathex=['./Flask'],
@@ -21,6 +39,7 @@ a = Analysis(
     datas=more_datas,
     # Add any imports that show up as missing once bundled
     hiddenimports=[
+        'proj',
         'fiona._shim',
         'fiona.schema',
         'fiona.enums',
@@ -33,7 +52,7 @@ a = Analysis(
         'skimage.measure.block',
         'tqdm'
         ],
-    hookspath=["."],
+    hookspath=["./pyinstaller_hooks"],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
