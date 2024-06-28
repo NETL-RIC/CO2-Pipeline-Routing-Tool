@@ -31,6 +31,9 @@ export default function MyApp(){
   const [finished, setFinished] = useState('')
   const [finished2, setFinished2] = useState('')
 
+  const [startloc, setStartloc] = useState('')
+  const [endloc, setEndloc] = useState('')
+
   const customIcon1 = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
     iconSize: [30,30]
@@ -67,9 +70,16 @@ export default function MyApp(){
 
     setFinished(false)
 
+    if ((endloc !== startloc) && (endloc !== '' && startloc !== '')){
+      setpipeloc(true)
+
+    }else{
+
+    
+
     axios({
       method: "POST",
-      url:"/token",
+      url:"http://127.0.0.1:5000/token",
       data: {s: start, e:end}
     })
     .then((response) => {
@@ -85,6 +95,7 @@ export default function MyApp(){
         }
     })
   }
+}
 
   // creates "are you sure" dialogue box on page refresh
   useEffect(() => {
@@ -98,12 +109,9 @@ export default function MyApp(){
     e.returnValue = "";
   }
 
-  function openDocs(){
-    // all assets for 
-    window.open("documentation/_build/html/index.html", "_blank", "noreferrer")
-  }
-
   const [show, setShowloc] = useState(false);
+
+  const [pipeshow, setpipeloc] = useState(false);
   
   const [srclat, setSrcLat] = useState('')
   const [updateSrcLat, setupdateSrcLat] = useState(srclat)
@@ -142,7 +150,7 @@ export default function MyApp(){
                 <img src={netlLogo} width={50} height={50}  alt='NETL Logo' />
                 <img src={doeLogo}  alt='DOE Logo' />
             </Modal.Header>
-            <div id="disTitle" class="modal-body">
+            <div id="disTitle" className="modal-body">
               <label id="disTitleText">
                 Disclaimer
               </label>
@@ -204,7 +212,36 @@ function InvalidLocation() {
     </>
   );    
 }
-  
+ 
+function InvalidPipeline() {
+  const handleClose = () => setpipeloc(false);
+
+  return (
+    <>
+
+      <Modal
+        show={pipeshow}
+        onHide={handleClose}
+        backdrop="static"
+        keyboard={false}
+        aria-labelledby="contained-modal-title-vcenter"
+      centered
+      >
+        <Modal.Header>
+          <Modal.Title>Invalid Pipeline!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+        Start and end locations must be both in Alaska or both in continental USA.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={handleClose}>Understood</Button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );    
+}
+
+
 
   const handleChange1 = (event) =>{
     setSrcLat(event.target.value)
@@ -250,16 +287,31 @@ function InvalidLocation() {
         .then((response) => {
 
           let startdata = response.data['address']
+          console.log(startdata)
 
           if((startdata === undefined) ||(startdata["state"] === "Hawaii") || (startdata["country"] !== "United States")){
             setShowloc(true)
             
           }else{
+            if(startdata['state'] === "Alaska"){
+              console.log('a')
+              setStartloc('Alaska')
+            }else{
+              setStartloc('US')
+              console.log('b')
+            }
+            
+            console.log(startloc)
+            console.log(endloc)
+            
+            
             start[0] = e.latlng['lat']
             start[1] = e.latlng['lng']
             markers.push(e.latlng);
             setMarkers((prevValue) => [...prevValue, e.latlng]);
-          }
+            
+          
+        }
 
         }).catch((error) => {
           if (error.response) {
@@ -320,10 +372,18 @@ function InvalidLocation() {
             setShowloc(true)
 
           }else{
+
+            if(enddata['state'] === "Alaska"){
+              setEndloc('Alaska')
+            }else{
+              setEndloc('US')
+            }
+            
             end[0] = f.latlng['lat']
             end[1] = f.latlng['lng']
             emarkers.push(f.latlng);
             seteMarkers((prevValue) => [...prevValue, f.latlng]);
+          
           }
     
         }).catch((error) => {
@@ -460,22 +520,11 @@ function InvalidLocation() {
   function Footer() {
 
     return (
-      <div class="footer">
-
-          <img src={bilLogo} alt='BIL Logo' />
-
-          <div class="footer-links">
-            <Link to="https://www.netl.doe.gov/home/disclaimer">Disclaimer</Link>
-          </div>
-
-          <div class="footer-links">
-            <Link to="https://edx.netl.doe.gov/dataset/ccs-pipeline-route-planning-database-v1">Dataset</Link>
-          </div>
-
-          <div class="footer-links">
-            <Link to="https://www.sciencedirect.com/science/article/pii/S2352340923010144?via%3Dihub">Publication</Link>
-          </div>
-      </div>
+      <p>
+      <img src={bilLogo} alt='BIL Logo' />
+      <Link to="https://www.netl.doe.gov/home/disclaimer">Disclaimer</Link>
+      </p>
+      
     )
   }
 
@@ -506,9 +555,7 @@ function InvalidLocation() {
         <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
         <h1>Smart CO2 Transport-Routing Tool</h1>
         <div id="docButton">
-            <Button onClick={openDocs}>
-              Help Documentation
-            </Button>
+          <Button>Help Documentation</Button>
         </div>
       </div>
     );
@@ -580,6 +627,7 @@ function InvalidLocation() {
 
       <DisclaimerPopup/>
       <InvalidLocation/>
+      <InvalidPipeline/>
 
       <Header/>
 
@@ -636,7 +684,7 @@ function InvalidLocation() {
         <label htmlFor="end">End</label>
     </div>
       
-      <h4>Add Start Location in World Geodetic System WGS 1984 (WGS84)</h4>
+      <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
 
       <p> Latitude:   <input name="myInput1"  onChange={handleChange1} value={srclat} disabled={uploaz!=="points"}/> 
           Longitude:  <input name="myInput2"  onChange={handleChange2} value={srclon} disabled={uploaz!=="points"}/>  
@@ -659,13 +707,13 @@ function InvalidLocation() {
       <br></br>
 
       <p>
-        <Button id="gen-button" type="button" onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button>
+        <Button type="button" onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button>
       </p>
 
       <p><a href={"route_shapefile_and_report.zip"} target="_blank" rel="noopener noreferrer" download>
         <Button disabled={uploaz!=="points"}>
           <i className="fas fa-download"/>
-          Download Report and Shapefiles
+          Download Report and Shapefile
         </Button>
       </a></p>
       <br/>
@@ -673,7 +721,7 @@ function InvalidLocation() {
       <form onSubmit={handleMultipleSubmit} disabled={uploaz!=="upld"}>
         <h4> Upload Shapefiles</h4>
         <input type="file" multiple onChange={handleMultipleChange} disabled={uploaz!=="upld"} />
-        <button type="submit" disabled={uploaz!=="upld"}>Upload and Evaluate</button>
+        <button type="submit" disabled={uploaz!=="upld"}>Evaluate</button>
       </form>
       <br></br>
       <p><a href={"route_report.pdf"} target="_blank" rel="noopener noreferrer" download>
