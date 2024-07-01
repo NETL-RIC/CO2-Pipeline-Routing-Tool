@@ -141,7 +141,7 @@ def create_output_zip(zipname):
     """ Creates .zip based on contents of output_shapefiles in the proj root dir's /public folder
     params: zipname: string, the name of the zip to be created
     """
-    zipname = 'route_shapefile_and_report'    # TEMPORARY SOLUTION, eventually pass the name to frontend to download
+    zipname = 'route_shapefile_and_report'    
     dest_path = os.path.join(os.path.realpath('../public'), zipname)
     shutil.make_archive(dest_path, 'zip', 'output')
     print("\tcreate_output_shp_zip: created zipfile at ../public")

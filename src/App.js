@@ -21,6 +21,7 @@ let lastend = -999
 let end = [0,0]
 let prevstart = 'Select known CCS project as start location'
 let prevend = 'Select known CCS project as destination location'
+// c'mon michael lmao
 let a = true;
 const limeOptions = { color: 'lime' }
 const purpleOptions = { color: 'purple' }
@@ -104,7 +105,7 @@ export default function MyApp(){
   }
 
   const [show, setShowloc] = useState(false);
-  
+  const [showNoGo, setShowNoGo] = useState(false);
   const [srclat, setSrcLat] = useState('')
   const [updateSrcLat, setupdateSrcLat] = useState(srclat)
 
@@ -176,8 +177,33 @@ export default function MyApp(){
       );
   }
 
+function NoGoZonePopup(){
+  const handleClose = () => setShowNoGo(false);
+  return(
+    <>
+      <Modal
+        show={showNoGo}
+        onHide={handleClose}
+        backdrop="static"
+        keyboard={false}
+        aria-labelledby="contained-modal-title-vcenter"
+      centered
+      >
+        <Modal.Header>
+          <Modal.Title>Invalid Location!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+        Please select a point within valid pipeline-building areas.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={handleClose}>Understood</Button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );
+}
   
-function InvalidLocation() {
+function InvalidLocationPopup() {
   const handleClose = () => setShowloc(false);
 
   return (
@@ -253,6 +279,8 @@ function InvalidLocation() {
 
           if((startdata === undefined) ||(startdata["state"] === "Hawaii") || (startdata["country"] !== "United States")){
             setShowloc(true)
+
+          // Need logic to check for NoGo zone
             
           }else{
             start[0] = e.latlng['lat']
@@ -577,13 +605,16 @@ function InvalidLocation() {
   return(
 
     <div>
-
+      {/*Initial popup */}
       <DisclaimerPopup/>
-      <InvalidLocation/>
 
+      {/*Hidden by default popups*/}
+      <InvalidLocationPopup/>
+      <NoGoZonePopup/>
+
+
+      {/*Regular page*/}
       <Header/>
-
-    
       <MapContainer center={[39.8283, -98.5795]} zoom={5}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
