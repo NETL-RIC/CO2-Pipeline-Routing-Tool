@@ -65,3 +65,11 @@ PyInstaller can be asked to copy necessary data via the `more_datas` list of tup
 If the dev environment doesn't agree with pyinstaller there is a `pyinstaller_env.yml` included that should bundle without issue.
 
 ### Electron
+The electron bundle can be created *after* the flask exe has been packaged by running
+`npm run electron:package:win`. This will create an installer file in the `dist` folder
+titled `CO2Pipeline setup` which can be distributed to users.
+
+The installer when run will install the app to `/AppData/Local/Programs/apptest/` and
+create a shortcut to the electron front end.
+
+>NOTE: Currently there is a bug with the tool where if the backend is launched by the frontend it will not spawn a shell window and will not be closed when the main window is closed forcing the user to close it with Task Manager. To avoid this the backend must be launched manually for the time being so there is a closeable window. It can be found at `Appdata/Local/Programs/apptest/dist/CO2PRT_Flask.exe`
