@@ -80,20 +80,23 @@ export default function MyApp(){
 
     axios({
       method: "POST",
-      url:"http://127.0.0.1:5000/token",
+      //url:"http://127.0.0.1:5000/token",
+      url:"/token",
       data: {s: start, e:end}
     })
     .then((response) => {
-      linevals =response.data
-      console.log("Got line data")
-      setFinished(true)
+      linevals =response.data;
+      console.log("Got line data");
+      setFinished(true);
 
     }).catch((error) => {
       if (error.response) {
-        console.log(error.response)
-        console.log(error.response.status)
-        console.log(error.response.headers)
+        console.log("Error with Generate Pipeline. Points are invalid or other logic error.");
+        console.log(error.response);
+        console.log(error.response.status);
+        console.log(error.response.headers);
         }
+        setShowNoGo(true);
     })
   }
 }
@@ -111,6 +114,7 @@ export default function MyApp(){
   }
 
   function openDocs(){
+    // all assets for 
     window.open("documentation/_build/html/index.html", "_blank", "noreferrer")
   }
 
@@ -655,7 +659,9 @@ function InvalidPipeline() {
         <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
         <h1>Smart CO2 Transport-Routing Tool</h1>
         <div id="docButton">
-          <Button onClick={openDocs}>Help Documentation</Button>
+            <Button onClick={openDocs}>
+              Help Documentation
+            </Button>
         </div>
       </div>
     );
