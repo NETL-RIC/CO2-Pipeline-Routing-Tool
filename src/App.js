@@ -80,7 +80,7 @@ export default function MyApp(){
 
     axios({
       method: "POST",
-      url:"/token",
+      url:"http://127.0.0.1:5000/token",
       data: {s: start, e:end}
     })
     .then((response) => {
@@ -449,18 +449,86 @@ function InvalidPipeline() {
 
   const HandleClick1 = () => {
     laststart = 0
-    setupdateSrcLat(srclat)
-    setupdateSrcLon(srclon)
-    start[0] = Number(srclat)
-    start[1] = Number(srclon)
+    let stlat = Number(srclat)
+    let stlon = Number(srclon)
+
+    let pt2 = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+stlat+"&lon="+stlon;
+
+    axios({
+      method: "GET",
+      url: pt2,
+    })
+    .then((response) => {
+      let enddata = response.data['address']
+
+
+      if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
+        setShowloc(true)
+
+      }else{
+
+        if(enddata['state'] === "Alaska"){
+          setEndloc('Alaska')
+        }else{
+          setEndloc('US')
+        }
+        setupdateSrcLat(srclat)
+        setupdateSrcLon(srclon)
+        start[0] = Number(srclat)
+        start[1] = Number(srclon)
+        
+
+      }
+
+    }).catch((error) => {
+      if (error.response) {
+        console.log(error.response)
+        console.log(error.response.status)
+        console.log(error.response.headers)
+        }
+    })
   }
 
   const HandleClick2 = () =>{
     lastend = 0
-    setupdateDestLat(destlat)
-    setupdateDestLon(destlon)
-    end[0] = Number(destlat)
-    end[1] = Number(destlon)
+    let dtlat = Number(destlat)
+    let dtlon = Number(destlon)
+
+    let pt3 = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+dtlat+"&lon="+dtlon;
+
+    axios({
+      method: "GET",
+      url: pt3,
+    })
+    .then((response) => {
+      let enddata = response.data['address']
+
+
+      if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
+        setShowloc(true)
+
+      }else{
+
+        if(enddata['state'] === "Alaska"){
+          setEndloc('Alaska')
+        }else{
+          setEndloc('US')
+        }
+        setupdateDestLat(destlat)
+        setupdateDestLon(destlon)
+        end[0] = Number(destlat)
+        end[1] = Number(destlon)
+        
+
+      }
+
+    }).catch((error) => {
+      if (error.response) {
+        console.log(error.response)
+        console.log(error.response.status)
+        console.log(error.response.headers)
+        }
+    })
   }
 
   
@@ -721,8 +789,8 @@ function InvalidPipeline() {
       
       <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
 
-      <p> Latitude:   <input name="myInput1"  onChange={handleChange1} value={srclat} disabled={uploaz!=="points"}/> 
-          Longitude:  <input name="myInput2"  onChange={handleChange2} value={srclon} disabled={uploaz!=="points"}/>  
+      <p> Latitude:   <input type="number" name="myInput1"  onChange={handleChange1} value={srclat} disabled={uploaz!=="points"}/> 
+          Longitude:  <input type="number" name="myInput2"  onChange={handleChange2} value={srclon} disabled={uploaz!=="points"}/>  
                        <Button size="sm" onClick={HandleClick1} disabled={uploaz!=="points"}> Save Start </Button >                      
       </p> 
 
@@ -732,8 +800,8 @@ function InvalidPipeline() {
 
       <h4>Add End Location in WGS84</h4>
 
-      <p> Latitude:   <input name="myInput3" onChange={handleChange3} value={destlat} disabled={uploaz!=="points"}/> 
-          Longitude:  <input name="myInput4" onChange={handleChange4} value={destlon} disabled={uploaz!=="points"}/>
+      <p> Latitude:   <input type="number" name="myInput3" onChange={handleChange3} value={destlat} disabled={uploaz!=="points"}/> 
+          Longitude:  <input type="number" name="myInput4" onChange={handleChange4} value={destlon} disabled={uploaz!=="points"}/>
                        <Button size="sm"  onClick={HandleClick2} disabled={uploaz!=="points"}> Save Destination </Button >            
       </p>
 
