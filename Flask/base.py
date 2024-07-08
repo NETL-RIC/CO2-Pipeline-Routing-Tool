@@ -99,6 +99,8 @@ def run_line_eval_mode():
         output_shp_abspath = os.path.join(os.path.dirname(__file__), "user_uploads", shp_extension_file)
         delete_prev_zips_pdfs()
         public_abspath = resource_path('../public')
+        if not os.path.exists(public_abspath):
+            os.mkdir(public_abspath)
         pdfname = report_builder(shapefile=output_shp_abspath, out_path=public_abspath)    # create pdf report in '../public' so front-end can grab it easily
         os.rename(os.path.join(public_abspath, pdfname), os.path.join(public_abspath, "route_report.pdf"))
 
@@ -130,12 +132,16 @@ def delete_prev_zips_pdfs():
     returns: none
     """
     #dirname = os.path.abspath('../public')
-    dircontents = os.listdir('../public')
+    public_path = resource_path('../public')
+    if os.path.exists(public_path):
+        dircontents = os.listdir(public_path)
 
-    for file in dircontents:
-        if file.endswith(".zip") or file.endswith(".pdf"):
-            print(f"\t delete_prev_zips: deleting old file {file}")
-            os.remove(os.path.join('../public', file))
+        for file in dircontents:
+            if file.endswith(".zip") or file.endswith(".pdf"):
+                print(f"\t delete_prev_zips: deleting old file {file}")
+                os.remove(os.path.join('../public', file))
+    else:
+        print(f'There was no public folder {public_path} to delete zips from')
 
 def create_output_zip(zipname):
     """ Creates .zip based on contents of output_shapefiles in the proj root dir's /public folder

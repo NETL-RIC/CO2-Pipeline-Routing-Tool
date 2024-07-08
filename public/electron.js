@@ -2,41 +2,12 @@
 const { app, BrowserWindow, protocol } = require("electron");
 const path = require("path");
 const url = require("url");
-// let backend;
-// backend = path.join(process.cwd(), 'dist/CO2PRT_Flask.exe') 
-// var execfile = require('child_process').execFile;
+const util = require('node:util');
+const { exec } = require('node:child_process');
 
-// execfile(
-//   backend,
-//   {
-//    windowsHide: false,
-//   },
-//   (err, stdout, stderr) => {
-//    if (err) {
-//    console.log(err);
-//    }
-//    if (stdout) {
-//    console.log(stdout);
-//    }
-//    if (stderr) {
-//    console.log(stderr);
-//    }
-//   }
-//  )
-let backend = require('child_process').execFile;
-let exePath = 'dist/CO2PRT_Flask.exe';
-
-let backendProcess = backend(exePath, function(err, data) {
-  if(err){
-    console.error(err);
-    return;
-  }
-});
 
 // Create the native browser window.
 function createWindow() {
-  // var exePath = './dist/CO2PRT_Flask.exe'
-  // var child = require('child_process').spawn(exePath);
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -44,6 +15,7 @@ function createWindow() {
     // communicate between node-land and browser-land.
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
+      nodeIntegration: true
     },
   });
  
@@ -59,10 +31,15 @@ function createWindow() {
     : "http://localhost:3000";
   mainWindow.loadURL(appURL);
  
+  exec('/dist/CO2PRT_Flask.exe')
+
   // Automatically open Chrome's DevTools in development mode.
   if (!app.isPackaged) {
     mainWindow.webContents.openDevTools();
   }
+  mainWindow.on('closed', function() {
+    mainWindow = null
+  })
 }
  
 // Setup a local proxy to adjust the paths of requested files when loading
@@ -100,16 +77,6 @@ app.whenReady().then(() => {
 // There, it's common for applications and their menu bar to stay active until
 // the user quits  explicitly with Cmd + Q.
 app.on("window-all-closed", function () {
-  // const { exec } = require('child_process');
-  // exec("taskkill /f /t /im CO2PRT_Flask.exe", (err, stdout, stderr) => {
-  // if (err) {
-  //   console.log(err)
-  // return;
-  // }
-  // console.log(`stdout: ${stdout}`);
-  // console.log(`stderr: ${stderr}`);
-  // });
-  backendProcess.kill()
   if (process.platform !== "darwin") {
     app.quit();
   }
