@@ -440,8 +440,8 @@ def generate_line_ml(start, dest):
     with open('report_builder_input.txt','w') as f:
         for line in route_wgs:
             f.write(f"{line}\n")
-    return route_wgs
     """
+    return route_wgs
 
 
 #NEW FUNCTION
