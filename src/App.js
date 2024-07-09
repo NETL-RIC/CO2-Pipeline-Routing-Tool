@@ -751,7 +751,8 @@ function InvalidPipeline() {
 
 
     axios
-    .post("/uploads", formData)
+    .post("http://127.0.0.1:5000/uploads", formData)
+    // .post("/uploads", formData)
     .then((response) => {
       shpvals =response.data['array']
       shptyp = response.data['typ']

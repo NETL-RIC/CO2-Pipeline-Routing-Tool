@@ -37,15 +37,16 @@ def my_profile():
 @api.route('/uploads', methods = ['POST'])
 def uploads_file():
     print('hello')
-    delete_dir_contents('user_uploads')     #clear out stuff from a previous tool run
+    delete_dir_contents(resource_path('user_uploads'))     #clear out stuff from a previous tool run
     name = ''
     file = request.files
     print(file)
     for i in file:
+        print(i)
         name = file[i].filename
         print(name)
         # file[i].save(os.path.join(UPLOAD_FOLDER, name))
-        cur_dir = os.path.dirname(__file__)
+        # cur_dir = os.path.dirname(__file__)
         file_path = os.path.join(resource_path('user_uploads'), name)
         file[i].save(file_path)
     
@@ -93,7 +94,7 @@ def run_line_eval_mode():
     Returns: none
     """
     shp_extension_file = None
-    for file in os.listdir(os.path.join(os.path.dirname(__file__), "user_uploads")):
+    for file in os.listdir(resource_path("user_uploads")):
         if file.endswith(".shp"):
             shp_extension_file = file
             print(f"Found user-uploaded file: {shp_extension_file}")
@@ -101,7 +102,7 @@ def run_line_eval_mode():
     if shp_extension_file == None:
         print('No .shp file found in user_uploads')
     else:
-        output_shp_abspath = os.path.join(os.path.dirname(__file__), "user_uploads", shp_extension_file)
+        output_shp_abspath = os.path.join(resource_path("user_uploads"), shp_extension_file)
         delete_prev_zips_pdfs()
         public_abspath = resource_path('public')
         if not os.path.exists(public_abspath):
