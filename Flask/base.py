@@ -17,7 +17,12 @@ from report_builder.report_builder import report_builder
 from extra_utils import resource_path
 
 api = Flask(__name__)
-APP_ROOT = os.path.dirname(os.path.realpath(__file__))
+# APP_ROOT = os.path.dirname(os.path.realpath(__file__))
+
+if getattr(sys, 'frozen', False):
+    APP_ROOT = os.path.dirname(sys.executable)
+elif __file__:
+    APP_ROOT = os.path.dirname(__file__)
 UPLOAD_FOLDER = os.path.join(APP_ROOT, 'user_uploads')
 
 @api.route('/profile')
@@ -98,7 +103,7 @@ def run_line_eval_mode():
     else:
         output_shp_abspath = os.path.join(os.path.dirname(__file__), "user_uploads", shp_extension_file)
         delete_prev_zips_pdfs()
-        public_abspath = resource_path('../public')
+        public_abspath = resource_path('public')
         if not os.path.exists(public_abspath):
             os.mkdir(public_abspath)
         pdfname = report_builder(shapefile=output_shp_abspath, out_path=public_abspath)    # create pdf report in '../public' so front-end can grab it easily
@@ -132,14 +137,14 @@ def delete_prev_zips_pdfs():
     returns: none
     """
     #dirname = os.path.abspath('../public')
-    public_path = resource_path('../public')
+    public_path = resource_path('public')
     if os.path.exists(public_path):
         dircontents = os.listdir(public_path)
 
         for file in dircontents:
             if file.endswith(".zip") or file.endswith(".pdf"):
                 print(f"\t delete_prev_zips: deleting old file {file}")
-                os.remove(os.path.join('../public', file))
+                os.remove(os.path.join(public_path, file))
     else:
         print(f'There was no public folder {public_path} to delete zips from')
 
@@ -148,9 +153,14 @@ def create_output_zip(zipname):
     params: zipname: string, the name of the zip to be created
     """
     zipname = 'route_shapefile_and_report'    
-    dest_path = os.path.join(os.path.realpath('../public'), zipname)
-    shutil.make_archive(dest_path, 'zip', 'output')
-    print("\tcreate_output_shp_zip: created zipfile at ../public")
+    # dest_path = os.path.join(os.path.realpath('public'), zipname)
+    public_f = resource_path('public')
+    dest_path = os.path.join(public_f, zipname)
+    if not os.path.exists(public_f):
+        os.mkdir(public_f)
+    shutil.make_archive(dest_path, 'zip', resource_path('output'))
+    print(f"\tcreate_output_shp_zip: created zipfile at f{dest_path}")
+    return dest_path + '.zip'
 
 
 @api.route('/token', methods=['GET', 'POST'])
@@ -182,14 +192,14 @@ def a():
         output_shp_filename = shpinfo[0]
        
         pdf_name = report_builder(output_shp_abspath, first_point, last_point, "output")    # create pdf report in './output
-        delete_prev_zips_pdfs()                   # delete zip from last run if exist
-        create_output_zip(output_shp_filename) # create zip of pdf/shp files in ../public so front-end can easily grab
+        # delete_prev_zips_pdfs()                   # delete zip from last run if exist
+        zip_path = create_output_zip(output_shp_filename) # create zip of pdf/shp files in ../public so front-end can easily grab
         route_correct_swap = []
         for coord in route:
             route_correct_swap.append((coord[1], coord[0]))
             
         print(f"First and last coord, about to go to frontend {route[0]}, {route[-1]}")
-        return route_correct_swap
+        return {'route': route_correct_swap, 'zip':zip_path}
 
 def generate_line_ml_old(start, dest):
     """ Call machine learning functions to generate line between parameter points

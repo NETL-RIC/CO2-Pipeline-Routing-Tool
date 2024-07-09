@@ -14,6 +14,7 @@ import bilLogo from "./BIL.png"
 
 global.Buffer = require('buffer').Buffer;
 let linevals = []
+let zip_file = ''
 let shpvals = []
 let start = [0,0]
 let laststart = -999
@@ -81,10 +82,13 @@ export default function MyApp(){
     axios({
       method: "POST",
       url:"http://127.0.0.1:5000/token",
+      // url:"/token",
       data: {s: start, e:end}
     })
     .then((response) => {
-      linevals =response.data
+      linevals =response.data['route']
+      zip_file = response.data['zip']
+      console.log(zip_file)
       console.log("Got line data")
       setFinished(true)
 
@@ -813,7 +817,7 @@ function InvalidPipeline() {
         <Button type="button" onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button>
       </p>
 
-      <p><a href={"route_shapefile_and_report.zip"} target="_blank" rel="noopener noreferrer" download>
+      <p><a href={zip_file} target="_blank" rel="noopener noreferrer" download>
         <Button disabled={uploaz!=="points"}>
           <i className="fas fa-download"/>
           Download Report and Shapefile
