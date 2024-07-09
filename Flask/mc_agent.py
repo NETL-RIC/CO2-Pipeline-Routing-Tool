@@ -410,7 +410,10 @@ class MLWrapper:
         self.agent = MCAgent(trajectories=trajectories, num_workers=num_workers)
 
     def route(self, start, target):
-        
+        print("In mc_agent.MLWrapper.route:") 
+        print(f"start is {start}")
+        print(f"target is {target}")
+
         if start[0]<275:
             assert target[0]<275 , 'Start location in AL but target location is not'
             region = 'al'
@@ -431,4 +434,8 @@ class MLWrapper:
 
         lucy_path = [self.cost_surface.from_game_coordiantes(*pair, region) for pair in path]
 
+        if lucy_path:
+            print("Path generated")
+        else:
+            print("Error with lucy_path in mc_agent")
         return lucy_path, path

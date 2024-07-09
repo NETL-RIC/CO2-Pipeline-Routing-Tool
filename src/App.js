@@ -36,6 +36,8 @@ export default function MyApp(){
   const [startloc, setStartloc] = useState('')
   const [endloc, setEndloc] = useState('')
 
+  const [isLoading, setIsLoading] = useState(false)
+
   const customIcon1 = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
     iconSize: [30,30]
@@ -45,6 +47,7 @@ export default function MyApp(){
     iconUrl: require("./placeholder.png"),
     iconSize: [30,30]
   })
+
 
   function ShowPipeline(){
 
@@ -70,34 +73,40 @@ export default function MyApp(){
 
   function sendData() {
 
-    setFinished(false)
+    setFinished(false);
+    setIsLoading(true);
 
     if ((endloc !== startloc) && (endloc !== '' && startloc !== '')){
-      setpipeloc(true)
+      setpipeloc(true);
 
     }else{
-
-    
-
     axios({
       method: "POST",
+
+      // change to below for bundling with electron
       url:"http://127.0.0.1:5000/token",
-      // url:"/token",
+
+      // change to below for dev
+      //url:"/token", 
       data: {s: start, e:end}
     })
+
     .then((response) => {
       linevals =response.data['route']
       zip_file = response.data['zip']
-      console.log(zip_file)
-      console.log("Got line data")
-      setFinished(true)
+      console.log("Got line data");
+      setFinished(true);
+      setIsLoading(false);
 
     }).catch((error) => {
       if (error.response) {
-        console.log(error.response)
-        console.log(error.response.status)
-        console.log(error.response.headers)
+        console.log("Error with Generate Pipeline. Points are invalid or other logic error.");
+        console.log(error.response);
+        console.log(error.response.status);
+        console.log(error.response.headers);
         }
+        setIsLoading(false);
+        setShowNoGo(true);
     })
   }
 }
@@ -115,6 +124,7 @@ export default function MyApp(){
   }
 
   function openDocs(){
+    // all assets for 
     window.open("documentation/_build/html/index.html", "_blank", "noreferrer")
   }
 
@@ -192,6 +202,33 @@ export default function MyApp(){
         </>
       );
   }
+
+
+function LoadingMessage() {
+  if (isLoading) {
+    return(
+      <>
+        <Modal
+          show={isLoading}
+          backdrop="static"
+          keyboard={false}
+          aria-labelledby="contained-modal-title-vcenter"
+        centered
+        >
+          <Modal.Header>
+            <Modal.Title>Loading...</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Optimizing pipeline corridor, this may take several minutes. Please do not close the webpage, or your progress will be lost.
+          </Modal.Body>
+          <Modal.Footer>
+            This window will close automatically when optimization has concluded. 
+          </Modal.Footer>
+        </Modal>
+      </>
+    );
+  }
+}
 
 function NoGoZonePopup(){
   const handleClose = () => setShowNoGo(false);
@@ -659,7 +696,9 @@ function InvalidPipeline() {
         <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
         <h1>Smart CO2 Transport-Routing Tool</h1>
         <div id="docButton">
-          <Button onClick={openDocs}>Help Documentation</Button>
+            <Button onClick={openDocs}>
+              Help Documentation
+            </Button>
         </div>
       </div>
     );
@@ -734,22 +773,21 @@ function InvalidPipeline() {
       {/*Hidden by default popups*/}
       <InvalidLocationPopup/>
       <NoGoZonePopup/>
-
       <InvalidPipeline/>
 
       {/*Regular page*/}
       <Header/>
+      <LoadingMessage/>
       <MapContainer center={[39.8283, -98.5795]} zoom={5}>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      
-      <StartMarkers/>
-      <EndMarkers/>
-      <ScaleControl position="bottomright" />
-      <ShowPipeline/>
-      <Showshp/>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <StartMarkers/>
+        <EndMarkers/>
+        <ScaleControl position="bottomright" />
+        <ShowPipeline/>
+        <Showshp/>
       </MapContainer>
 
       <div>

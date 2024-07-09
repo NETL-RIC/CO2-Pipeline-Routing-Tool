@@ -445,10 +445,12 @@ def generate_line_ml(start, dest):
     pipecontrol = PipelineController(startlocal, destlocal)
     route_local = pipecontrol.ml_run()
     route_wgs = translateLine(raspath, route_local)
-    # write post-ml route list to a file for Ben to troubleshoot... remove later
+    """
+    # write post-ml route list to a file for Ben to troubleshoot. Only needed for ben's troubleshooting
     with open('report_builder_input.txt','w') as f:
         for line in route_wgs:
             f.write(f"{line}\n")
+    """
     return route_wgs
 
 
