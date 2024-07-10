@@ -42,6 +42,7 @@ def open_help():
     webbrowser.open(f"file://{h_path}")
     return(h_path)
 
+# Evaluate button 
 @api.route('/uploads', methods = ['POST'])
 def uploads_file():
     print('hello')
@@ -102,6 +103,7 @@ def uploads_file():
 
     return v
 
+# Evaluate button
 def run_line_eval_mode():
     """ Create eval report from user-uploaded LINE shapefiles on button click
     Connected to 'Perform Analysis' in the evaluation mode section of the webpage
