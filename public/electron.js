@@ -15,7 +15,8 @@ function createWindow() {
     // communicate between node-land and browser-land.
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
-      nodeIntegration: true
+      nodeIntegration: true,
+      nativeWindowOpen: true
     },
   });
  
@@ -31,14 +32,26 @@ function createWindow() {
     : "http://localhost:3000";
   mainWindow.loadURL(appURL);
  
-  exec('/dist/CO2PRT_Flask.exe')
+  // exec('/dist/CO2PRT_Flask.exe')
 
   // Automatically open Chrome's DevTools in development mode.
   if (!app.isPackaged) {
     mainWindow.webContents.openDevTools();
   }
-  mainWindow.on('closed', function() {
-    mainWindow = null
+  mainWindow.on('close', function(e) {
+    e.preventDefault();
+    mainWindow.destroy();
+  })
+  // mainWindow.on('closed', function() {
+  //   mainWindow = null
+  // })
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    console.log(url)
+    if (url === 'http://localhost:3000/documentation/_build/html/index.html') {
+      exec(path.join(__dirname, "documentation/_build/html/index.html"))
+    }
+    return { action: 'deny' }
   })
 }
  

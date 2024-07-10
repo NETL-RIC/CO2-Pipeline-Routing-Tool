@@ -35,6 +35,7 @@ def GetIDsAndLengthOrArea(new_shp, grid_shp, tracts_shp):
     :return: list of ids where grid_shp intersects with new_shp, list of ids where tracts_shp intersects with new_shp,
             new_shp length (m) or area (m) depending on if geometry is a line or polgyon
     """
+    print(f"In GetIDs... {new_shp}, {grid_shp}, {tracts_shp}")
     # Open shapefiles as layers
     driver = ogr.GetDriverByName("ESRI Shapefile")
     ds = driver.Open(new_shp, 0)
@@ -44,6 +45,7 @@ def GetIDsAndLengthOrArea(new_shp, grid_shp, tracts_shp):
     vg_lyr = vg_ds.GetLayer()
     tract_ds = driver.Open(tracts_shp, 0)
     tract_lyr = tract_ds.GetLayer()
+    print("Shapes and layers loaded")
     # Temp output information
     mem_driver = ogr.GetDriverByName('MEMORY')
     mem_ds = mem_driver.CreateDataSource('memData')
@@ -74,6 +76,12 @@ def GetIDsAndLengthOrArea(new_shp, grid_shp, tracts_shp):
         outFeature.SetGeometry(l_geom)
         memLyr.CreateFeature(outFeature)
     del memLyr, mem_ds, mem_driver
+    driver = None
+    input_lyr, vg_lyr, tract_lyr = None, None, None
+    ds, vg_ds, tract_ds = None, None, None
+    # del driver
+    # del input_lyr, vg_lyr, tract_lyr # Closing open layers
+    # del ds, vg_ds, tract_ds # Closing open drivers
     return vg_ids, tract_ids, stat, geometry_type
 
 def GetIDsAndLengthOrArea_old(line, vg, tracts):
@@ -236,6 +244,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     :param out_path: output location to save pdf report
     :return: pdf report file
     """
+    print(f"Report builder recieved: {shapefile}, {start_coordinates}, {end_coordinates}")
     curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
     report_input = resource_path('report_builder\inputs')
     # Hardcoded data for evaluation
@@ -270,10 +279,10 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
 
     # shapefile = "../" + shapefile   # need to prefix ../ to go back out of report_builder directory to get .shp file
     # shapefile = Path.absolute("../" + shapefile)
+
     shapefile = os.path.abspath(shapefile)
     # Run intersection and pull intersecting ids and line length from shapefiles
     vg_ids, tract_ids, statistic, geometry_type = GetIDsAndLengthOrArea(shapefile, vg_shp, tract_shp)
-
     # Pull data by FID into dataframe for report
    # if vg_ids:
     vg_df = CleanDF(pd.read_csv(vg_table), null_list, vg_id, vg_ids)

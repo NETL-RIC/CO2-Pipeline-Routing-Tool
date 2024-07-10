@@ -37,7 +37,10 @@ def my_profile():
 @api.route('/uploads', methods = ['POST'])
 def uploads_file():
     print('hello')
-    delete_dir_contents(resource_path('user_uploads'))     #clear out stuff from a previous tool run
+    try:
+        delete_dir_contents(resource_path('user_uploads'))     #clear out stuff from a previous tool run
+    except PermissionError as e:
+        print("Got permission error from locked file:", e)
     name = ''
     file = request.files
     print(file)
@@ -74,17 +77,21 @@ def uploads_file():
     print('The uploaded shapefile is of type:')
     print('\t'+shptype)
 
+
+    pdf_path = None
     if shptype == "LineString":
         print("Creating PDF report for LineString shapefile")
         # first_point = v['array'][0] # unnessecary right now, but in case it's needed later
         # last_point = v['array'][-1] # unnessecary right now, but in case it's needed later
-        run_line_eval_mode()
+        pdf_path = run_line_eval_mode()
     elif shptype == "Polygon":
         print("Creating PDF report for Polygon shapefile")
-        run_line_eval_mode()
+        pdf_path = run_line_eval_mode()
     else:
         print("Uploaded shapefile is neither a polygon or a line. Please upload an appropriate shapefile.")
     
+    v['pdf'] = pdf_path
+
     return v
 
 def run_line_eval_mode():
@@ -101,14 +108,21 @@ def run_line_eval_mode():
 
     if shp_extension_file == None:
         print('No .shp file found in user_uploads')
+
+        return None
     else:
         output_shp_abspath = os.path.join(resource_path("user_uploads"), shp_extension_file)
         delete_prev_zips_pdfs()
         public_abspath = resource_path('public')
         if not os.path.exists(public_abspath):
             os.mkdir(public_abspath)
+            print(f"Created public folder at {public_abspath}")
         pdfname = report_builder(shapefile=output_shp_abspath, out_path=public_abspath)    # create pdf report in '../public' so front-end can grab it easily
-        os.rename(os.path.join(public_abspath, pdfname), os.path.join(public_abspath, "route_report.pdf"))
+        print("Created pdf report")
+        new_pdf_path = os.path.join(public_abspath, "route_report.pdf")
+        os.rename(os.path.join(public_abspath, pdfname), new_pdf_path)
+        
+        return new_pdf_path
 
 
 def delete_dir_contents(rel_path):
@@ -372,6 +386,7 @@ def CoordinatesToIndices(raster, coordinates):
     pixelHeight = geotransform[5]
     xOffset = int((aea_coordinates[0] - originX) / pixelWidth)
     yOffset = int((aea_coordinates[1] - originY) / pixelHeight)
+    ds = None
     return ((yOffset, xOffset))
 
 
@@ -398,7 +413,7 @@ def IndicesToCoordinates(raster, indices):
     wgs84_coordinates = AeaToWgs84((x, y)) #Stephen, I added this and the next line so the function operates the same
                                             # as before and returns latitude, longitude in WGS84
     (y, x) = wgs84_coordinates[1], wgs84_coordinates[0]
-
+    ds = None
     return (y, x)
 
 

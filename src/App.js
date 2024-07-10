@@ -15,6 +15,7 @@ import bilLogo from "./BIL.png"
 global.Buffer = require('buffer').Buffer;
 let linevals = []
 let zip_file = ''
+let pdf_file = ''
 let shpvals = []
 let start = [0,0]
 let laststart = -999
@@ -125,7 +126,8 @@ export default function MyApp(){
 
   function openDocs(){
     // all assets for 
-    window.open("documentation/_build/html/index.html", "_blank", "noreferrer")
+    window.open("documentation/_build/html/index.html", "helpWindow", "noreferrer")
+    // window.open("C:/Users/zaengled/Appdata/Local/Programs/apptest/documentation/_build/html/index.html", "_blank", "noreferrer")
   }
 
   const [show, setShowloc] = useState(false);
@@ -754,8 +756,9 @@ function InvalidPipeline() {
     .post("http://127.0.0.1:5000/uploads", formData)
     // .post("/uploads", formData)
     .then((response) => {
-      shpvals =response.data['array']
+      shpvals = response.data['array']
       shptyp = response.data['typ']
+      pdf_file = response.data['pdf']
       console.log(response)
       console.log(response.data)
       setFinished2(true)
@@ -870,7 +873,7 @@ function InvalidPipeline() {
         <button type="submit" disabled={uploaz!=="upld"}>Evaluate</button>
       </form>
       <br></br>
-      <p><a href={"route_report.pdf"} target="_blank" rel="noopener noreferrer" download>
+      <p><a href={pdf_file} target="_blank" rel="noopener noreferrer" download>
         <Button disabled={uploaz!=="upld"}>
           <i className="fas fa-download"/>
           Download Report
