@@ -13,17 +13,20 @@ import discoverLogo from "./discover.jpg";
 import bilLogo from "./BIL.png"
 
 global.Buffer = require('buffer').Buffer;
+// visualizes Id mode line
 let linevals = []
+
+// visualizes Evalulate mode polygon
+let shpvals = []
+
 let zip_file = ''
 let pdf_file = ''
-let shpvals = []
 let start = [0,0]
 let laststart = -999
 let lastend = -999  
 let end = [0,0]
 let prevstart = 'Select known CCS project as start location'
 let prevend = 'Select known CCS project as destination location'
-// c'mon michael lmao
 let a = true;
 const limeOptions = { color: 'lime' }
 const purpleOptions = { color: 'purple' }
@@ -31,13 +34,17 @@ let shptyp = ''
 
 export default function MyApp(){
   
+  // might be duplicates of the isLoadingx variables
   const [finished, setFinished] = useState('')
   const [finished2, setFinished2] = useState('')
 
   const [startloc, setStartloc] = useState('')
   const [endloc, setEndloc] = useState('')
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingEvalMode, setIsLoadingEvalMode] = useState(false)
+  const [isLoadingIdMode, setIsLoadingIdMode] = useState(false)
+
+
 
   const customIcon1 = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
@@ -72,10 +79,12 @@ export default function MyApp(){
   }
 }
 
+  // Generate Pipeline button
   function sendData() {
 
     setFinished(false);
-    setIsLoading(true);
+    setIsLoadingIdMode(true);
+    setIsLoadingEvalMode(false);
 
     if ((endloc !== startloc) && (endloc !== '' && startloc !== '')){
       setpipeloc(true);
@@ -97,7 +106,7 @@ export default function MyApp(){
       zip_file = response.data['zip']
       console.log("Got line data");
       setFinished(true);
-      setIsLoading(false);
+      setIsLoadingIdMode(false);
 
     }).catch((error) => {
       if (error.response) {
@@ -106,7 +115,7 @@ export default function MyApp(){
         console.log(error.response.status);
         console.log(error.response.headers);
         }
-        setIsLoading(false);
+        setIsLoadingIdMode(false);
         setShowNoGo(true);
     })
   }
@@ -206,12 +215,12 @@ export default function MyApp(){
   }
 
 
-function LoadingMessage() {
-  if (isLoading) {
+function LoadingMessageIdMode() {
+  if (isLoadingIdMode) {
     return(
       <>
         <Modal
-          show={isLoading}
+          show={isLoadingIdMode}
           backdrop="static"
           keyboard={false}
           aria-labelledby="contained-modal-title-vcenter"
@@ -224,7 +233,33 @@ function LoadingMessage() {
             Optimizing pipeline corridor, this may take several minutes. Please do not close the webpage, or your progress will be lost.
           </Modal.Body>
           <Modal.Footer>
-            This window will close automatically when optimization has concluded. 
+            This notification will close automatically when optimization has concluded. 
+          </Modal.Footer>
+        </Modal>
+      </>
+    );
+  }
+}
+
+function LoadingMessageEvalMode() {
+  if (isLoadingEvalMode) {
+    return(
+      <>
+        <Modal
+          show={isLoadingEvalMode}
+          backdrop="static"
+          keyboard={false}
+          aria-labelledby="contained-modal-title-vcenter"
+        centered
+        >
+          <Modal.Header>
+            <Modal.Title>Loading...</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Evaluating uploaded corridor, this may take several minutes. Please do not close the webpage, or your progress will be lost.
+          </Modal.Body>
+          <Modal.Footer>
+            This notification will close automatically when evaluation has concluded. 
           </Modal.Footer>
         </Modal>
       </>
@@ -726,7 +761,11 @@ function InvalidPipeline() {
   const [location, setLocation] = useState("")
   const [uploaz, setUploaz] = useState("")
 
-  const onvalChange = e => {
+  const onModeChange = e => {
+    // If there is a visualized polygon from Eval mode, clear it
+    shpvals = []
+
+    setFinished(false)
     setUploaz(e.target.value)
     console.log(uploaz)
   }
@@ -742,15 +781,17 @@ function InvalidPipeline() {
     setFiles([...event.target.files]);
   } 
 
-  function handleMultipleSubmit(event) {
+  // handleMultipleSubmit formerly
+  function evaluateCorridor(event) {
     event.preventDefault();
     setFinished2(false)
+    setIsLoadingEvalMode(true)
+    setIsLoadingIdMode(false)
     
     const formData = new FormData();
     files.forEach((file, index) => {
       formData.append(`file${index}`, file);
     });
-
 
     axios
     .post("http://127.0.0.1:5000/uploads", formData)
@@ -762,11 +803,14 @@ function InvalidPipeline() {
       console.log(response)
       console.log(response.data)
       setFinished2(true)
+      setIsLoadingEvalMode(false)
 
     })
-    .catch(err => console.warn(err));
+    .catch((err) => {
+      setIsLoadingEvalMode(false)
+      console.warn(err)
+    });
   }
-
 
   return(
 
@@ -781,7 +825,8 @@ function InvalidPipeline() {
 
       {/*Regular page*/}
       <Header/>
-      <LoadingMessage/>
+      <LoadingMessageEvalMode/>
+      <LoadingMessageIdMode/>
       <MapContainer center={[39.8283, -98.5795]} zoom={5}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -800,7 +845,7 @@ function InvalidPipeline() {
         value="points"
         id="points"
         checked={uploaz=== "points"}
-        onChange={onvalChange}/>
+        onChange={onModeChange}/>
         <label id="modeRadioText" htmlFor="points">Identify Route</label>
 
         <input type="radio"
@@ -808,7 +853,7 @@ function InvalidPipeline() {
         value="upld"
         id="upld"
         checked={uploaz=== "upld"}
-        onChange={onvalChange}/>
+        onChange={onModeChange}/>
         <label id="modeRadioText" htmlFor="upld">Evaluate Corridor</label>
 
       </div>
@@ -856,7 +901,7 @@ function InvalidPipeline() {
       <br></br>
 
       <p>
-        <Button type="button" onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button>
+        <Button id="gen-btn" type="button" onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button>
       </p>
 
       <p><a href={zip_file} target="_blank" rel="noopener noreferrer" download>
@@ -867,7 +912,7 @@ function InvalidPipeline() {
       </a></p>
       <br/>
 
-      <form onSubmit={handleMultipleSubmit} disabled={uploaz!=="upld"}>
+      <form onSubmit={evaluateCorridor} disabled={uploaz!=="upld"}>
         <h4> Upload Shapefiles</h4>
         <input type="file" multiple onChange={handleMultipleChange} disabled={uploaz!=="upld"} />
         <button type="submit" disabled={uploaz!=="upld"}>Evaluate</button>
