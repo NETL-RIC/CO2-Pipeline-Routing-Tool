@@ -72,4 +72,14 @@ titled `CO2Pipeline setup` which can be distributed to users.
 The installer when run will install the app to `/AppData/Local/Programs/apptest/` and
 create a shortcut to the electron front end.
 
+#### Potential Electron Building Issues
+You may need to manually download electron-builder if `npm run electron:package:win` doesn't automatically install it.
+You also may have the incorrect electron-builder package and will get a 7zip permissions error if using the most recent version of the electron-builder package.
+Fix either of these problems by installing or downgrading the package respectively, with `npm install electron-builder@24.6.3`. 
+
+You may also get other permissions errors when building, from the WinCodeSign-2.6.0 or nsis-3.0.4.1 packages.
+Fix the former by renaming one of the folders inside C:\Users\leveckis\AppData\Local\electron-builder\Cache\winCodeSign\ from a 9-digit string of numbers to `WinCodeSign-2.6.0.` If there are mulitiple of these folders, renaming just one should work.
+Fix the nsis error by renaming one of the folders inside C:\Users\yourusername\AppData\Local\electron-builder\Cache\nsis\ from a 9-digit strong of numbers to `nsis-3.0.4.1`
+
+
 >NOTE: Currently there is a bug with the tool where if the backend is launched by the frontend it will not spawn a shell window and will not be closed when the main window is closed forcing the user to close it with Task Manager. To avoid this the backend must be launched manually for the time being so there is a closeable window. It can be found at `Appdata/Local/Programs/apptest/dist/CO2PRT_Flask.exe`
