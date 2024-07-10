@@ -1,5 +1,5 @@
 // Module to control the application lifecycle and the native browser window.
-const { app, BrowserWindow, protocol } = require("electron");
+const { app, BrowserWindow, protocol, ipcMain } = require("electron");
 const path = require("path");
 const url = require("url");
 const util = require('node:util');
@@ -19,7 +19,7 @@ function createWindow() {
       nativeWindowOpen: true
     },
   });
- 
+
   // In production, set the initial browser path to the local bundle generated
   // by the Create React App build process.
   // In development, set it to localhost to allow live/hot-reloading.
@@ -42,19 +42,14 @@ function createWindow() {
     e.preventDefault();
     mainWindow.destroy();
   })
+  /// Removing below fixed the issue with a javascript error when closing the window
   // mainWindow.on('closed', function() {
   //   mainWindow = null
   // })
 
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    console.log(url)
-    if (url === 'http://localhost:3000/documentation/_build/html/index.html') {
-      exec(path.join(__dirname, "documentation/_build/html/index.html"))
-    }
-    return { action: 'deny' }
-  })
 }
- 
+
+
 // Setup a local proxy to adjust the paths of requested files when loading
 // them from the local production bundle (e.g.: local fonts, etc...).
 function setupLocalFilesNormalizerProxy() {
@@ -86,6 +81,17 @@ app.whenReady().then(() => {
   });
 });
  
+// attempt 3 at showing help doc
+// app.on('web-contents-created', (createEvent, contents) => {
+//   contents.setWindowOpenHandler(({ url }) => {
+//     console.log(url);
+//     if (url.startsWith('http://')) {
+//       exec(path.join(__dirname, "documentation/_build/html/index.html"))
+//     }
+//     return { action: 'deny' }
+//   });
+// });
+
 // Quit when all windows are closed, except on macOS.
 // There, it's common for applications and their menu bar to stay active until
 // the user quits  explicitly with Cmd + Q.

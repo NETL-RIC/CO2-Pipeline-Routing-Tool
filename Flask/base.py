@@ -1,6 +1,7 @@
 import os.path
 import os
 import sys
+import webbrowser
 from pathlib import Path
 
 import shutil
@@ -33,6 +34,13 @@ def my_profile():
     }
 
     return response_body
+
+@api.route('/help', methods = ['POST'])
+def open_help():
+    h_path = resource_path("documentation/_build/html/index.html")
+    print(os.path.exists(h_path))
+    webbrowser.open(f"file://{h_path}")
+    return(h_path)
 
 @api.route('/uploads', methods = ['POST'])
 def uploads_file():

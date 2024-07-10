@@ -52,12 +52,7 @@
       "node_modules/**/*"
     ],
     "extraFiles": [
-      "dist/CO2PRT_Flask.exe",
-      {
-        "from":"public/documentation",
-        "to":"documentation"
-      }
-
+      "dist/CO2PRT_Flask.exe"
     ],
     "directories": {
       "buildResources": "public"

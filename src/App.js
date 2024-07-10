@@ -125,9 +125,20 @@ export default function MyApp(){
   }
 
   function openDocs(){
-    // all assets for 
-    window.open("documentation/_build/html/index.html", "helpWindow", "noreferrer")
-    // window.open("C:/Users/zaengled/Appdata/Local/Programs/apptest/documentation/_build/html/index.html", "_blank", "noreferrer")
+    /// THIS VERSION IS FOR ELECTRON BUILD AS SOMETHING IS BLOCKING NEW WINDOWS
+    axios({
+      method: "POST",
+      url:"http://127.00.1:5000/help",
+    })
+    .catch((error) => {
+      if (error.response) {
+        console.log("Error requesting help documentation");
+      }
+    });
+
+    /// THIS VERSION CAN BE USED FOR DEVELOPMENT
+    // console.log("trying documentation open")
+    // window.open("documentation/_build/html/index.html", "helpWindow", "noreferrer")
   }
 
   const [show, setShowloc] = useState(false);

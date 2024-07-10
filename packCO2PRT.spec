@@ -12,7 +12,8 @@ more_datas = [
     ('Flask/cost_surfaces', 'cost_surfaces'),
     ('Flask/raster','raster'),
     ('Flask/report_builder/inputs','report_builder/inputs'),
-    ('Flask/report_builder/images','report_builder/images')
+    ('Flask/report_builder/images','report_builder/images'),
+    ('public/documentation', 'documentation')
     ]
 
 
