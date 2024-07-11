@@ -56,6 +56,10 @@ export default function MyApp(){
     iconSize: [30,30]
   })
 
+  // abstracted hide pipeline by setting the variable to null
+  function HidePipeline(){
+    linevals = []
+  }
 
   function ShowPipeline(){
 
@@ -116,7 +120,7 @@ export default function MyApp(){
         console.log(error.response.headers);
         }
         setIsLoadingIdMode(false);
-        setShowNoGo(true);
+        setShowServerError(true);
     })
   }
 }
@@ -153,7 +157,7 @@ export default function MyApp(){
   const [show, setShowloc] = useState(false);
 
   const [pipeshow, setpipeloc] = useState(false);
-  const [showNoGo, setShowNoGo] = useState(false);
+  const [showServerError, setShowServerError] = useState(false);
   const [srclat, setSrcLat] = useState('')
   const [updateSrcLat, setupdateSrcLat] = useState(srclat)
 
@@ -225,7 +229,7 @@ export default function MyApp(){
       );
   }
 
-
+// The loading message that apperas when the backend is generating after 'Generate Pipeline' in ID Mode
 function LoadingMessageIdMode() {
   if (isLoadingIdMode) {
     return(
@@ -252,6 +256,7 @@ function LoadingMessageIdMode() {
   }
 }
 
+// The loading message that apperas when the backend is generating after 'Evaluate' in Eval Mode
 function LoadingMessageEvalMode() {
   if (isLoadingEvalMode) {
     return(
@@ -278,12 +283,13 @@ function LoadingMessageEvalMode() {
   }
 }
 
-function NoGoZonePopup(){
-  const handleClose = () => setShowNoGo(false);
+// Catch-all for invalid points, bad logic issues, etc. In the future should have more specific messages for different server errors
+function ServerErrorPopup(){
+  const handleClose = () => setShowServerError(false);
   return(
     <>
       <Modal
-        show={showNoGo}
+        show={showServerError}
         onHide={handleClose}
         backdrop="static"
         keyboard={false}
@@ -291,10 +297,10 @@ function NoGoZonePopup(){
       centered
       >
         <Modal.Header>
-          <Modal.Title>Invalid Location!</Modal.Title>
+          <Modal.Title>Server Error</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        Please select a point within valid pipeline-building areas.
+          An invalid point location may have been selected, the server may not have been started, or a different server error has occured.
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={handleClose}>Understood</Button>
@@ -403,6 +409,7 @@ function InvalidPipeline() {
           method: "GET",
           url: pt,
         })
+
         .then((response) => {
 
           let startdata = response.data['address']
@@ -411,7 +418,7 @@ function InvalidPipeline() {
           if((startdata === undefined) ||(startdata["state"] === "Hawaii") || (startdata["country"] !== "United States")){
             setShowloc(true)
 
-          // Need logic to check for NoGo zone
+          // Need logic to check for NoGo zone... currently just handled by backend serving a general server error
             
           }else{
             if(startdata['state'] === "Alaska"){
@@ -430,8 +437,6 @@ function InvalidPipeline() {
             start[1] = e.latlng['lng']
             markers.push(e.latlng);
             setMarkers((prevValue) => [...prevValue, e.latlng]);
-            
-          
         }
 
         }).catch((error) => {
@@ -536,6 +541,7 @@ function InvalidPipeline() {
   
 
 
+  // Handle START point click
   const HandleClick1 = () => {
     laststart = 0
     let stlat = Number(srclat)
@@ -578,6 +584,7 @@ function InvalidPipeline() {
     })
   }
 
+  // Handle END point click
   const HandleClick2 = () =>{
     lastend = 0
     let dtlat = Number(destlat)
@@ -707,20 +714,16 @@ function InvalidPipeline() {
   ];
 
   function Footer() {
-
     return (
       <p>
       <img src={bilLogo} alt='BIL Logo' />
       <Link to="https://www.netl.doe.gov/home/disclaimer">Disclaimer</Link>
       </p>
-      
     )
   }
 
   function DropdownStart() {
-
     laststart = 1
-
     return (
       <DropdownList
         containerClassName='dropdown'
@@ -736,7 +739,6 @@ function InvalidPipeline() {
 
 
   const Header = () => {
-
     return (
       <div className="header">
         <img src={netlLogo} width={50} height={50}  alt='NETL Logo' />
@@ -792,7 +794,7 @@ function InvalidPipeline() {
     setFiles([...event.target.files]);
   } 
 
-  // handleMultipleSubmit formerly
+  // Fn for pressing 'Generate Pipeline' button (handleMultipleSubmit formerly)
   function evaluateCorridor(event) {
     event.preventDefault();
     setFinished2(false)
@@ -831,7 +833,7 @@ function InvalidPipeline() {
 
       {/*Hidden by default popups*/}
       <InvalidLocationPopup/>
-      <NoGoZonePopup/>
+      <ServerErrorPopup/>
       <InvalidPipeline/>
 
       {/*Regular page*/}

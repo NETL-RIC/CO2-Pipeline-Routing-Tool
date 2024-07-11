@@ -13,12 +13,19 @@ function createWindow() {
     height: 900,
     // Set the path of an additional "preload" script that can be used to
     // communicate between node-land and browser-land.
+    title: 'CO2 Pipeline Routing Tool',
+    icon: 'icon.png',
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: true,
       nativeWindowOpen: true
     },
   });
+  
+  // prevent the window title from reverting back to the default, 'React App'
+  mainWindow.on('page-title-updated', (e) => {
+    e.preventDefault();
+  })
 
   // In production, set the initial browser path to the local bundle generated
   // by the Create React App build process.

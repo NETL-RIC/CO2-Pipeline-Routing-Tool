@@ -83,3 +83,11 @@ Fix the nsis error by renaming one of the folders inside C:\Users\yourusername\A
 
 
 >NOTE: Currently there is a bug with the tool where if the backend is launched by the frontend it will not spawn a shell window and will not be closed when the main window is closed forcing the user to close it with Task Manager. To avoid this the backend must be launched manually for the time being so there is a closeable window. It can be found at `Appdata/Local/Programs/apptest/dist/CO2PRT_Flask.exe`
+
+### Packaging Summary
+- Run Pyinstaller in the project root dir
+- Run Electron bundler in the project root dir AFTER pyinstaller
+- Run the CO2Pipeline Setup exe in the /dist folder inside the project root dir. This will also start the React UI exe after installation
+- Start the React UI exe (if not already up) at the local path C:\\Users\\[username]\\AppData\\Local\\Programs\\apptest\\CO2Pipeline.exe
+- Start the Flask Backend exe (if not already up) at the local path C:\\Users\\[username]\\AppData\\Local\\Programs\\apptest\\dist\\CO2PRT_Flask.exe
+
