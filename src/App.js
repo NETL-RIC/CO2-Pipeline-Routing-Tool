@@ -13,6 +13,7 @@ import discoverLogo from "./discover.jpg";
 import bilLogo from "./BIL.png"
 
 global.Buffer = require('buffer').Buffer;
+
 // visualizes Id mode line
 let linevals = []
 
@@ -28,23 +29,11 @@ let end = [0,0]
 let prevstart = 'Select known CCS project as start location'
 let prevend = 'Select known CCS project as destination location'
 let a = true;
-const limeOptions = { color: 'lime' }
-const purpleOptions = { color: 'purple' }
+const LIME_OPTIONS = { color: 'lime' }
+const PURPLE_OPTIONS = { color: 'purple' }
 let shptyp = ''
 
 export default function MyApp(){
-  
-  // might be duplicates of the isLoadingx variables
-  const [finished, setFinished] = useState('')
-  const [finished2, setFinished2] = useState('')
-
-  const [startloc, setStartloc] = useState('')
-  const [endloc, setEndloc] = useState('')
-
-  const [isLoadingEvalMode, setIsLoadingEvalMode] = useState(false)
-  const [isLoadingIdMode, setIsLoadingIdMode] = useState(false)
-
-
 
   const customIcon1 = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
@@ -56,35 +45,47 @@ export default function MyApp(){
     iconSize: [30,30]
   })
 
-  // abstracted hide pipeline by setting the variable to null
-  function HidePipeline(){
-    linevals = []
+  const [isLoadingIdMode, setIsLoadingIdMode] = useState(false)
+  const [isLoadingEvalMode, setIsLoadingEvalMode] = useState(false)
+  const [finished2, setFinished2] = useState('')
+  // 'Evaluate' button (handleMultipleSubmit() formerly)
+  function evaluateCorridor(event) {
+    event.preventDefault();
+    setFinished2(false)
+    setIsLoadingEvalMode(true)
+    setIsLoadingIdMode(false)
+    
+    const formData = new FormData();
+    files.forEach((file, index) => {
+      formData.append(`file${index}`, file);
+    });
+
+    axios
+    .post("http://127.0.0.1:5000/uploads", formData)
+    // .post("/uploads", formData)
+    .then((response) => {
+      shpvals = response.data['array']
+      shptyp = response.data['typ']
+      pdf_file = response.data['pdf']
+      console.log(response)
+      console.log(response.data)
+      setFinished2(true)
+      setIsLoadingEvalMode(false)
+
+    })
+    .catch((err) => {
+      setIsLoadingEvalMode(false)
+      console.warn(err)
+    });
   }
 
-  function ShowPipeline(){
+  const [pipeshow, setpipeloc] = useState(false);
+  const [finished, setFinished] = useState('')
+  const [showServerError, setShowServerError] = useState(false);
+  const [endloc, setEndloc] = useState('')
 
-    if (finished){
-    console.log("Returning line data as Polyline for map")
-    console.log("Line array in front end: ")
-    console.log(linevals)
-    return <Polyline pathOptions={limeOptions} positions={linevals} />
-    }
-  }
-
-  function Showshp(){
-
-    if (finished2){
-      if (shptyp === 'Polygon'){
-        return <Polygon pathOptions={purpleOptions} positions={shpvals} />
-      }
-      else if (shptyp === 'LineString'){
-        return <Polyline pathOptions={purpleOptions} positions={shpvals} />
-      }
-  }
-}
-
-  // Generate Pipeline button
-  function sendData() {
+  // 'Generate Pipeline' button (sendData() formerly)
+  function generatePipeline() {
 
     setFinished(false);
     setIsLoadingIdMode(true);
@@ -123,20 +124,9 @@ export default function MyApp(){
         setShowServerError(true);
     })
   }
-}
-
-  // creates "are you sure" dialogue box on page refresh
-  useEffect(() => {
-    window.addEventListener("beforeunload", alertUser);
-    return () => {
-      window.removeEventListener("beforeunload", alertUser);
-    };
-  }, []);
-  const alertUser = (e) => {
-    e.preventDefault();
-    e.returnValue = "";
   }
 
+  // Electron vs Webapp difference here
   function openDocs(){
     /// THIS VERSION IS FOR ELECTRON BUILD AS SOMETHING IS BLOCKING NEW WINDOWS
     axios({
@@ -153,26 +143,6 @@ export default function MyApp(){
     // console.log("trying documentation open")
     // window.open("documentation/_build/html/index.html", "helpWindow", "noreferrer")
   }
-
-  const [show, setShowloc] = useState(false);
-
-  const [pipeshow, setpipeloc] = useState(false);
-  const [showServerError, setShowServerError] = useState(false);
-  const [srclat, setSrcLat] = useState('')
-  const [updateSrcLat, setupdateSrcLat] = useState(srclat)
-
-  const [srclon, setSrcLon] = useState('')
-  const [updateSrcLon, setupdateSrcLon] = useState(srclon)
-
-  const [destlat, setDestLat] = useState('')
-  const [updateDestLat, setupdateDestLat] = useState(destlat)
-
-  const [destlon, setDestLon] = useState('')
-  const [updateDestLon, setupdateDestLon] = useState(destlon)
-
-
-  const [value1, setValue1] = useState('Select known CCS project as start location')
-  const [value2, setValue2] = useState('Select known CCS project as destination location')
 
   function DisclaimerPopup() {
     const [showz, setShow] = useState(a);
@@ -229,323 +199,210 @@ export default function MyApp(){
       );
   }
 
-// The loading message that apperas when the backend is generating after 'Generate Pipeline' in ID Mode
-function LoadingMessageIdMode() {
-  if (isLoadingIdMode) {
+  // The loading message that apperas when the backend is generating after 'Generate Pipeline' in ID Mode
+  function LoadingMessageIdMode() {
+    if (isLoadingIdMode) {
+      return(
+        <>
+          <Modal
+            show={isLoadingIdMode}
+            backdrop="static"
+            keyboard={false}
+            aria-labelledby="contained-modal-title-vcenter"
+          centered
+          >
+            <Modal.Header>
+              <Modal.Title>Loading...</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              Optimizing pipeline corridor, this may take several minutes. Please do not close the webpage, or your progress will be lost.
+            </Modal.Body>
+            <Modal.Footer>
+              This notification will close automatically when optimization has concluded. 
+            </Modal.Footer>
+          </Modal>
+        </>
+      );
+    }
+  }
+
+  // The loading message that apperas when the backend is generating after 'Evaluate' in Eval Mode
+  function LoadingMessageEvalMode() {
+    if (isLoadingEvalMode) {
+      return(
+        <>
+          <Modal
+            show={isLoadingEvalMode}
+            backdrop="static"
+            keyboard={false}
+            aria-labelledby="contained-modal-title-vcenter"
+          centered
+          >
+            <Modal.Header>
+              <Modal.Title>Loading...</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              Evaluating uploaded corridor, this may take several minutes. Please do not close the webpage, or your progress will be lost.
+            </Modal.Body>
+            <Modal.Footer>
+              This notification will close automatically when evaluation has concluded. 
+            </Modal.Footer>
+          </Modal>
+        </>
+      );
+    }
+  }
+
+  // Catch-all for invalid points, bad logic issues, etc. In the future should have more specific messages for different server errors
+  function ServerErrorPopup(){
+    const handleClose = () => setShowServerError(false);
     return(
       <>
         <Modal
-          show={isLoadingIdMode}
+          show={showServerError}
+          onHide={handleClose}
           backdrop="static"
           keyboard={false}
           aria-labelledby="contained-modal-title-vcenter"
         centered
         >
           <Modal.Header>
-            <Modal.Title>Loading...</Modal.Title>
+            <Modal.Title>Server Error</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            Optimizing pipeline corridor, this may take several minutes. Please do not close the webpage, or your progress will be lost.
+            An invalid point location may have been selected, the server may not have been started, or a different server error has occured.
           </Modal.Body>
           <Modal.Footer>
-            This notification will close automatically when optimization has concluded. 
+            <Button onClick={handleClose}>Understood</Button>
           </Modal.Footer>
         </Modal>
       </>
     );
   }
-}
+    
+  // Single selected point is outside of US or AK
+  function InvalidLocationPopup() {
+    const handleClose = () => setShowloc(false);
 
-// The loading message that apperas when the backend is generating after 'Evaluate' in Eval Mode
-function LoadingMessageEvalMode() {
-  if (isLoadingEvalMode) {
-    return(
+    return (
       <>
+
         <Modal
-          show={isLoadingEvalMode}
+          show={show}
+          onHide={handleClose}
           backdrop="static"
           keyboard={false}
           aria-labelledby="contained-modal-title-vcenter"
         centered
         >
           <Modal.Header>
-            <Modal.Title>Loading...</Modal.Title>
+            <Modal.Title>Invalid Location!</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            Evaluating uploaded corridor, this may take several minutes. Please do not close the webpage, or your progress will be lost.
+          Please select a point within the USA or Alaska.
           </Modal.Body>
           <Modal.Footer>
-            This notification will close automatically when evaluation has concluded. 
+            <Button onClick={handleClose}>Understood</Button>
           </Modal.Footer>
         </Modal>
       </>
-    );
+    );    
   }
-}
-
-// Catch-all for invalid points, bad logic issues, etc. In the future should have more specific messages for different server errors
-function ServerErrorPopup(){
-  const handleClose = () => setShowServerError(false);
-  return(
-    <>
-      <Modal
-        show={showServerError}
-        onHide={handleClose}
-        backdrop="static"
-        keyboard={false}
-        aria-labelledby="contained-modal-title-vcenter"
-      centered
-      >
-        <Modal.Header>
-          <Modal.Title>Server Error</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          An invalid point location may have been selected, the server may not have been started, or a different server error has occured.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={handleClose}>Understood</Button>
-        </Modal.Footer>
-      </Modal>
-    </>
-  );
-}
   
-function InvalidLocationPopup() {
-  const handleClose = () => setShowloc(false);
+  // Both selected points are in different landmasses (US or AK)
+  function InvalidPipeline() {
+    const handleClose = () => setpipeloc(false);
 
-  return (
-    <>
-
-      <Modal
-        show={show}
-        onHide={handleClose}
-        backdrop="static"
-        keyboard={false}
-        aria-labelledby="contained-modal-title-vcenter"
-      centered
-      >
-        <Modal.Header>
-          <Modal.Title>Invalid Location!</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-        Please select a point within the USA or Alaska.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={handleClose}>Understood</Button>
-        </Modal.Footer>
-      </Modal>
-    </>
-  );    
-}
- 
-function InvalidPipeline() {
-  const handleClose = () => setpipeloc(false);
-
-  return (
-    <>
-
-      <Modal
-        show={pipeshow}
-        onHide={handleClose}
-        backdrop="static"
-        keyboard={false}
-        aria-labelledby="contained-modal-title-vcenter"
-      centered
-      >
-        <Modal.Header>
-          <Modal.Title>Invalid Pipeline!</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-        Start and end locations must be both in Alaska or both in continental USA.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={handleClose}>Understood</Button>
-        </Modal.Footer>
-      </Modal>
-    </>
-  );    
-}
-
-
-
-  const handleChange1 = (event) =>{
-    setSrcLat(event.target.value)
+    return (
+      <>
+        <Modal
+          show={pipeshow}
+          onHide={handleClose}
+          backdrop="static"
+          keyboard={false}
+          aria-labelledby="contained-modal-title-vcenter"
+        centered
+        >
+          <Modal.Header>
+            <Modal.Title>Invalid Pipeline!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          Start and end locations must be both in Alaska or both in continental USA.
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={handleClose}>Understood</Button>
+          </Modal.Footer>
+        </Modal>
+      </>
+    );    
   }
 
-  const handleChange2 = (event) =>{
-    setSrcLon(event.target.value)
-  }
 
-  const handleChange3 = (event) => {
-    setDestLat(event.target.value)
-  }
-
-  const handleChange4 = (event) => {
-    setDestLon(event.target.value)
-  }
-
-  const StartMarkers = () => {
-
-    if (prevstart !== value1  && laststart === 1){
-      prevstart = value1
-      laststart = 1
-      start[0] = value1['id'][0]
-      start[1] = value1['id'][1]
+  // Displays pipeline onto map from ID Mode output
+  function ShowPipeline(){
+    if (finished){
+    console.log("Returning line data as Polyline for map")
+    console.log("Line array in front end: ")
+    console.log(linevals)
+    return <Polyline pathOptions={LIME_OPTIONS} positions={linevals} />
     }
+  }
 
-    const initialMarkers= [0,0]
-    const [markers, setMarkers] = useState(initialMarkers);
-  
-    const map = useMapEvents({
-      click(e) {
-        if(uploaz==="points"){if (location ==='start'){
-        let s1 =  e.latlng['lat']
-        let s2 = e.latlng['lng']
-
-        let pt = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+s1+"&lon="+s2;
-        
-
-        axios({
-          method: "GET",
-          url: pt,
-        })
-
-        .then((response) => {
-
-          let startdata = response.data['address']
-          console.log(startdata)
-
-          if((startdata === undefined) ||(startdata["state"] === "Hawaii") || (startdata["country"] !== "United States")){
-            setShowloc(true)
-
-          // Need logic to check for NoGo zone... currently just handled by backend serving a general server error
-            
-          }else{
-            if(startdata['state'] === "Alaska"){
-              console.log('a')
-              setStartloc('Alaska')
-            }else{
-              setStartloc('US')
-              console.log('b')
-            }
-            
-            console.log(startloc)
-            console.log(endloc)
-            
-            
-            start[0] = e.latlng['lat']
-            start[1] = e.latlng['lng']
-            markers.push(e.latlng);
-            setMarkers((prevValue) => [...prevValue, e.latlng]);
-        }
-
-        }).catch((error) => {
-          if (error.response) {
-            console.log(error.response)
-            console.log(error.response.status)
-            console.log(error.response.headers)
-            }
-        })
-        }}
+  // Displays line or polygon onto map from Eval Mode output
+  function Showshp(){
+    if (finished2){
+      if (shptyp === 'Polygon'){
+        return <Polygon pathOptions={PURPLE_OPTIONS} positions={shpvals} />
       }
-    })
-    
-    if (uploaz==="points"){
-    return (
-      <Marker position={[start[0], start[1]]} icon={customIcon1}>
-        <Popup>Start Location ({(start[0].toFixed(6))}, {start[1].toFixed(6)})</Popup>
-      </Marker>
-    ) 
-  }else if(uploaz==="upld"){
-    return (
-      <Marker position={[0, 0]} icon={customIcon1}>
-        <Popup>Start Location ({(0)}, {0})</Popup>
-      </Marker>
-    ) 
-
-  }}
-  
-
-  const EndMarkers = () => {
-   
-    if (prevend !== value2 && lastend === 1){
-      prevend = value2
-      lastend = 1
-      end[0] = value2['id'][0]
-      end[1] = value2['id'][1]
-    }
-
-    const endMarkers= [0,0]
-    const [emarkers, seteMarkers] = useState(endMarkers);
-  
-    const maps = useMapEvents({
-      click(f) {
-        if(uploaz==="points"){if (location === 'end'){
-        let e1 =  f.latlng['lat']
-        let e2 = f.latlng['lng']
-
-        let pt2 = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+e1+"&lon="+e2;
-       
-        axios({
-          method: "GET",
-          url: pt2,
-        })
-        .then((response) => {
-          let enddata = response.data['address']
-
-
-          if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
-            setShowloc(true)
-
-          }else{
-
-            if(enddata['state'] === "Alaska"){
-              setEndloc('Alaska')
-            }else{
-              setEndloc('US')
-            }
-            
-            end[0] = f.latlng['lat']
-            end[1] = f.latlng['lng']
-            emarkers.push(f.latlng);
-            seteMarkers((prevValue) => [...prevValue, f.latlng]);
-          
-          }
-    
-        }).catch((error) => {
-          if (error.response) {
-            console.log(error.response)
-            console.log(error.response.status)
-            console.log(error.response.headers)
-            }
-        })
-        }}
+      else if (shptyp === 'LineString'){
+        return <Polyline pathOptions={PURPLE_OPTIONS} positions={shpvals} />
       }
-    })
-
-    if(uploaz === "points"){
-    return (
-      <Marker position={[end[0], end[1]]} icon={customIcon2}>
-        <Popup>End Location ({(end[0].toFixed(6))}, {end[1].toFixed(6)})</Popup>
-      </Marker>
-    )
     }
-    else if(uploaz === "uploads"){
-      return (
-      <Marker position={[0,0]} icon={customIcon2}>
-        <Popup>End Location ({(0)}, {0})</Popup>
-      </Marker>
-    )}
+  }
 
-    }
-  
+  // creates "are you sure" dialogue box on page refresh
+  useEffect(() => {
+    window.addEventListener("beforeunload", alertUser);
+    return () => {
+      window.removeEventListener("beforeunload", alertUser);
+    };
+  }, []);
+  const alertUser = (e) => {
+    e.preventDefault();
+    e.returnValue = "";
+  }
 
+  const [uploaz, setUploaz] = useState("")
+  const onModeChange = e => {
+    // If there is a visualized polygon from Eval mode, clear it
+    shpvals = []
 
+    setFinished(false)
+    setUploaz(e.target.value)
+    console.log(uploaz)
+  }
+
+  const [location, setLocation] = useState("")
+  const onOptionChange = e => {
+    setLocation(e.target.value)
+    console.log(location)
+  }
+
+  const [files, setFiles] = useState([]);
+  function handleMultipleChange(event) {
+    setFiles([...event.target.files]);
+  } 
+
+  const [show, setShowloc] = useState(false);
+  const [srcLat, setSrcLat] = useState('')
+  const [srcLon, setSrcLon] = useState('')
+  const [updateSrcLat, setUpdateSrcLat] = useState(srcLat)
+  const [updateSrcLon, setupdateSrcLon] = useState(srcLon)
   // Handle START point click
   const HandleClick1 = () => {
     laststart = 0
-    let stlat = Number(srclat)
-    let stlon = Number(srclon)
+    let stlat = Number(srcLat)
+    let stlon = Number(srcLon)
 
     let pt2 = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+stlat+"&lon="+stlon;
 
@@ -556,7 +413,6 @@ function InvalidPipeline() {
     .then((response) => {
       let enddata = response.data['address']
 
-
       if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
         setShowloc(true)
 
@@ -567,12 +423,10 @@ function InvalidPipeline() {
         }else{
           setEndloc('US')
         }
-        setupdateSrcLat(srclat)
-        setupdateSrcLon(srclon)
-        start[0] = Number(srclat)
-        start[1] = Number(srclon)
-        
-
+        setUpdateSrcLat(srcLat)
+        setupdateSrcLon(srcLon)
+        start[0] = Number(srcLat)
+        start[1] = Number(srcLon)
       }
 
     }).catch((error) => {
@@ -584,11 +438,15 @@ function InvalidPipeline() {
     })
   }
 
+  const [destLat, setDestLat] = useState('')
+  const [destLon, setDestLon] = useState('')
+  const [updateDestLat, setupdateDestLat] = useState(destLat)
+  const [updateDestLon, setupdateDestLon] = useState(destLon)
   // Handle END point click
   const HandleClick2 = () =>{
     lastend = 0
-    let dtlat = Number(destlat)
-    let dtlon = Number(destlon)
+    let dtlat = Number(destLat)
+    let dtlon = Number(destLon)
 
     let pt3 = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+dtlat+"&lon="+dtlon;
 
@@ -599,7 +457,6 @@ function InvalidPipeline() {
     .then((response) => {
       let enddata = response.data['address']
 
-
       if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
         setShowloc(true)
 
@@ -610,12 +467,10 @@ function InvalidPipeline() {
         }else{
           setEndloc('US')
         }
-        setupdateDestLat(destlat)
-        setupdateDestLon(destlon)
-        end[0] = Number(destlat)
-        end[1] = Number(destlon)
-        
-
+        setupdateDestLat(destLat)
+        setupdateDestLon(destLon)
+        end[0] = Number(destLat)
+        end[1] = Number(destLon)
       }
 
     }).catch((error) => {
@@ -627,7 +482,22 @@ function InvalidPipeline() {
     })
   }
 
-  
+  const handleChangeSrcLat = (event) =>{
+    setSrcLat(event.target.value)
+  }
+
+  const handleChangeSrcLon = (event) =>{
+    setSrcLon(event.target.value)
+  }
+
+  const handleChangeDestLat = (event) => {
+    setDestLat(event.target.value)
+  }
+
+  const handleChangeDestLon = (event) => {
+    setDestLon(event.target.value)
+  }
+
   let colors1 = [
     { id: [39.87, -88.89], name: 'Illinois Industrial Carbon Capture and Storage Project'},
     { id: [45, -85], name: 'MRCSP Development Phase - Michigan Basin Project' },
@@ -713,15 +583,166 @@ function InvalidPipeline() {
     { id: [31, -102], name: 'Yates Oil Field EOR Operations'},
   ];
 
-  function Footer() {
+  //----------------------------------------------SUPPORTING COMPONENTS----------------------------
+  const [startloc, setStartloc] = useState('')
+  // Marker point component
+  const StartMarkers = () => {
+
+    if (prevstart !== value1  && laststart === 1){
+      prevstart = value1
+      laststart = 1
+      start[0] = value1['id'][0]
+      start[1] = value1['id'][1]
+    }
+
+    const initialMarkers= [0,0]
+    const [markers, setMarkers] = useState(initialMarkers);
+  
+    const map = useMapEvents({
+      click(e) {
+        if(uploaz==="points"){if (location ==='start'){
+        let s1 =  e.latlng['lat']
+        let s2 = e.latlng['lng']
+
+        let pt = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+s1+"&lon="+s2;
+        
+
+        axios({
+          method: "GET",
+          url: pt,
+        })
+
+        .then((response) => {
+
+          let startdata = response.data['address']
+          console.log(startdata)
+
+          if((startdata === undefined) ||(startdata["state"] === "Hawaii") || (startdata["country"] !== "United States")){
+            setShowloc(true)
+
+          // Need logic to check for NoGo zone... currently just handled by backend serving a general server error
+            
+          }else{
+            if(startdata['state'] === "Alaska"){
+              console.log('a')
+              setStartloc('Alaska')
+            }else{
+              setStartloc('US')
+              console.log('b')
+            }
+            
+            console.log(startloc)
+            console.log(endloc)
+            
+            
+            start[0] = e.latlng['lat']
+            start[1] = e.latlng['lng']
+            markers.push(e.latlng);
+            setMarkers((prevValue) => [...prevValue, e.latlng]);
+        }
+
+        }).catch((error) => {
+          if (error.response) {
+            console.log(error.response)
+            console.log(error.response.status)
+            console.log(error.response.headers)
+            }
+        })
+        }}
+      }
+    })
+    
+    if (uploaz==="points"){
     return (
-      <p>
-      <img src={bilLogo} alt='BIL Logo' />
-      <Link to="https://www.netl.doe.gov/home/disclaimer">Disclaimer</Link>
-      </p>
-    )
+      <Marker position={[start[0], start[1]]} icon={customIcon1}>
+        <Popup>Start Location ({(start[0].toFixed(6))}, {start[1].toFixed(6)})</Popup>
+      </Marker>
+    ) 
+    } else if(uploaz==="upld"){
+      return (
+        <Marker position={[0, 0]} icon={customIcon1}>
+          <Popup>Start Location ({(0)}, {0})</Popup>
+        </Marker>
+      ) 
+    }
   }
 
+  // Marker point component
+  const EndMarkers = () => {
+   
+    if (prevend !== value2 && lastend === 1){
+      prevend = value2
+      lastend = 1
+      end[0] = value2['id'][0]
+      end[1] = value2['id'][1]
+    }
+
+    const endMarkers= [0,0]
+    const [emarkers, seteMarkers] = useState(endMarkers);
+  
+    const maps = useMapEvents({
+      click(f) {
+        if(uploaz==="points"){if (location === 'end'){
+        let e1 =  f.latlng['lat']
+        let e2 = f.latlng['lng']
+
+        let pt2 = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+e1+"&lon="+e2;
+       
+        axios({
+          method: "GET",
+          url: pt2,
+        })
+        .then((response) => {
+          let enddata = response.data['address']
+
+
+          if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
+            setShowloc(true)
+
+          }else{
+
+            if(enddata['state'] === "Alaska"){
+              setEndloc('Alaska')
+            }else{
+              setEndloc('US')
+            }
+            
+            end[0] = f.latlng['lat']
+            end[1] = f.latlng['lng']
+            emarkers.push(f.latlng);
+            seteMarkers((prevValue) => [...prevValue, f.latlng]);
+          
+          }
+    
+        }).catch((error) => {
+          if (error.response) {
+            console.log(error.response)
+            console.log(error.response.status)
+            console.log(error.response.headers)
+            }
+        })
+        }}
+      }
+    })
+
+    if(uploaz === "points"){
+    return (
+      <Marker position={[end[0], end[1]]} icon={customIcon2}>
+        <Popup>End Location ({(end[0].toFixed(6))}, {end[1].toFixed(6)})</Popup>
+      </Marker>
+    )
+    }
+    else if(uploaz === "uploads"){
+      return (
+      <Marker position={[0,0]} icon={customIcon2}>
+        <Popup>End Location ({(0)}, {0})</Popup>
+      </Marker>
+    )}
+
+  }
+  
+  const [value1, setValue1] = useState('Select known CCS project as start location')
+  // Dropdown component for start point
   function DropdownStart() {
     laststart = 1
     return (
@@ -737,23 +758,8 @@ function InvalidPipeline() {
     )
   }
 
-
-  const Header = () => {
-    return (
-      <div className="header">
-        <img src={netlLogo} width={50} height={50}  alt='NETL Logo' />
-        <img src={doeLogo}  alt='DOE Logo' />
-        <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
-        <h1>Smart CO2 Transport-Routing Tool</h1>
-        <div id="docButton">
-            <Button onClick={openDocs}>
-              Help Documentation
-            </Button>
-        </div>
-      </div>
-    );
-  };
-
+  const [value2, setValue2] = useState('Select known CCS project as destination location')
+  // Dropdown component for start point
   function DropdownEnd() {
 
     lastend = 1
@@ -771,87 +777,73 @@ function InvalidPipeline() {
     )
   }
 
-  const [location, setLocation] = useState("")
-  const [uploaz, setUploaz] = useState("")
+  function AddStartLoc() {
+    return(
+      <div>
+        <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
 
-  const onModeChange = e => {
-    // If there is a visualized polygon from Eval mode, clear it
-    shpvals = []
-
-    setFinished(false)
-    setUploaz(e.target.value)
-    console.log(uploaz)
+        <p> 
+          Latitude:   <input type="number" name="myInput1"  onChange={handleChangeSrcLat} value={srcLat} disabled={uploaz!=="points"}/> 
+          Longitude:  <input type="number" name="myInput2"  onChange={handleChangeSrcLon} value={srcLon} disabled={uploaz!=="points"}/>  
+          <Button size="sm" onClick={HandleClick1} disabled={uploaz!=="points"}> Save Start </Button >                      
+        </p> 
+        <div><DropdownStart/></div>
+      </div>
+    )
   }
 
-  const onOptionChange = e => {
-    setLocation(e.target.value)
-    console.log(location)
+  function AddEndLoc() {
+    return(
+      <div>
+        <h4>Add End Location in WGS84</h4>
+
+        <p> 
+          Latitude:   <input type="number" name="myInput3" onChange={handleChangeDestLat} value={destLat} disabled={uploaz!=="points"}/> 
+          Longitude:  <input type="number" name="myInput4" onChange={handleChangeDestLon} value={destLon} disabled={uploaz!=="points"}/>
+          <Button size="sm"  onClick={HandleClick2} disabled={uploaz!=="points"}> Save Destination </Button >            
+        </p>
+        <div><DropdownEnd/></div>
+      </div>
+    )
   }
 
-  const [files, setFiles] = useState([]);
+  function IdModeBtns() {
+    return(
+      <div>
+        <p>
+          <Button id="gen-btn" type="button" onClick={generatePipeline} disabled={uploaz!=="points"}> Generate Pipeline </Button>
+        </p>
 
-  function handleMultipleChange(event) {
-    setFiles([...event.target.files]);
-  } 
-
-  // Fn for pressing 'Generate Pipeline' button (handleMultipleSubmit formerly)
-  function evaluateCorridor(event) {
-    event.preventDefault();
-    setFinished2(false)
-    setIsLoadingEvalMode(true)
-    setIsLoadingIdMode(false)
-    
-    const formData = new FormData();
-    files.forEach((file, index) => {
-      formData.append(`file${index}`, file);
-    });
-
-    axios
-    .post("http://127.0.0.1:5000/uploads", formData)
-    // .post("/uploads", formData)
-    .then((response) => {
-      shpvals = response.data['array']
-      shptyp = response.data['typ']
-      pdf_file = response.data['pdf']
-      console.log(response)
-      console.log(response.data)
-      setFinished2(true)
-      setIsLoadingEvalMode(false)
-
-    })
-    .catch((err) => {
-      setIsLoadingEvalMode(false)
-      console.warn(err)
-    });
+        <p><a href={zip_file} target="_blank" rel="noopener noreferrer" download>
+          <Button disabled={uploaz!=="points"}>
+            <i className="fas fa-download"/>
+            Download Report and Shapefile
+          </Button>
+        </a></p>
+        <br/>
+      </div>
+    )
   }
 
-  return(
+  // ---------------------------------------MAIN COMPONENTS------------------------------------
+  const Header = () => {
+    return (
+      <div className="header">
+        <img src={netlLogo} width={50} height={50}  alt='NETL Logo' />
+        <img src={doeLogo}  alt='DOE Logo' />
+        <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
+        <h1>Smart CO2 Transport-Routing Tool</h1>
+        <div id="docButton">
+            <Button onClick={openDocs}>
+              Help Documentation
+            </Button>
+        </div>
+      </div>
+    );
+  };
 
-    <div>
-      {/*Initial popup */}
-      <DisclaimerPopup/>
-
-      {/*Hidden by default popups*/}
-      <InvalidLocationPopup/>
-      <ServerErrorPopup/>
-      <InvalidPipeline/>
-
-      {/*Regular page*/}
-      <Header/>
-      <LoadingMessageEvalMode/>
-      <LoadingMessageIdMode/>
-      <MapContainer center={[39.8283, -98.5795]} zoom={5}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <StartMarkers/>
-        <EndMarkers/>
-        <ScaleControl position="bottomright" />
-        <ShowPipeline/>
-        <Showshp/>
-      </MapContainer>
-
+  function ModeSelector() {
+    return (
       <div>
         <input type="radio"
         name="selectpoints"
@@ -868,63 +860,24 @@ function InvalidPipeline() {
         checked={uploaz=== "upld"}
         onChange={onModeChange}/>
         <label id="modeRadioText" htmlFor="upld">Evaluate Corridor</label>
-
       </div>
+    )
+  }
 
+  function IdMode(){
+    return(
       <div>
-        <input type="radio" 
-        name="location" 
-        value="start" 
-        id="start" 
-        checked={location === "start"} 
-        onChange={onOptionChange}
-        disabled={uploaz!=="points"}/>
-        <label htmlFor="start">Start</label>
+        <AddStartLoc/>
+        <AddEndLoc/> 
+        <br></br>
+        <IdModeBtns/>
+      </div>
+    )
+  }
 
-        <input type="radio" 
-        name="location" 
-        value="end" 
-        id="end" 
-        checked={location === "end"} 
-        onChange={onOptionChange}
-        disabled={uploaz!=="points"}/>
-        <label htmlFor="end">End</label>
-    </div>
-      
-      <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
-
-      <p> Latitude:   <input type="number" name="myInput1"  onChange={handleChange1} value={srclat} disabled={uploaz!=="points"}/> 
-          Longitude:  <input type="number" name="myInput2"  onChange={handleChange2} value={srclon} disabled={uploaz!=="points"}/>  
-                       <Button size="sm" onClick={HandleClick1} disabled={uploaz!=="points"}> Save Start </Button >                      
-      </p> 
-
-      <div><DropdownStart/></div>
-      
-     
-
-      <h4>Add End Location in WGS84</h4>
-
-      <p> Latitude:   <input type="number" name="myInput3" onChange={handleChange3} value={destlat} disabled={uploaz!=="points"}/> 
-          Longitude:  <input type="number" name="myInput4" onChange={handleChange4} value={destlon} disabled={uploaz!=="points"}/>
-                       <Button size="sm"  onClick={HandleClick2} disabled={uploaz!=="points"}> Save Destination </Button >            
-      </p>
-
-      <div><DropdownEnd/></div>
-
-      <br></br>
-
-      <p>
-        <Button id="gen-btn" type="button" onClick={sendData} disabled={uploaz!=="points"}> Generate Pipeline </Button>
-      </p>
-
-      <p><a href={zip_file} target="_blank" rel="noopener noreferrer" download>
-        <Button disabled={uploaz!=="points"}>
-          <i className="fas fa-download"/>
-          Download Report and Shapefile
-        </Button>
-      </a></p>
-      <br/>
-
+  function EvalMode(){
+    return(
+      <div>
       <form onSubmit={evaluateCorridor} disabled={uploaz!=="upld"}>
         <h4> Upload Shapefiles</h4>
         <input type="file" multiple onChange={handleMultipleChange} disabled={uploaz!=="upld"} />
@@ -938,11 +891,48 @@ function InvalidPipeline() {
         </Button>
       </a></p>
       <br/>
-      
-      <Footer/>
- 
-   
     </div>
-    
+    )
+  }
+
+  // Footer node
+  function Footer() {
+    return (
+      <p>
+      <img src={bilLogo} alt='BIL Logo' />
+      <Link to="https://www.netl.doe.gov/home/disclaimer">Disclaimer</Link>
+      </p>
+    )
+  }
+  return(
+    <div>
+      {/*Initial popup */}
+      <DisclaimerPopup/>
+
+      {/*Hidden by default popups*/}
+      <InvalidLocationPopup/>
+      <ServerErrorPopup/>
+      <InvalidPipeline/>
+      <LoadingMessageEvalMode/>
+      <LoadingMessageIdMode/>
+
+      {/*Regular page*/}
+      <Header/>
+      <MapContainer center={[39.8283, -98.5795]} zoom={5}>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <StartMarkers/>
+        <EndMarkers/>
+        <ScaleControl position="bottomright" />
+        <ShowPipeline/>
+        <Showshp/>
+      </MapContainer>
+      <ModeSelector/>
+      <IdMode/>
+      <EvalMode/>
+      <Footer/>
+    </div>
   )
 }

@@ -27,5 +27,5 @@ The built html files in the `_build/html` folder can be viewed with any web brow
 I have modified the `_build` folder to be at the same directory level as `source`, instead of the default which is inside of `source`.
 
 ## Adding New Documentation to the Actual Tool
-The tool will only read documenation that is in the Flask/public folder. The documentation folder at the root level is just to build documentation. 
+The tool will only read documenation that is in the ./public folder. The documentation folder at the root level is just to build documentation. 
 To actually add the documentation to the tool, manually copy and paste the new "_build" folder over the old one with the same name in the Flask/public directory
