@@ -930,7 +930,49 @@ export default function MyApp(){
         <Showshp/>
       </MapContainer>
       <ModeSelector/>
-      <IdMode/>
+      <div>
+        <input type="radio" 
+        name="location" 
+        value="start" 
+        id="start" 
+        checked={location === "start"} 
+        onChange={onOptionChange}
+        disabled={uploaz!=="points"}/>
+        <label htmlFor="start">Start</label>
+
+        <input type="radio" 
+        name="location" 
+        value="end" 
+        id="end" 
+        checked={location === "end"} 
+        onChange={onOptionChange}
+        disabled={uploaz!=="points"}/>
+        <label htmlFor="end">End</label>
+    </div>
+
+    <div>
+        <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
+
+        <p> 
+          Latitude:   <input type="number" name="myInput1"  onChange={handleChangeSrcLat} value={srcLat} disabled={uploaz!=="points"}/> 
+          Longitude:  <input type="number" name="myInput2"  onChange={handleChangeSrcLon} value={srcLon} disabled={uploaz!=="points"}/>  
+          <Button size="sm" onClick={HandleClick1} disabled={uploaz!=="points"}> Save Start </Button >                      
+        </p> 
+        <div><DropdownStart/></div>
+      </div>
+
+      <div>
+        <h4>Add End Location in WGS84</h4>
+
+        <p> 
+          Latitude:   <input type="number" name="myInput3" onChange={handleChangeDestLat} value={destLat} disabled={uploaz!=="points"}/> 
+          Longitude:  <input type="number" name="myInput4" onChange={handleChangeDestLon} value={destLon} disabled={uploaz!=="points"}/>
+          <Button size="sm"  onClick={HandleClick2} disabled={uploaz!=="points"}> Save Destination </Button >            
+        </p>
+        <div><DropdownEnd/></div>
+      </div>
+      <br></br>
+      <IdModeBtns/>
       <EvalMode/>
       <Footer/>
     </div>
