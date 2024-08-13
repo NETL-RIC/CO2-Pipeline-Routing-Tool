@@ -875,6 +875,7 @@ export default function MyApp(){
     )
   }
 
+  // When used in a react component, the 'x files selected / no files uploaded' text doesn't change
   function EvalMode(){
     return(
       <div>
@@ -948,9 +949,9 @@ export default function MyApp(){
         onChange={onOptionChange}
         disabled={uploaz!=="points"}/>
         <label htmlFor="end">End</label>
-    </div>
+      </div>
 
-    <div>
+      <div>
         <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
 
         <p> 
@@ -971,9 +972,24 @@ export default function MyApp(){
         </p>
         <div><DropdownEnd/></div>
       </div>
+
       <br></br>
       <IdModeBtns/>
-      <EvalMode/>
+      <div>
+        <form onSubmit={evaluateCorridor} disabled={uploaz!=="upld"}>
+          <h4> Upload Shapefiles</h4>
+          <input type="file" multiple onChange={handleMultipleChange} disabled={uploaz!=="upld"} />
+          <button type="submit" disabled={uploaz!=="upld"}>Evaluate</button>
+        </form>
+        <br></br>
+        <p><a href={pdf_file} target="_blank" rel="noopener noreferrer" download>
+          <Button disabled={uploaz!=="upld"}>
+            <i className="fas fa-download"/>
+            Download Report
+          </Button>
+        </a></p>
+        <br/>
+      </div>
       <Footer/>
     </div>
   )
