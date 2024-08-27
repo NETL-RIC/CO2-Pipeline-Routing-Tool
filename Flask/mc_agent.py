@@ -19,7 +19,7 @@ def least_cost_path_ml(start, dest):
     # lucy_route = lucy_route_cntr['route']
     # return lucy_route
 
-def nomrmalize(arr, high=1, low=0):
+def normalize(arr, high=1, low=0):
     norm = (high-low)*(arr - arr.min())/(arr.max() - arr.min()) + low
     return norm
 
@@ -92,86 +92,26 @@ class CostSurface:
     """
 
     def __init__(self):
-        self.obs_size = 112
-        self.local_regional_ratio = 6/3
-        self.local_national_ratio = 6
+        self.cost = None
+        self.no_go = None
 
     def load_rasters(self, raster_dir):
         """
         Loads processed rasters arrays.
 
-        This method should only be used to load arrays which have
-        alreasd
+        This method should only be used to load arrays which have already been
+        preprocessed.
         """
         assert raster_dir is not None, 'Must provide raster directory'
-
-        if 'al' in raster_dir:
-            self.alaska = True
-            self.pad_width = (99, 0)
-            self.clip = (0, 0)
-
-        else:
-            self.alaska = False
-            self.pad_width = (68, 0)
-            self.clip = (300, 275)
-
         raster_dir = Path(raster_dir)
 
-        self.us = np.load(raster_dir.joinpath('us_full.npy'))
-        self.us_no_go = np.load(raster_dir.joinpath('us_no_go.npy'))
-        self.al = np.load(raster_dir.joinpath('al_full.npy'))
-        self.al_no_go = np.load(raster_dir.joinpath('al_no_go.npy'))
+        self.cost = np.load(raster_dir.joinpath('cost.npy'))
+        self.no_go = np.load(raster_dir.joinpath('no_go.npy'))
 
     def __process_raster(self, path):
 
         raise NotImplementedError('This functionality should not be used at the time')
         self.path = Path(path)
-
-    def to_game_coordiantes(self, y_coor, x_coor, region):
-
-        if region == 'al' :
-            pad_width = (99, 0)
-            clip = (0, 0)
-
-        elif region == 'us':
-            pad_width = (68, 0)
-            clip = (300, 275)
-        
-        else:
-            raise ValueError('region must be "us" or "al"')
-
-        # Remove clipped portions
-        y_coor -= clip[0]
-        x_coor -= clip[1]
-
-        # Add the padding
-        y_coor += pad_width[0]
-        x_coor += pad_width[1]
-
-        return y_coor, x_coor
-
-    def from_game_coordiantes(self, y_coor, x_coor, region):
-        
-        if region == 'al' :
-            pad_width = (99, 0)
-            clip = (0, 0)
-
-        elif region == 'us':
-            pad_width = (68, 0)
-            clip = (300, 275)
-        
-        else:
-            raise ValueError('region must be "us" or "al"')
-
-        # Remove the padding
-        y_coor -= pad_width[0]
-        x_coor -= pad_width[1]
-
-        # Add the clipped portions
-        y_coor += clip[0]
-        x_coor += clip[1]
-
-        return y_coor, x_coor
 
 
 class Node:
@@ -311,8 +251,8 @@ class MCTree:
 
 def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
     """
-    Search a MCTree by selecting the next node, exapanding leaf nodes and
-    backpropagating values.
+    Search a MCTree by selecting the next node, expanding leaf nodes and
+    back-propagating values.
     """
 
     for i in range(num_trajectories):
@@ -404,35 +344,35 @@ class MCAgent:
 
 class MLWrapper:
 
-    def __init__(self, trajectories=100, num_workers=1, raster_dir=resource_path('cost_surfaces/10km_448us_448al')):
+    def __init__(self, trajectories=100, num_workers=1, raster_dir=resource_path('cost_surfaces/raw_cost_10km_aea')):
         self.cost_surface = CostSurface()
         self.cost_surface.load_rasters(raster_dir)
         self.agent = MCAgent(trajectories=trajectories, num_workers=num_workers)
 
-    def route(self, start, target):
+    def route(self, start, target, show_viz=False):
         print("In mc_agent.MLWrapper.route:") 
         print(f"start is {start}")
         print(f"target is {target}")
 
+        surface = self.cost_surface.cost
+        no_go = self.cost_surface.no_go
+
         if start[0]<275:
             assert target[0]<275 , 'Start location in AL but target location is not'
             region = 'al'
-            surface = self.cost_surface.al
+
         else:
             assert target[0]>275 , 'Start location in US but target location is not'
             region = 'us'
-            surface = self.cost_surface.us
-
-        game_start = self.cost_surface.to_game_coordiantes(*start, region)
-        game_target = self.cost_surface.to_game_coordiantes(*target, region)
         
         path = self.agent.route(
             surface,
-            list(game_start),
-            list(game_target)
+            list(start),
+            list(target),
+            show_viz=show_viz
         )
 
-        lucy_path = [self.cost_surface.from_game_coordiantes(*pair, region) for pair in path]
+        lucy_path = path
 
         if lucy_path:
             print("Path generated")
