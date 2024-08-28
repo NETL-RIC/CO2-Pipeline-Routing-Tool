@@ -61,8 +61,8 @@ export default function MyApp(){
     });
 
     axios
-    .post("http://127.0.0.1:5000/uploads", formData)
-    // .post("/uploads", formData)
+    //.post("http://127.0.0.1:5000/uploads", formData)
+    .post("/uploads", formData)
     .then((response) => {
       shpvals = response.data['array']
       shptyp = response.data['typ']
@@ -99,10 +99,10 @@ export default function MyApp(){
       method: "POST",
 
       // change to below for bundling with electron
-      url:"http://127.0.0.1:5000/token",
+      // url:"http://127.0.0.1:5000/token",
 
       // change to below for dev
-      //url:"/token", 
+      url:"/token", 
       data: {s: start, e:end}
     })
 
@@ -131,7 +131,14 @@ export default function MyApp(){
     /// THIS VERSION IS FOR ELECTRON BUILD AS SOMETHING IS BLOCKING NEW WINDOWS
     axios({
       method: "POST",
-      url:"http://127.00.1:5000/help",
+      // or just change url here for dev/bundle difference
+
+
+      // bundle mode version
+      //url:"http://127.00.1:5000/help",
+
+      // deb webapp version
+      url:"/help",
     })
     .catch((error) => {
       if (error.response) {
