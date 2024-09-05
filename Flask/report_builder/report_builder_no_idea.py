@@ -1,21 +1,14 @@
 import os
 from pathlib import Path
 from datetime import datetime
+
 from osgeo import ogr, osr
 import pandas as pd
 import numpy as np
 import collections
 from fpdf import FPDF
-from pyproj import Transformer
-import shapely.ops as sp_ops
-from shapely import wkt
 
-# TODO: uncomment
 from extra_utils import resource_path
-
-
-global sub_title
-sub_title = list()
 
 codecs = ['utf_8','windows-1252','utf_32','utf_32_be','utf_32_le','utf_16','utf_7','utf_8_sig','ascii','big5',
           'big5hkscs','cp037','cp273','cp424','cp437','cp500','cp720','cp737','cp775','cp850','cp852','cp855', 'cp856',
@@ -58,19 +51,6 @@ def GetIDsAndLengthOrArea(new_shp, grid_shp, tracts_shp):
     mem_ds = mem_driver.CreateDataSource('memData')
     memLyr = mem_ds.CreateLayer("memData", geom_type=input_lyr.GetGeomType())
     outLayerDefn = memLyr.GetLayerDefn()
-
-    # # Build coordinate transformation for pulling length or area in meters
-    # # Transfrom input_lyr geom to calculate length in meters - using NAD 1983 Albers North America
-    # inSpatialRef = osr.SpatialReference()
-    # inSpatialRef.ImportFromEPSG(4326)
-    # outSpatialRef = osr.SpatialReference()
-    # outSpatialRef.ImportFromEPSG(102008)
-    #
-    # # create the CoordinateTransformation
-    # coordTrans = osr.CoordinateTransformation(inSpatialRef, outSpatialRef)
-
-    transformer = Transformer.from_crs('EPSG:4326', 'EPSG:3857', always_xy=True)
-
     # Pull list of intersecting ids
     stat = 0.0
     vg_ids = list()
@@ -79,27 +59,16 @@ def GetIDsAndLengthOrArea(new_shp, grid_shp, tracts_shp):
         l_geom = l_feat.GetGeometryRef()
         for v_feat in vg_lyr:
             v_geom = v_feat.GetGeometryRef()
-            #if l_geom.Intersects(v_geom):
             if l_geom.Intersects(v_geom):
                 vg_ids.append(v_feat.GetFID())
         for t_feat in tract_lyr:
             t_geom = t_feat.GetGeometryRef()
             if l_geom.Intersects(t_geom):
                 tract_ids.append(t_feat.GetFID())
-
-        if geometry_type in [2,3]:
-            # Convert from WGS84 into meters to pull stats in meters
-            l_geom.SetMeasured(False)
-            shapely_geom = wkt.loads(l_geom.ExportToWkt())
-
-            geom_transformed = sp_ops.transform(transformer.transform, shapely_geom)
-            #l_geom.Transform(coordTrans)
-
-            if geometry_type == 2:
-                stat += geom_transformed.length
-            elif geometry_type == 3:
-                stat += geom_transformed.area
-
+        if geometry_type == 2:
+            stat += l_geom.Length()
+        elif geometry_type == 3:
+            stat += l_geom.Area()
         else:
             # STEPHEN - here is a check for the geometry type to ensure the shapefile being evaluated is either a line or polygon
             print(f"Unable to pull statistic for geometry type ({geometry_type})") #TODO: Raise exception the input shapefile not able to be evaluated do to geometry type
@@ -110,6 +79,79 @@ def GetIDsAndLengthOrArea(new_shp, grid_shp, tracts_shp):
     driver = None
     input_lyr, vg_lyr, tract_lyr = None, None, None
     ds, vg_ds, tract_ds = None, None, None
+    # del driver
+    # del input_lyr, vg_lyr, tract_lyr # Closing open layers
+    # del ds, vg_ds, tract_ds # Closing open drivers
+    return vg_ids, tract_ids, stat, geometry_type
+
+def GetIDsAndLengthOrArea_old(line, vg, tracts):
+    """
+    Opens shapefiles as layers, identifies ids of vg and tracts that intersect line,
+    returns lists of ids and length of line or area of polygon (reprojects geometry to NA Albers projection in meters).
+     Assumes all three are in same spatial reference sytstem.
+
+    :param line: line shapefile (output of tool)
+    :param vg: vector grid shapefile
+    :param tracts: census tract shapefile
+    :return: list of ids where vg intersects with line, list of ids where tract intersects with line, line length (m)
+    """
+    # Open shapefiles as layers
+    driver = ogr.GetDriverByName("ESRI Shapefile")
+    ds = driver.Open(line, 0)
+    input_lyr = ds.GetLayer()
+
+    geometry_type = input_lyr.GetGeomType()
+
+    # Transfrom input_lyr geom to calculate length in meters - using NAD 1983 Albers North America
+    inSpatialRef = osr.SpatialReference()
+    inSpatialRef.ImportFromEPSG(4326)
+    outSpatialRef = osr.SpatialReference()
+    outSpatialRef.ImportFromEPSG(102008)
+
+    # create the CoordinateTransformation
+    coordTrans = osr.CoordinateTransformation(inSpatialRef, outSpatialRef)
+
+    vg_ds = driver.Open(vg, 0)
+    vg_lyr = vg_ds.GetLayer()
+
+    tract_ds = driver.Open(tracts, 0)
+    tract_lyr = tract_ds.GetLayer()
+
+    # Temp output information
+    mem_driver = ogr.GetDriverByName('MEMORY')
+    mem_ds = mem_driver.CreateDataSource('memData')
+    memLyr = mem_ds.CreateLayer("memData", geom_type=input_lyr.GetGeomType())
+    outLayerDefn = memLyr.GetLayerDefn()
+
+    # Pull list of intersecting ids
+    stat = 0.0
+    vg_ids = list()
+    tract_ids = list()
+    for l_feat in input_lyr:
+        l_geom = l_feat.GetGeometryRef()
+        for v_feat in vg_lyr:
+            v_geom = v_feat.GetGeometryRef()
+            if l_geom.Intersects(v_geom):
+                vg_ids.append(v_feat.GetFID())
+
+        for t_feat in tract_lyr:
+            t_geom = t_feat.GetGeometryRef()
+            if l_geom.Intersects(t_geom):
+                tract_ids.append(t_feat.GetFID())
+
+        l_geom.Transform(coordTrans)
+        if geometry_type == 2:
+            stat += l_geom.Length()
+        elif geometry_type == 3:
+            stat += l_geom.Area()
+        else:
+            print(f"Unable to pull statistic for geometry type ({geometry_type})") #TODO: Raise exception the input shapefile not able to be evaluated do to geometry type
+
+        outFeature = ogr.Feature(outLayerDefn)
+        outFeature.SetGeometry(l_geom)
+        memLyr.CreateFeature(outFeature)
+
+    del memLyr, mem_ds, mem_driver
 
     return vg_ids, tract_ids, stat, geometry_type
 
@@ -163,9 +205,7 @@ class PDF(FPDF):
     def header(self):
         curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
         # Logo
-        #TODO: uncomment/delete
         self.image(resource_path("report_builder/images/DOE_NETL_Logos.png"), 10, 10, 60)
-#         self.image(r"C:\Users\romeolf\Desktop\GitHub\SMART_CO2_TRANPORT_ROUTING_TOOL\CO2-Pipeline-Routing-Tool\Flask\report_builder\images\DOE_NETL_Logos.png", 10, 10, 60)
         # Arial bold 15
         self.set_font('Helvetica', 'B', 14)
         # Move to the right
@@ -195,99 +235,6 @@ class PDF(FPDF):
         self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'R')
 
 
-def p(pdf, p_type, data, header=None, level=0, font_size=None, **kwargs):
-    "Inserts a paragraph or table"
-    og_x = pdf.x
-    og_w = pdf.w
-    if level > 0:
-        pdf.x = pdf.x + (5 * level)
-    if font_size:
-        pdf.set_font("Helvetica", size=font_size)
-    if p_type == "text":
-        pdf.x = pdf.x + 5
-        pdf.set_margins(10,10,20)
-        if not font_size:
-            pdf.set_font("Helvetica", size=10)
-        pdf.multi_cell(
-            w=pdf.w - (pdf.l_margin + pdf.r_margin + 20),
-            h=pdf.font_size * 1.4,
-            text=data,
-            new_x="LEFT",
-            **kwargs
-        )
-    elif p_type == "table":
-        pdf.set_font("Helvetica", size=10)
-        # Build table
-        num_cols = len(header)
-        if num_cols == 2:
-            with pdf.table(width=pdf.w - (pdf.l_margin + pdf.r_margin + 10),
-                           col_widths=((pdf.w - (pdf.l_margin + pdf.r_margin + 10)) * .15, (pdf.w - (pdf.l_margin + pdf.r_margin + 10)) * .85),
-                           line_height=pdf.font_size*1.4) as table:
-                row = table.row()
-                for h in header:
-                    row.cell(h)
-                for data_row in data:
-                    row = table.row()
-                    for datum in data_row:
-                        row.cell(datum)
-    elif p_type == "header_1":
-        pdf.set_font("Helvetica", size=14)
-        pdf.multi_cell(
-            w=pdf.w - (pdf.l_margin + pdf.r_margin + 10),
-            h=pdf.font_size,
-            text=data,
-            new_x="LMARGIN",
-            new_y="NEXT",
-            **kwargs,
-        )
-    elif p_type == "header_2":
-        pdf.set_font("Helvetica", size=12)
-        pdf.multi_cell(
-            w=pdf.w - (pdf.l_margin + pdf.r_margin + 10),
-            h=pdf.font_size,
-            text=data,
-            new_x="LMARGIN",
-            new_y="NEXT",
-            **kwargs,
-        )
-    elif p_type == "header_3":
-        pdf.set_font("Helvetica", size=11)
-        pdf.multi_cell(
-            w=pdf.w - (pdf.l_margin + pdf.r_margin + 10),
-            h=pdf.font_size,
-            text=data,
-            new_x="LMARGIN",
-            new_y="NEXT",
-            **kwargs,
-        )
-    else:
-        # Internal warning
-        print(f"Unable to handle {p_type}")
-        pass
-    pdf.x = og_x
-    pdf.w = og_w
-
-
-def render_toc(pdf, outline):
-    pdf.x = 15 #hardcode to force correct location
-    for section in outline:
-        link = pdf.add_link()
-        pdf.set_link(link, page=section.page_number)
-        if section.name in sub_title:
-            p(pdf, "text",
-              f'{" " * section.level * 2} {section.name} {"." * (160 - section.level * 2 - len(section.name))} {section.page_number}',
-              font_size=5,
-              level=2,
-              link=link)
-        else:
-            p(pdf,
-              "text", f'{" " * section.level * 2} {section.name} {"." * (120 - section.level * 2 - len(section.name))} {section.page_number}',
-              font_size=7,
-              level=0,
-              link=link)
-        #print(f'{" " * section.level * 2} {section.name} {"." * (60 - section.level*2 - len(section.name))} {section.page_number}')
-
-
 def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_path="output"):
     """
 
@@ -299,9 +246,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     """
     print(f"Report builder recieved: {shapefile}, {start_coordinates}, {end_coordinates}")
     curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
-    #TODO: uncomment/delete
     report_input = resource_path('report_builder\inputs')
-    #report_input = r"C:\Users\romeolf\Desktop\inputs"
     # Hardcoded data for evaluation
     vg_shp = os.path.join(report_input, "vg_base.shp")
     vg_id = 'OID_'
@@ -339,6 +284,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     # Run intersection and pull intersecting ids and line length from shapefiles
     vg_ids, tract_ids, statistic, geometry_type = GetIDsAndLengthOrArea(shapefile, vg_shp, tract_shp)
     # Pull data by FID into dataframe for report
+   # if vg_ids:
     vg_df = CleanDF(pd.read_csv(vg_table), null_list, vg_id, vg_ids)
     print(vg_df.shape)
     """
@@ -369,7 +315,6 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     for index, row in def_df.iterrows():
         if row[orig_table] != "x" and not pd.isna(row[category]) and row[category] != 'x' and row[category] != 'Header':
             title_ = row[title]
-
             for r in replacers:
                 title_ = title_.replace(r, '_')
             def_dicts.append({category: row[category],
@@ -397,7 +342,6 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     # Identify datasets where multiple items are recorded
     multiple_measurements = list()
     for c in categories:
-        print(c)
 
         # Get list of datasets
         datasets_by_orig = list([cd[orig_dataset_name] for cd in [dd for dd in def_dicts if dd[category] == c]])
@@ -410,8 +354,6 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     vg_cols = vg_df.columns.tolist()
     tract_cols = tract_df.columns.tolist()
     for dd in def_dicts:
-        if dd['Baseline FCS'] == 'Urban Areas':
-            print('pause')
         if dd[orig_table] == "grid":
             if dd["title_"] in vg_cols:
                 dd["values"] = vg_df[dd["title_"]].tolist()
@@ -487,19 +429,6 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
                     # Min
                     dd["printable_values"] = dd["printable_values"] + f"Minimum = {PrettyNumber(min(nonna_values))}\n"
 
-                elif dd[measurement] == "Joined-BSV":  # TODO: Add handling
-                    by_state = list()
-                    n_i = 0
-                    for n in range(len(dd["values"])):
-                        by_state.append((dd["states"][n], dd["values"][n]))
-
-                    by_state = list(set(by_state))
-                    if by_state:
-                        for b in by_state:
-                            dd["printable_values"] = dd["printable_values"] + f"{b[0]} = {b[1]}\n"
-                    else:
-                        dd["printable_values"] = dd["printable_values"] + f"Not present in intersecting states\n"
-
                 elif dd[measurement] == "Joined-BS":  # TODO: Add handling
                     by_state = list()
                     n_i = 0
@@ -571,87 +500,48 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     pdf = PDF()
     pdf.alias_nb_pages()
     pdf.add_page()
-    pdf.set_margins(10, 10, 10)
-
-    # Table of contents placeholder
-    pdf.cell(0, h=pdf.font_size, txt="", border=0, ln=1)
-    p(pdf, "header_1", "Table of Contents", level=0)
-    pdf.insert_toc_placeholder(render_toc)
-    toc_alpha = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-                 'U', 'V', 'W', 'X', 'Y', 'Z']
-    toc_romnum = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI']
-    i_abc = 0
-    i_rom = 0
-
-    # A. General Information
-    text = ""
+    pdf.set_font('Helvetica', '', 11)
+    # for i in range(1, 41):
+    #     pdf.cell(0, 10, 'Printing line number ' + str(i), 0, 1)
+    # Write basic stats information
     if start_coordinates is not None:
-        text = text+f"\tStart Location: {start_coordinates}\n"
+        pdf.cell(0, 5, f"Start Location: {start_coordinates}", 0, 1)
     if end_coordinates is not None:
-        text = text + f"\tEnd Location: {end_coordinates}\n"
-
+        pdf.cell(0, 5, f"End Location: {end_coordinates}", 0, 1)
     if geometry_type == 2:
-        text = text + f"\tRoute Length: {PrettyNumber(statistic / 1000.0)} km\n"
+        pdf.cell(0, 5, f"Route Length: {PrettyNumber(statistic / 1000.0)} km", 0, 1)
     else:
-        text = text + f"\tRoute Area: {PrettyNumber(statistic / 1000.0)} km\n"
-    pdf.start_section(f"{toc_romnum[i_rom]}. General Route Information", level=0)
+        pdf.cell(0, 5, f"Route Area: {PrettyNumber(statistic / 1000.0)} km", 0, 1)
+    pdf.cell(0, 5, f"", 0, 1)
+    pdf.cell(0, 5, f"Counties Intersected by State:", 0, 1)
 
-    p(pdf, "header_1", f"{toc_romnum[i_rom]}. General Route Information", level=0)
-    p(pdf, "text", text)
-    i_rom += 1
-    pdf.cell(0, h=pdf.font_size, txt="", border=0, ln=1)
-
-    # B. Make table of counties per state
-    """
-    state_table = list()
-    states = list(set(states))
-    states.sort()
-    c_i = 0
-    for s in states:
+    for s in list(set(states)):
+        pdf.cell(0, 5, f"{s}:", 0, 1)
+        # Convert list of relevant counties by index into joined list by ';'
         county_list = list()
-        for c in counties:
-            if s == states[c_i]:
-                county_list.append(c)
-        c_i += 1
-        state_table.append((s, ', '.join(county_list)))
-    state_table = set(state_table)
-    """
-    state_table = list()
-    unique_states = list(set(states))
-
-    for s in unique_states:
         c_i = 0
-        county_list = list()
         for c in counties:
             if s == states[c_i]:
                 county_list.append(c)
             c_i += 1
-        state_table.append((s, ', '.join(county_list)))
-    state_table = set(state_table)
+        pdf.cell(10)
+        # pdf.multi_cell(0, 5, f"{'; '.join(county_list)}", 0, 1)
+        pdf.multi_cell(0, 5, f"{'; '.join(county_list)}", 0, fill=False)
 
-    pdf.start_section(f"{toc_romnum[i_rom]}. Counties by State", level=0)
-    p(pdf, "header_1", f"{toc_romnum[i_rom]}. Counties by State", level=0)
-    p(pdf, "table", state_table, header=["State", "Counties"], level=1)
-    i_rom += 1
-    pdf.cell(0, h=pdf.font_size, txt="", border=0, ln=1)
 
-    pdf.start_section(f"{toc_romnum[i_rom]}. Spatially Intersecting Features by Category", level=0)
-    p(pdf, "header_1", f"{toc_romnum[i_rom]}. Spatially Intersecting Features by Category", level=0)
+    pdf.cell(0, 5, f"", 0, 1)
+    pdf.cell(0, 5, f"Spatially Intersecting Features by Category:", 0, 1)
     pdf.set_font('Helvetica', 'I', 10)
-    p(pdf, 'text', f"\tNOTE: Results based on where route intersects tract or 10 km grid cell that also intersects spatial data.", level=1)
-    pdf.set_font('Helvetica', '', 10)
-    i_rom += 1
-    pdf.cell(0, h=pdf.font_size, txt="", border=0, ln=1)
+    pdf.cell(0, 5,
+             f"NOTE: Results based on where route intersects tract or 10 km grid cell that also intersects spatial data.",
+             0, 1)
+    pdf.set_font('Helvetica', '', 11)
 
     # Loop through def_dicts to build reports
-    c_index = 1
     for c in categories:
-        c_index += 1
-
-        pdf.start_section(f"{toc_alpha[i_abc]}. {c}", level=1)
-        p(pdf, "header_2", f"{toc_alpha[i_abc]}. {c}", level=1)
-        pdf.cell(0, h=pdf.font_size, txt="", border=0, ln=1)
-        i_abc += 1
+        pdf.cell(0, 5, f"", 0, 1)
+        pdf.cell(10)
+        pdf.cell(0, 5, f"{c}", 0, 1)
 
         # Pull dicts for c
         c_dicts = [dd for dd in def_dicts if dd[category] == c]
@@ -660,41 +550,42 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
         datasets_by_orig = list(set([cd[orig_dataset_name] for cd in c_dicts]))
         datasets_by_orig.sort()
 
-        toc_num = 1
         for d in datasets_by_orig:
             intersect_check = False
+            pdf.cell(0, 5, f"", 0, 1)
+            pdf.cell(20)
+            pdf.cell(0, 5, f"{d}", 0, 1)
 
             for cd in c_dicts:
                 if cd[orig_dataset_name] == d:
                     if cd['printable_values'] != '':
-
-                        pdf.start_section(f"{toc_num}. {cd[title_2]}", level=2)
-                        sub_title.append(f"{toc_num}. {cd[title_2]}")
-
-                        p(pdf, "header_3", f"{toc_num}. {cd[title_2]}", level=2)
-                        p(pdf, "text", cd['printable_values'], level=3)
-                        toc_num += 1
+                        if cd[orig_dataset_name] in multiple_measurements:
+                            pdf.cell(30)
+                            pdf.cell(0, 5, f"{cd[title_2]}", 0, 1)
+                        pdf.cell(40)
+                        pdf.multi_cell(0, 5, f"{cd['printable_values']}", 0, fill=False)
+                        pdf.cell(0, 5, f"", 0, 1)
                         intersect_check = True
             if intersect_check == False:
-
-                p(pdf, "text", f"No intersections found", level=3)
-
-
+                pdf.cell(30)
+                pdf.cell(0, 5, f"No intersections found", 0, 1)
+            pdf.cell(0, 5, f"", 0, 1)
     output_file_name = f"Report_{curr_date.replace('/', '').replace(' ','_').replace(':','')}.pdf"
-
-    #TODO: uncomment/delete
     out_pdf = resource_path(os.path.join(out_path, output_file_name))
-    #out_pdf = os.path.join(out_path, output_file_name)
+    # out_pdf = os.path.join(out_path, "report.pdf")          #TEMPORARY SOLUTION TO GET DOWNLOADS WORKING
     pdf.output(out_pdf, 'F')
     print("PDF created.")
     return output_file_name
 
 if __name__ == "__main__" :
     # IN-SCRIPT TESTING 
-    #line_shp = r"C:\Users\romeolf\Desktop\test_files\33_report_test\input\iowa_select_counties.shp"
-    line_shp = "./one_aquifer_wgs84.shp"
-    start_location = None#"33.8204468, -106.1893528" # should come from tool UI
-    end_location = None#"38.0348321, -112.4845916"# should come from tool UI
-    output_location = r"C:\Users\romeolf\Desktop\test_files\33_report_test\output"# should come from tool UI
+    line_shp = r"C:\Users\leveckis\Documents\code\ey24\CO2-Pipeline-Routing-Tool\Flask\one_aquifer_wgs84.shp"
+    line_shp = "C:\\Users\\leveckis\\Documents\\code\\ey24\\CO2-Pipeline-Routing-Tool\\Flask\\one_aquifer_wgs84.shp"
 
-    output_pdf = report_builder(line_shp, start_location, end_location, output_location)
+    line_shp = "./one_aquifer_wgs84.shp"
+    #line_shp = r"C:\Users\romeolf\Desktop\test_shps_for_MCG\test_shps_for_MCG\one_aquifer_wgs84.shp"# should come from tool UI
+    start_location = "33.8204468, -106.1893528" # should come from tool UI
+    start_location = "38.0348321, -112.4845916"# should come from tool UI
+    output_location = ""# should come from tool UI
+
+    output_pdf = report_builder(line_shp, start_location, start_location, output_location)
