@@ -289,6 +289,12 @@ export default function MyApp(){
     
   // Single selected point is outside of US or AK
   function InvalidLocationPopup() {
+    if(global.electronmode === true){
+      console.log("in electron mode")
+
+    }else{
+      console.log("in react mode")
+    }
     const handleClose = () => setShowloc(false);
 
     return (
