@@ -3,7 +3,9 @@ const { app, BrowserWindow, protocol, ipcMain } = require("electron");
 const path = require("path");
 const url = require("url");
 const util = require('node:util');
-const { exec } = require('node:child_process');
+const { exec, execFile } = require('node:child_process');
+const controller = new AbortController();
+const { signal } = controller;
 
 
 // Create the native browser window.
@@ -38,8 +40,24 @@ function createWindow() {
       })
     : "http://localhost:3000";
   mainWindow.loadURL(appURL);
- 
-  // exec('/dist/CO2PRT_Flask.exe')
+
+  if (app.isPackaged){
+    // const exe_path = path.join(__dirname, '../../../dist/CO2PRT_Flask.exe')
+    const exe_path = path.join(process.execPath, '/dist/CO2PRT_Flask.exe')
+    var child = execFile(exe_path, [],(error, stdout, stderr) => {
+      console.log(exe_path);
+      if (error) {
+        console.log(stdout);
+        console.log(stderr);
+        throw error;
+      }
+      console.log(stdout);
+    });
+  }else{
+    const exe_path = path.join(process.execPath, '/dist/CO2PRT_Flask.exe')
+    console.log(exe_path);
+
+  }
 
   // Automatically open Chrome's DevTools in development mode.
   if (!app.isPackaged) {
@@ -48,6 +66,9 @@ function createWindow() {
   mainWindow.on('close', function(e) {
     e.preventDefault();
     mainWindow.destroy();
+    if (app.isPackaged) {
+      child.kill();
+    }
   })
   /// Removing below fixed the issue with a javascript error when closing the window
   // mainWindow.on('closed', function() {
