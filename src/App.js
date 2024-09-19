@@ -59,9 +59,26 @@ export default function MyApp(){
     files.forEach((file, index) => {
       formData.append(`file${index}`, file);
     });
+    
+    if (global.electronmode === true){
+      axios
+    .post("http://127.0.0.1:5000/uploads", formData)
+    .then((response) => {
+      shpvals = response.data['array']
+      shptyp = response.data['typ']
+      pdf_file = response.data['pdf']
+      console.log(response)
+      console.log(response.data)
+      setFinished2(true)
+      setIsLoadingEvalMode(false)
 
-    axios
-    //.post("http://127.0.0.1:5000/uploads", formData)
+    })
+    .catch((err) => {
+      setIsLoadingEvalMode(false)
+      console.warn(err)
+    });
+    }else{
+      axios
     .post("/uploads", formData)
     .then((response) => {
       shpvals = response.data['array']
@@ -77,6 +94,7 @@ export default function MyApp(){
       setIsLoadingEvalMode(false)
       console.warn(err)
     });
+    }
   }
 
   const [pipeshow, setpipeloc] = useState(false);
@@ -95,34 +113,62 @@ export default function MyApp(){
       setpipeloc(true);
 
     }else{
-    axios({
-      method: "POST",
+    if(global.electronmode === true){
+      axios({
+        method: "POST",
+  
 
-      // change to below for bundling with electron
-      // url:"http://127.0.0.1:5000/token",
+        url:"http://127.0.0.1:5000/token",
 
-      // change to below for dev
-      url:"/token", 
-      data: {s: start, e:end}
-    })
-
-    .then((response) => {
-      linevals =response.data['route']
-      zip_file = response.data['zip']
-      console.log("Got line data");
-      setFinished(true);
-      setIsLoadingIdMode(false);
-
-    }).catch((error) => {
-      if (error.response) {
-        console.log("Error with Generate Pipeline. Points are invalid or other logic error.");
-        console.log(error.response);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-        }
+        data: {s: start, e:end}
+      })
+  
+      .then((response) => {
+        linevals =response.data['route']
+        zip_file = response.data['zip']
+        console.log("Got line data");
+        setFinished(true);
         setIsLoadingIdMode(false);
-        setShowServerError(true);
-    })
+  
+      }).catch((error) => {
+        if (error.response) {
+          console.log("Error with Generate Pipeline. Points are invalid or other logic error.");
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+          }
+          setIsLoadingIdMode(false);
+          setShowServerError(true);
+      })
+    }
+    else{
+      axios({
+        method: "POST",
+
+  
+
+        url:"/token", 
+        data: {s: start, e:end}
+      })
+  
+      .then((response) => {
+        linevals =response.data['route']
+        zip_file = response.data['zip']
+        console.log("Got line data");
+        setFinished(true);
+        setIsLoadingIdMode(false);
+  
+      }).catch((error) => {
+        if (error.response) {
+          console.log("Error with Generate Pipeline. Points are invalid or other logic error.");
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+          }
+          setIsLoadingIdMode(false);
+          setShowServerError(true);
+      })
+    }
   }
   }
 
@@ -289,6 +335,12 @@ export default function MyApp(){
     
   // Single selected point is outside of US or AK
   function InvalidLocationPopup() {
+    if(global.electronmode === true){
+      console.log("in electron mode")
+
+    }else{
+      console.log("in react mode")
+    }
     const handleClose = () => setShowloc(false);
 
     return (
