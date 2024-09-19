@@ -54,32 +54,19 @@ export default function MyApp(){
     setFinished2(false)
     setIsLoadingEvalMode(true)
     setIsLoadingIdMode(false)
-    
+    let urlfile = ''
     const formData = new FormData();
     files.forEach((file, index) => {
       formData.append(`file${index}`, file);
     });
     
     if (global.electronmode === true){
-      axios
-    .post("http://127.0.0.1:5000/uploads", formData)
-    .then((response) => {
-      shpvals = response.data['array']
-      shptyp = response.data['typ']
-      pdf_file = response.data['pdf']
-      console.log(response)
-      console.log(response.data)
-      setFinished2(true)
-      setIsLoadingEvalMode(false)
-
-    })
-    .catch((err) => {
-      setIsLoadingEvalMode(false)
-      console.warn(err)
-    });
+      urlfile = "http://127.0.0.1:5000/uploads"
     }else{
-      axios
-    .post("/uploads", formData)
+      urlfile = "/uploads"
+    }
+    axios
+    .post(urlfile, formData)
     .then((response) => {
       shpvals = response.data['array']
       shptyp = response.data['typ']
@@ -94,7 +81,6 @@ export default function MyApp(){
       setIsLoadingEvalMode(false)
       console.warn(err)
     });
-    }
   }
 
   const [pipeshow, setpipeloc] = useState(false);
@@ -108,83 +94,60 @@ export default function MyApp(){
     setFinished(false);
     setIsLoadingIdMode(true);
     setIsLoadingEvalMode(false);
+    let urlpipe = ''
 
     if ((endloc !== startloc) && (endloc !== '' && startloc !== '')){
       setpipeloc(true);
 
     }else{
     if(global.electronmode === true){
-      axios({
-        method: "POST",
-  
-
-        url:"http://127.0.0.1:5000/token",
-
-        data: {s: start, e:end}
-      })
-  
-      .then((response) => {
-        linevals =response.data['route']
-        zip_file = response.data['zip']
-        console.log("Got line data");
-        setFinished(true);
-        setIsLoadingIdMode(false);
-  
-      }).catch((error) => {
-        if (error.response) {
-          console.log("Error with Generate Pipeline. Points are invalid or other logic error.");
-          console.log(error.response);
-          console.log(error.response.status);
-          console.log(error.response.headers);
-          }
-          setIsLoadingIdMode(false);
-          setShowServerError(true);
-      })
+      urlpipe = "http://127.0.0.1:5000/token"
+      
     }
     else{
-      axios({
-        method: "POST",
-
-  
-
-        url:"/token", 
-        data: {s: start, e:end}
-      })
-  
-      .then((response) => {
-        linevals =response.data['route']
-        zip_file = response.data['zip']
-        console.log("Got line data");
-        setFinished(true);
-        setIsLoadingIdMode(false);
-  
-      }).catch((error) => {
-        if (error.response) {
-          console.log("Error with Generate Pipeline. Points are invalid or other logic error.");
-          console.log(error.response);
-          console.log(error.response.status);
-          console.log(error.response.headers);
-          }
-          setIsLoadingIdMode(false);
-          setShowServerError(true);
-      })
+      urlpipe = "/token"
+      
     }
-  }
-  }
-
-  // Electron vs Webapp difference here
-  function openDocs(){
-    /// THIS VERSION IS FOR ELECTRON BUILD AS SOMETHING IS BLOCKING NEW WINDOWS
     axios({
       method: "POST",
-      // or just change url here for dev/bundle difference
+      url: urlpipe, 
+      data: {s: start, e:end}
+    })
 
+    .then((response) => {
+      linevals =response.data['route']
+      zip_file = response.data['zip']
+      console.log("Got line data");
+      setFinished(true);
+      setIsLoadingIdMode(false);
 
-      // bundle mode version
-      //url:"http://127.00.1:5000/help",
+    }).catch((error) => {
+      if (error.response) {
+        console.log("Error with Generate Pipeline. Points are invalid or other logic error.");
+        console.log(error.response);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+        }
+        setIsLoadingIdMode(false);
+        setShowServerError(true);
+    })
+  }
+  }
+  function openDocs(){
+    /// THIS VERSION IS FOR ELECTRON BUILD AS SOMETHING IS BLOCKING NEW WINDOWS
 
-      // deb webapp version
-      url:"/help",
+    let urldoc = ''
+
+    if(global.electronmode === true){
+      urldoc = 'http://127.00.1:5000/help'
+    }else{
+      urldoc = '/help'
+    }
+    axios({
+      method: "POST",
+
+      url: urldoc,
+
     })
     .catch((error) => {
       if (error.response) {
@@ -193,8 +156,8 @@ export default function MyApp(){
     });
 
     /// THIS VERSION CAN BE USED FOR DEVELOPMENT
-    // console.log("trying documentation open")
-    // window.open("documentation/_build/html/index.html", "helpWindow", "noreferrer")
+     console.log("trying documentation open")
+     window.open("documentation/_build/html/index.html", "helpWindow", "noreferrer")
   }
 
   function DisclaimerPopup() {
