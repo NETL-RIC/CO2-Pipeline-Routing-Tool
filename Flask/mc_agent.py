@@ -2,6 +2,8 @@ import multiprocessing as mp
 from multiprocessing import Pool
 from pathlib import Path
 
+import rasterio
+import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -22,6 +24,9 @@ def least_cost_path_ml(start, dest):
 def normalize(arr, high=1, low=0):
     norm = (high-low)*(arr - arr.min())/(arr.max() - arr.min()) + low
     return norm
+
+def exponential(x, degree):
+    return x**degree
 
 def draw_circle(img, center, radius):
     """
@@ -85,6 +90,26 @@ def plot_path(obs, done=False):
     else:
         display.display(plt.gcf())
 
+def get_contiguous_area(bool_raster):
+    """
+    Get the contiguous areas of AL and US using connected component analysis.
+    """
+    assert bool_raster.dtype == np.uint8, 'Array must have numpy.uint8 data type'
+    contiguous = np.zeros(bool_raster.shape)
+    number_components, output, stats, _ = cv.connectedComponentsWithStats(bool_raster, connectivity=4)
+
+    labels = []
+    for i in range(1, number_components):
+        size = stats[i, -1]
+        if size > 1000:
+            # Labels start at value of 1
+            labels.append(i)
+    
+    for value in labels:
+        contiguous[output==value] = 1
+
+    return contiguous, output
+
 
 class CostSurface:
     """
@@ -108,10 +133,82 @@ class CostSurface:
         self.cost = np.load(raster_dir.joinpath('cost.npy'))
         self.no_go = np.load(raster_dir.joinpath('no_go.npy'))
 
-    def __process_raster(self, path):
+    def process_raster(self, path, degree=2, no_go_cost=None, out_cost=None, visualize=False):
 
-        raise NotImplementedError('This functionality should not be used at the time')
-        self.path = Path(path)
+        path = Path(path)
+        assert path.exists(), 'The raw raster file path does not exist'
+
+        if no_go_cost is not None and out_cost is not None:
+            assert no_go_cost <= out_cost, 'No-go cannot exceed out of bounds cost'
+
+        ds = rasterio.open(path)
+        arr = ds.read(1)
+
+        # Some out of bounds areas are less than -1 but should be 0
+        arr[arr<-1]=0
+
+        # Make a copy of the raw raster array to modify
+        raster = arr.copy()
+
+        # Set edges of raster to 0
+        if arr.max() == np.inf:
+            raster[raster==np.inf] = 0
+
+        # Create an array where values of 1 represent land and 0 represents 
+        # bodies of water
+        check_bounds = raster.copy()
+        check_bounds[check_bounds<0] = 1
+        check_bounds[check_bounds>0] = 1
+
+        # Check for areas not connected to mainland
+        contiguous, _ = get_contiguous_area(check_bounds.astype(np.uint8))
+
+        # Set non-contiguous portions to out of bounds
+        raster[contiguous==0] = 0
+
+        # Define no-go areas as given by less than 0 values
+        no_go = raster.copy()
+        no_go[no_go<0] = 0
+        no_go[no_go>0] = 1
+        no_go = np.invert(no_go.astype(bool))
+
+
+        # Set values of out of bounds and no go areas, typically this should be
+        # the largest value in the raster unless otherwise specified by the user
+        if no_go_cost is None:
+            raster[raster==-1] = raster.max()
+        else:
+            raster[raster==-1] = no_go_cost
+        
+        if out_cost is None:
+            raster[raster==0] = raster.max()
+        else:
+            raster[raster==0] = out_cost
+
+        # Apply exponential weighting of cost surface
+        raster = exponential(raster, degree)
+
+        # Linear normalization to 0 to 1 scale
+        norm = normalize(raster)
+
+        self.cost = norm
+        self.no_go = no_go
+
+        if visualize:
+            fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(15,12))
+            ax[0,0].imshow(raster, cmap='gray')
+            ax[0,0].set_title('Original\n{}'.format(raster.shape))
+
+            ax[0,1].imshow(contiguous, cmap='gray')
+            ax[0,1].set_title('Contiguous\n{}'.format(contiguous.shape))
+
+            ax[1,0].imshow(norm, cmap='gray')
+            ax[1,0].set_title('Normalized\n{} - {}'.format(norm.shape, norm.dtype))
+
+            ax[1,1].imshow(no_go, cmap='gray')
+            ax[1,1].set_title('No Go\n{} - {}'.format(no_go.shape, no_go.dtype))
+
+            plt.show()
 
 
 class Node:
@@ -135,7 +232,7 @@ class Node:
             7: np.array([-1, -1]), # Up/Left
         }
 
-    def calculate_eucldian_reward(self, new_location, target_location):
+    def calculate_euclidean_reward(self, new_location, target_location):
 
         ay = new_location[0]
         ax = new_location[1]
@@ -148,7 +245,7 @@ class Node:
         distance_to_target = np.sqrt((ax-tx)**2 + (ay-ty)**2)
         previous_distance = np.sqrt((px-tx)**2 + (py-ty)**2)
 
-        # subtract constant to prevent postive rewards, otherwise agent wants to
+        # subtract constant to prevent positive rewards, otherwise agent wants to
         # keep moving to keep gaining rewards
         euclidean_reward = previous_distance - distance_to_target - 1.42
 
@@ -184,7 +281,8 @@ class Node:
 
             cost_reward = -cost_surface[child_location[0], child_location[1]]
 
-            # Do not allow out of bounds moves
+            # Do not allow out of bounds moves, any index in the cost array with
+            # a value of 1 represents an out of bounds value
             if cost_reward == 1:
                 continue
 
@@ -192,8 +290,8 @@ class Node:
                 reward = 100
 
             else:
-                euclidian_reward = self.calculate_eucldian_reward(child_location, target_location)
-                reward = euclidian_reward + cost_reward*2
+                euclidean_reward = self.calculate_euclidean_reward(child_location, target_location)
+                reward = euclidean_reward + cost_reward*2
             
             path = self.path.copy()
             path[location_hash_key] = True
@@ -202,7 +300,7 @@ class Node:
             
         self.value = np.mean(rewards)
         if not self.children:
-            raise ValueError('Unable to find pipline route')
+            raise ValueError('Unable to find pipeline route')
     
     def backpropagate(self, discount=0.98):
         self.parent.value += (self.value*discount - self.parent.value)/self.parent.selections
@@ -344,9 +442,10 @@ class MCAgent:
 
 class MLWrapper:
 
-    def __init__(self, trajectories=100, num_workers=1, raster_dir=resource_path('cost_surfaces/raw_cost_10km_aea')):
+    def __init__(self, trajectories=100, num_workers=1, raster_path=resource_path('cost_surfaces/raw_cost_10km_aea/cost_10km_aea.tif')):
         self.cost_surface = CostSurface()
-        self.cost_surface.load_rasters(raster_dir)
+        # self.cost_surface.load_rasters(raster_dir)
+        self.cost_surface.process_raster(raster_path)
         self.agent = MCAgent(trajectories=trajectories, num_workers=num_workers)
 
     def route(self, start, target, show_viz=False):
