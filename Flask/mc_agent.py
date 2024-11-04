@@ -442,10 +442,18 @@ class MCAgent:
 
 class MLWrapper:
 
-    def __init__(self, trajectories=100, num_workers=1, raster_path=resource_path('cost_surfaces/raw_cost_10km_aea/cost_10km_aea.tif')):
+    def __init__(
+            self, 
+            trajectories=100, 
+            num_workers=1, 
+            raster_path=resource_path('cost_surfaces/raw_cost_10km_aea/cost_10km_aea.tif'),
+            cost_degree=2
+            ):
         self.cost_surface = CostSurface()
         # self.cost_surface.load_rasters(raster_dir)
-        self.cost_surface.process_raster(raster_path)
+
+        # Use degree to increase the weighting of high cost areas
+        self.cost_surface.process_raster(raster_path, degree=cost_degree)
         self.agent = MCAgent(trajectories=trajectories, num_workers=num_workers)
 
     def route(self, start, target, show_viz=False):
