@@ -226,6 +226,10 @@ def a():
         print(f"First and last coord, about to go to frontend {route[0]}, {route[-1]}")
         return {'route': route_correct_swap, 'zip':zip_path}
 
+@api.route('/exit', methods=['GET'])
+def stop_backend():
+    exit()
+
 def generate_line_ml_old(start, dest):
     """ Call machine learning functions to generate line between parameter points
 

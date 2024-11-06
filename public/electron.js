@@ -6,6 +6,7 @@ const util = require('node:util');
 const { exec, execFile } = require('node:child_process');
 const controller = new AbortController();
 const { signal } = controller;
+const axios = require("axios");
 
 
 // Create the native browser window.
@@ -40,10 +41,10 @@ function createWindow() {
       })
     : "http://localhost:3000";
   mainWindow.loadURL(appURL);
-
+  console.log(process.execPath);
   if (app.isPackaged){
-    // const exe_path = path.join(__dirname, '../../../dist/CO2PRT_Flask.exe')
-    const exe_path = path.join(process.execPath, '/dist/CO2PRT_Flask.exe')
+    const exe_path = path.join(__dirname, '../../../dist/CO2PRT_Flask/CO2PRT_Flask.exe')
+    // const exe_path = path.join(process.execPath, '/CO2PRT_Flask.exe')
     var child = execFile(exe_path, [],(error, stdout, stderr) => {
       console.log(exe_path);
       if (error) {
@@ -54,7 +55,7 @@ function createWindow() {
       console.log(stdout);
     });
   }else{
-    const exe_path = path.join(process.execPath, '/dist/CO2PRT_Flask.exe')
+    const exe_path = path.join(process.execPath, '/CO2PRT_Flask.exe')
     console.log(exe_path);
 
   }
@@ -67,6 +68,7 @@ function createWindow() {
     e.preventDefault();
     mainWindow.destroy();
     if (app.isPackaged) {
+      axios.get('/exit');
       child.kill();
     }
   })

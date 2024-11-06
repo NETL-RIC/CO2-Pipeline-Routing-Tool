@@ -53,14 +53,14 @@
       "node_modules/**/*"
     ],
     "extraFiles": [
-      "dist/CO2PRT_Flask.exe"
+      "dist/CO2PRT_Flask/**/*"
     ],
     "directories": {
       "buildResources": "public"
     },
     "win": {
-      "target": "nsis"
-    }
+        "target": "nsis"
+      }
   },
   "browserslist": {
     "production": [
@@ -78,7 +78,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "electron": "^31.0.0",
-    "electron-builder": "^24.6.3"
+    "electron": "^32.1.2",
+    "electron-builder": "24.6.3"
   }
 }
