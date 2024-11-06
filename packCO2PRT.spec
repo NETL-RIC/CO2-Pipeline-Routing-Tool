@@ -71,7 +71,7 @@ exe = EXE(
     a.zipfiles, # Comment in for singlefile
     a.datas, # Comment in for singlefile
     [],
-    exclude_binaries=False, # by setting to false and removing call to COLLECT this bundles in onefile mode
+    exclude_binaries=True, #False, # by setting to false and removing call to COLLECT this bundles in onefile mode
     name='CO2PRT_Flask',
     debug=False,
     bootloader_ignore_signals=False,
@@ -86,13 +86,13 @@ exe = EXE(
 )
 
 # Comment out below for singlefile
-# coll = COLLECT(
-#     exe,
-#     a.binaries,
-#     a.zipfiles,
-#     a.datas,
-#     strip=False,
-#     upx=True,
-#     upx_exclude=[],
-#     name='CO2PRT_Flask',
-# )
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='CO2PRT_Flask',
+)

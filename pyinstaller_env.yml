@@ -20,4 +20,8 @@ dependencies:
     - fpdf
     - matplotlib
     - tqdm
+    - six
+    - IPython
+    - pyproj
+    - shapely
 prefix: C:\Users\zaengled\.conda\envs\mlpipeline
