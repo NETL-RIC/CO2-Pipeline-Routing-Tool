@@ -218,28 +218,34 @@ export default function MyApp(){
   }
 
   function handleFeatureLayer(){
-    if (showExtraLayers) {
+    if (showFeatureLayer) {
       setShowFeatureLayer(false)
-      console.log('Feature: off')
     }
-    if (!showExtraLayers) {
+    if (!showFeatureLayer) {
       setShowFeatureLayer(true)
-      console.log('Feature: ON')
     }
   }
 
-  const [showExtraLayers, setShowExtraLayer] = useState(false);
+  function handleTileLayer(){
+    if (showTileLayer) {
+      setShowTileLayer(false)
+    }
+    if (!showTileLayer) {
+      setShowTileLayer(true)
+    }
+  }
+
+  const [showFeatureLayer, setShowFeatureLayer] = useState(false);
+  const [showTileLayer, setShowTileLayer] = useState(false);
   function FeatureLayerWrapper() {
         return showFeatureLayer ?
         <FeatureLayer
-          url={"https://arcgis.netl.doe.gov/server/rest/services/Hosted/CEJST_Disadvantaged_Communities_2022/FeatureServer/2"}
-          fetchAllFeatures={true}
-          simplifyFactor={1}
-          cacheLayers={false}/> : null
+          url={"https://arcgis.netl.doe.gov/server/rest/services/Hosted/CEJST_Disadvantaged_Communities_2022/FeatureServer/2"}/> : null
   }
 
+
   function VectorTileLayerWrapper() {
-        return showFeatureLayer ?
+        return showTileLayer ?
         <VectorTileLayer 
           url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/CJEST_Disadvantaged_Communities_2022_ExportFeatures1/VectorTileServer'
         /> : null
@@ -977,9 +983,6 @@ export default function MyApp(){
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <VectorTileLayer 
-          url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/CJEST_Disadvantaged_Communities_2022_ExportFeatures1/VectorTileServer'
-        />
 
         <VectorTileLayerWrapper/>
         <FeatureLayerWrapper/>
@@ -1018,6 +1021,15 @@ export default function MyApp(){
         value="on"
         onClick={handleFeatureLayer}/>
         <label htmlFor="feature-layer-on">Feature Layer On (Resource Intensive)</label>
+      </div>
+
+      <div>
+        <input type="checkbox"
+        name="tile-layer"
+        id="tile-layer-on"
+        value="on"
+        onClick={handleTileLayer}/>
+        <label htmlFor="feature-layer-on">Tile Layer On</label>
       </div>
 
       <div>
