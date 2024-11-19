@@ -1,7 +1,8 @@
 import { React, useState, useEffect } from 'react';
 import { DropdownList } from "react-widgets";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, ScaleControl, Polyline, Polygon } from "react-leaflet";
-import { FeatureLayer } from "react-esri-leaflet";
+import { FeatureLayer} from "react-esri-leaflet";
+import VectorTileLayer from "react-esri-leaflet/plugins/VectorTileLayer";
 import { Icon } from "leaflet";
 import { Link } from 'react-router-dom';
 import axios from "axios";
@@ -217,19 +218,31 @@ export default function MyApp(){
   }
 
   function handleFeatureLayer(){
-    if (showFeatureLayer) {
+    if (showExtraLayers) {
       setShowFeatureLayer(false)
       console.log('Feature: off')
     }
-    if (!showFeatureLayer) {
+    if (!showExtraLayers) {
       setShowFeatureLayer(true)
       console.log('Feature: ON')
     }
   }
 
-  const [showFeatureLayer, setShowFeatureLayer] = useState(false);
+  const [showExtraLayers, setShowExtraLayer] = useState(false);
   function FeatureLayerWrapper() {
-        return showFeatureLayer ? <FeatureLayer url={"https://arcgis.netl.doe.gov/server/rest/services/Hosted/CEJST_Disadvantaged_Communities_2022/FeatureServer/2"}/> : null
+        return showFeatureLayer ?
+        <FeatureLayer
+          url={"https://arcgis.netl.doe.gov/server/rest/services/Hosted/CEJST_Disadvantaged_Communities_2022/FeatureServer/2"}
+          fetchAllFeatures={true}
+          simplifyFactor={1}
+          cacheLayers={false}/> : null
+  }
+
+  function VectorTileLayerWrapper() {
+        return showFeatureLayer ?
+        <VectorTileLayer 
+          url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/CJEST_Disadvantaged_Communities_2022_ExportFeatures1/VectorTileServer'
+        /> : null
   }
 
   // The loading message that apperas when the backend is generating after 'Generate Pipeline' in ID Mode
@@ -964,7 +977,11 @@ export default function MyApp(){
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <VectorTileLayer 
+          url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/CJEST_Disadvantaged_Communities_2022_ExportFeatures1/VectorTileServer'
+        />
 
+        <VectorTileLayerWrapper/>
         <FeatureLayerWrapper/>
 
         <StartMarkers/>
