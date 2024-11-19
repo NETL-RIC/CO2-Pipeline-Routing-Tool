@@ -218,21 +218,13 @@ export default function MyApp(){
   }
 
   function handleFeatureLayer(){
-    if (showFeatureLayer) {
-      setShowFeatureLayer(false)
-    }
-    if (!showFeatureLayer) {
-      setShowFeatureLayer(true)
-    }
+    showFeatureLayer ? setShowFeatureLayer(false) : setShowFeatureLayer(true);
+    !showFeatureLayer ? setShowFeatureLayer(true) : setShowFeatureLayer(false);
   }
 
   function handleTileLayer(){
-    if (showTileLayer) {
-      setShowTileLayer(false)
-    }
-    if (!showTileLayer) {
-      setShowTileLayer(true)
-    }
+    showTileLayer ? setShowTileLayer(false) : setShowTileLayer(true);
+    !showTileLayer ? setShowTileLayer(true) : setShowTileLayer(false);
   }
 
   const [showFeatureLayer, setShowFeatureLayer] = useState(false);
@@ -249,6 +241,31 @@ export default function MyApp(){
         <VectorTileLayer 
           url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/CJEST_Disadvantaged_Communities_2022_ExportFeatures1/VectorTileServer'
         /> : null
+  }
+
+  function LayerButtons() {
+    return (
+        <div>
+        <div>
+          <input type="checkbox"
+          name="feature-layer"
+          id="feature-layer-on"
+          value="on"
+          onChange={handleFeatureLayer}/>
+          <label htmlFor="feature-layer-on">Feature Layer On (Resource Intensive)</label>
+        </div>
+
+        <div>
+          <input type="checkbox"
+          name="tile-layer"
+          id="tile-layer-on"
+          value="on"
+          onChange={handleTileLayer}/>
+
+          <label htmlFor="feature-layer-on">Tile Layer On</label>
+        </div>
+      </div>
+    );
   }
 
   // The loading message that apperas when the backend is generating after 'Generate Pipeline' in ID Mode
@@ -992,8 +1009,12 @@ export default function MyApp(){
         <ScaleControl position="bottomright" />
         <ShowPipeline/>
         <Showshp/>
+
       </MapContainer>
+      <LayerButtons/>
+
       <ModeSelector/>
+      
       <div>
         <input type="radio" 
         name="location" 
@@ -1012,24 +1033,6 @@ export default function MyApp(){
         onChange={onOptionChange}
         disabled={uploaz!=="points"}/>
         <label htmlFor="end">End</label>
-      </div>
-
-      <div>
-        <input type="checkbox"
-        name="feature-layer"
-        id="feature-layer-on"
-        value="on"
-        onClick={handleFeatureLayer}/>
-        <label htmlFor="feature-layer-on">Feature Layer On (Resource Intensive)</label>
-      </div>
-
-      <div>
-        <input type="checkbox"
-        name="tile-layer"
-        id="tile-layer-on"
-        value="on"
-        onClick={handleTileLayer}/>
-        <label htmlFor="feature-layer-on">Tile Layer On</label>
       </div>
 
       <div>
