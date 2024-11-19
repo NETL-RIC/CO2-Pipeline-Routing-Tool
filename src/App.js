@@ -216,6 +216,22 @@ export default function MyApp(){
       );
   }
 
+  function handleFeatureLayer(){
+    if (showFeatureLayer) {
+      setShowFeatureLayer(false)
+      console.log('Feature: off')
+    }
+    if (!showFeatureLayer) {
+      setShowFeatureLayer(true)
+      console.log('Feature: ON')
+    }
+  }
+
+  const [showFeatureLayer, setShowFeatureLayer] = useState(false);
+  function FeatureLayerWrapper() {
+        return showFeatureLayer ? <FeatureLayer url={"https://arcgis.netl.doe.gov/server/rest/services/Hosted/CEJST_Disadvantaged_Communities_2022/FeatureServer/2"}/> : null
+  }
+
   // The loading message that apperas when the backend is generating after 'Generate Pipeline' in ID Mode
   function LoadingMessageIdMode() {
     if (isLoadingIdMode) {
@@ -928,6 +944,7 @@ export default function MyApp(){
       </p>
     )
   }
+
   return(
     <div>
       {/*Initial popup */}
@@ -948,10 +965,7 @@ export default function MyApp(){
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <FeatureLayer
-          url={"https://arcgis.netl.doe.gov/server/rest/services/Hosted/CEJST_Disadvantaged_Communities_2022/FeatureServer/2"}
-        />
-        
+        <FeatureLayerWrapper/>
 
         <StartMarkers/>
         <EndMarkers/>
@@ -978,6 +992,15 @@ export default function MyApp(){
         onChange={onOptionChange}
         disabled={uploaz!=="points"}/>
         <label htmlFor="end">End</label>
+      </div>
+
+      <div>
+        <input type="checkbox"
+        name="feature-layer"
+        id="feature-layer-on"
+        value="on"
+        onClick={handleFeatureLayer}/>
+        <label htmlFor="feature-layer-on">Feature Layer On (Resource Intensive)</label>
       </div>
 
       <div>
