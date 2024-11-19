@@ -1,7 +1,8 @@
 import { React, useState, useEffect } from 'react';
 import { DropdownList } from "react-widgets";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, ScaleControl, Polyline, Polygon } from "react-leaflet";
-import { FeatureLayer } from "react-esri-leaflet";
+import { FeatureLayer} from "react-esri-leaflet";
+import VectorTileLayer from "react-esri-leaflet/plugins/VectorTileLayer";
 import { Icon } from "leaflet";
 import { Link } from 'react-router-dom';
 import axios from "axios";
@@ -947,9 +948,15 @@ export default function MyApp(){
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <VectorTileLayer 
+          url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/CJEST_Disadvantaged_Communities_2022_ExportFeatures1/VectorTileServer'
+        />
 
-        <FeatureLayer
+<FeatureLayer
           url={"https://arcgis.netl.doe.gov/server/rest/services/Hosted/CEJST_Disadvantaged_Communities_2022/FeatureServer/2"}
+          fetchAllFeatures={true}
+          simplifyFactor={1}
+          cacheLayers={false}
         />
         
 
