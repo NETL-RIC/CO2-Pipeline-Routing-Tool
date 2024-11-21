@@ -227,7 +227,7 @@ class Node:
         self.reward = reward # Reward for the parent node selecting this node
         self.value = 0       # Expected discounted returns when in this state
         self.path = path
-        self.distance_factor=1.0
+        self.distance_factor=distance_factor
         self.action_to_direction = {
             0: np.array([-1, 0]),  # Up
             1: np.array([-1, 1]),  # Up/Right
