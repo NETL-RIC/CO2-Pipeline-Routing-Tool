@@ -90,9 +90,12 @@ def plot_path(obs, done=False):
     else:
         display.display(plt.gcf())
 
-def get_contiguous_area(bool_raster):
+def get_contiguous_area(bool_raster, min_size):
     """
     Get the contiguous areas of AL and US using connected component analysis.
+
+    size (int): The number of connected pixels in order to be considered
+        contiguous portion of US or AL.
     """
     assert bool_raster.dtype == np.uint8, 'Array must have numpy.uint8 data type'
     contiguous = np.zeros(bool_raster.shape)
@@ -101,7 +104,7 @@ def get_contiguous_area(bool_raster):
     labels = []
     for i in range(1, number_components):
         size = stats[i, -1]
-        if size > 1000:
+        if size > min_size:
             # Labels start at value of 1
             labels.append(i)
     
@@ -109,7 +112,6 @@ def get_contiguous_area(bool_raster):
         contiguous[output==value] = 1
 
     return contiguous, output
-
 
 class CostSurface:
     """
@@ -133,77 +135,81 @@ class CostSurface:
         self.cost = np.load(raster_dir.joinpath('cost.npy'))
         self.no_go = np.load(raster_dir.joinpath('no_go.npy'))
 
-    def process_raster(self, path, degree=2, no_go_cost=None, out_cost=None, visualize=False):
+    def process_raster(self, path, degree=2, no_go_cost=None, visualize=False):
 
         path = Path(path)
         assert path.exists(), 'The raw raster file path does not exist'
 
-        if no_go_cost is not None and out_cost is not None:
-            assert no_go_cost <= out_cost, 'No-go cannot exceed out of bounds cost'
-
         ds = rasterio.open(path)
         arr = ds.read(1)
-
-        # Some out of bounds areas are less than -1 but should be 0
-        arr[arr<-1]=0
 
         # Make a copy of the raw raster array to modify
         raster = arr.copy()
 
-        # Set edges of raster to 0
-        if arr.max() == np.inf:
-            raster[raster==np.inf] = 0
+        # Set all values less than -1 to -1 to represent out of bounds/no-go
+        raster[raster<-1]=-1
+
+        # Make a copy of the raw raster array to modify
+        raster = arr.copy()
+
+        # Reset values which are outside expected range (these values should be -1)
+        raster[raster==np.inf] = -1
+        raster[raster==-np.inf] = -1
+        
+        # Required for proper visualization value color mapping
+        if arr.min() < -1 and visualize:
+            arr[arr<-1] = -np.inf
 
         # Create an array where values of 1 represent land and 0 represents 
-        # bodies of water
+        # out of bounds/no-go
         check_bounds = raster.copy()
-        check_bounds[check_bounds<0] = 1
-        check_bounds[check_bounds>0] = 1
+        check_bounds[check_bounds>=0] = 1.0
+        check_bounds[check_bounds<0] = 0.0
 
         # Check for areas not connected to mainland
-        contiguous, _ = get_contiguous_area(check_bounds.astype(np.uint8))
+        contiguous, _ = get_contiguous_area(check_bounds.astype(np.uint8), min_size=1000)
 
         # Set non-contiguous portions to out of bounds
-        raster[contiguous==0] = 0
+        raster[contiguous==0] = -1
 
         # Define no-go areas as given by less than 0 values
         no_go = raster.copy()
+        no_go[no_go>=0] = 1
         no_go[no_go<0] = 0
-        no_go[no_go>0] = 1
         no_go = np.invert(no_go.astype(bool))
 
-
-        # Set values of out of bounds and no go areas, typically this should be
-        # the largest value in the raster unless otherwise specified by the user
-        if no_go_cost is None:
-            raster[raster==-1] = raster.max()
-        else:
-            raster[raster==-1] = no_go_cost
-        
-        if out_cost is None:
-            raster[raster==0] = raster.max()
-        else:
-            raster[raster==0] = out_cost
+        # Set out of bounds and no-go areas to 0 so they do not interfere with 
+        # normalization calculation, they must be changed to 1 after normalization
+        # using the no-go surface
+        raster[raster==-1] = 0
 
         # Apply exponential weighting of cost surface
         raster = exponential(raster, degree)
 
         # Linear normalization to 0 to 1 scale
-        norm = normalize(raster)
+        raster = normalize(raster)
 
-        self.cost = norm
+        # Set values of out of bounds and no go areas, typically this should be
+        # the largest value in the raster unless otherwise specified by the user
+        if no_go_cost is None:
+            raster[no_go] = 1
+        else:
+            raster[no_go] = no_go_cost
+        
+
+        self.cost = raster
         self.no_go = no_go
 
         if visualize:
             fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(15,12))
-            ax[0,0].imshow(raster, cmap='gray')
-            ax[0,0].set_title('Original\n{}'.format(raster.shape))
+            ax[0,0].imshow(arr, cmap='gray')
+            ax[0,0].set_title('Original\n{}'.format(arr.shape))
 
             ax[0,1].imshow(contiguous, cmap='gray')
             ax[0,1].set_title('Contiguous\n{}'.format(contiguous.shape))
 
-            ax[1,0].imshow(norm, cmap='gray')
-            ax[1,0].set_title('Normalized\n{} - {}'.format(norm.shape, norm.dtype))
+            ax[1,0].imshow(raster, cmap='gray')
+            ax[1,0].set_title('Normalized\n{} - {}'.format(raster.shape, raster.dtype))
 
             ax[1,1].imshow(no_go, cmap='gray')
             ax[1,1].set_title('No Go\n{} - {}'.format(no_go.shape, no_go.dtype))
@@ -213,7 +219,7 @@ class CostSurface:
 
 class Node:
 
-    def __init__(self, location, parent, reward, path):
+    def __init__(self, location, parent, reward, path, distance_factor=1.0):
         self.location = location
         self.parent = parent
         self.children = []
@@ -221,6 +227,7 @@ class Node:
         self.reward = reward # Reward for the parent node selecting this node
         self.value = 0       # Expected discounted returns when in this state
         self.path = path
+        self.distance_factor=distance_factor
         self.action_to_direction = {
             0: np.array([-1, 0]),  # Up
             1: np.array([-1, 1]),  # Up/Right
@@ -247,7 +254,7 @@ class Node:
 
         # subtract constant to prevent positive rewards, otherwise agent wants to
         # keep moving to keep gaining rewards
-        euclidean_reward = previous_distance - distance_to_target - 1.42
+        euclidean_reward = self.distance_factor*(previous_distance - distance_to_target - 1.42)
 
         return euclidean_reward
 
@@ -295,7 +302,7 @@ class Node:
             
             path = self.path.copy()
             path[location_hash_key] = True
-            self.children.append(Node(child_location, self, reward, path))
+            self.children.append(Node(child_location, self, reward, path, self.distance_factor))
             rewards.append(reward)
             
         self.value = np.mean(rewards)
@@ -308,14 +315,19 @@ class Node:
             self.parent.backpropagate()
             self.parent.selections += 1
 
+    # def rollout(self, num_moves=100):
+    #     for move in num_moves:
+
+
 
 class MCTree:
 
-    def __init__(self, cost_surface, start, target):
+    def __init__(self, cost_surface, start, target, distance_factor=1.0):
         self.cost_surface = cost_surface
         self.target = target
+        self.distance_factor = distance_factor
         path = {str(start[0]).zfill(3) + ',' + str(start[1]).zfill(3): True}
-        self.root = Node(location=start, parent=None, reward=None, path=path)
+        self.root = Node(location=start, parent=None, reward=None, path=path, distance_factor=distance_factor)
 
     def traverse(self, node):
         locations = [node.location.tolist()]
@@ -394,9 +406,10 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
 
 
 class MCAgent:
-    def __init__(self, trajectories, num_workers=None):
+    def __init__(self, trajectories, num_workers=None, distance_factor=1.0):
         
         self.num_workers = num_workers
+        self.distance_factor = distance_factor
         if num_workers is None:
             self.num_workers = mp.cpu_count()//2
         self.trajectories = trajectories
@@ -406,7 +419,9 @@ class MCAgent:
             self.c = [np.sqrt(2)]
 
     def route(self, cost_surface, start, target, max_steps=1000, show_viz=False):
-        forest = [MCTree(cost_surface, start, target) for _ in range(self.num_workers)]
+        forest = [
+            MCTree(cost_surface, start, target, distance_factor=self.distance_factor) for _ in range(self.num_workers)
+            ]
         path = [start]
         
         for _ in range(max_steps):
@@ -446,15 +461,16 @@ class MLWrapper:
             self, 
             trajectories=100, 
             num_workers=1, 
-            raster_path=resource_path('cost_surfaces/raw_cost_10km_aea/cost_10km_aea.tif'),
-            cost_degree=2
+            raster_path=resource_path('cost_surfaces/10km_RAIL/cost_10km_aea_RAIL_ready.tif'),
+            cost_degree=2,
+            distance_factor=1.0
             ):
         self.cost_surface = CostSurface()
         # self.cost_surface.load_rasters(raster_dir)
 
         # Use degree to increase the weighting of high cost areas
         self.cost_surface.process_raster(raster_path, degree=cost_degree)
-        self.agent = MCAgent(trajectories=trajectories, num_workers=num_workers)
+        self.agent = MCAgent(trajectories=trajectories, num_workers=num_workers, distance_factor=distance_factor)
 
     def route(self, start, target, show_viz=False):
         print("In mc_agent.MLWrapper.route:") 
