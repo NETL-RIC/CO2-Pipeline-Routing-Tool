@@ -6,7 +6,7 @@ from pathlib import Path
 
 import shutil
 import glob
-from flask import Flask, request
+from flask import Flask, request, render_template
 import fiona
 import torch
 from osgeo import gdal, ogr, osr
@@ -17,7 +17,7 @@ from line_builder import line_builder
 from report_builder.report_builder import report_builder
 from extra_utils import resource_path
 
-api = Flask(__name__)
+api = Flask(__name__, static_url_path='', static_folder='build', template_folder='build')
 # APP_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 if getattr(sys, 'frozen', False):
@@ -25,6 +25,10 @@ if getattr(sys, 'frozen', False):
 elif __file__:
     APP_ROOT = os.path.dirname(__file__)
 UPLOAD_FOLDER = os.path.join(APP_ROOT, 'user_uploads')
+
+@api.route('/')
+def index():
+    return render_template('index.html')
 
 @api.route('/profile')
 def my_profile():
