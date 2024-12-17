@@ -1,7 +1,8 @@
 import { React, useState, useEffect } from 'react';
 import { DropdownList } from "react-widgets";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, ScaleControl, Polyline, Polygon } from "react-leaflet";
-import { FeatureLayer } from "react-esri-leaflet";
+import { FeatureLayer} from "react-esri-leaflet";
+import VectorTileLayer from "react-esri-leaflet/plugins/VectorTileLayer";
 import { Icon } from "leaflet";
 import { Link } from 'react-router-dom';
 import axios from "axios";
@@ -214,6 +215,57 @@ export default function MyApp(){
           </Modal>
         </>
       );
+  }
+
+  function handleFeatureLayer(){
+    showFeatureLayer ? setShowFeatureLayer(false) : setShowFeatureLayer(true);
+    !showFeatureLayer ? setShowFeatureLayer(true) : setShowFeatureLayer(false);
+  }
+
+  function handleTileLayer(){
+    showTileLayer ? setShowTileLayer(false) : setShowTileLayer(true);
+    !showTileLayer ? setShowTileLayer(true) : setShowTileLayer(false);
+  }
+
+  const [showFeatureLayer, setShowFeatureLayer] = useState(false);
+  const [showTileLayer, setShowTileLayer] = useState(false);
+  function FeatureLayerWrapper() {
+        return showFeatureLayer ?
+        <FeatureLayer
+          url={"https://arcgis.netl.doe.gov/server/rest/services/Hosted/CEJST_Disadvantaged_Communities_2022/FeatureServer/2"}/> : null
+  }
+
+
+  function VectorTileLayerWrapper() {
+        return showTileLayer ?
+        <VectorTileLayer 
+          url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/CJEST_Disadvantaged_Communities_2022_ExportFeatures1/VectorTileServer'
+        /> : null
+  }
+
+  function LayerButtons() {
+    return (
+        <div>
+        <div>
+          <input type="checkbox"
+          name="feature-layer"
+          id="feature-layer-on"
+          value="on"
+          onChange={handleFeatureLayer}/>
+          <label htmlFor="feature-layer-on">Feature Layer On (Resource Intensive)</label>
+        </div>
+
+        <div>
+          <input type="checkbox"
+          name="tile-layer"
+          id="tile-layer-on"
+          value="on"
+          onChange={handleTileLayer}/>
+
+          <label htmlFor="feature-layer-on">Tile Layer On</label>
+        </div>
+      </div>
+    );
   }
 
   // The loading message that apperas when the backend is generating after 'Generate Pipeline' in ID Mode
@@ -928,6 +980,7 @@ export default function MyApp(){
       </p>
     )
   }
+
   return(
     <div>
       {/*Initial popup */}
@@ -948,18 +1001,20 @@ export default function MyApp(){
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <FeatureLayer
-          url={"https://arcgis.netl.doe.gov/server/rest/services/Hosted/CEJST_Disadvantaged_Communities_2022/FeatureServer/2"}
-        />
-        
+        <VectorTileLayerWrapper/>
+        <FeatureLayerWrapper/>
 
         <StartMarkers/>
         <EndMarkers/>
         <ScaleControl position="bottomright" />
         <ShowPipeline/>
         <Showshp/>
+
       </MapContainer>
+      <LayerButtons/>
+
       <ModeSelector/>
+      
       <div>
         <input type="radio" 
         name="location" 
