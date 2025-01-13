@@ -17,7 +17,10 @@ from line_builder import line_builder
 from report_builder.report_builder import report_builder
 from extra_utils import resource_path
 
-api = Flask(__name__, static_url_path='', static_folder='build', template_folder='build')
+api = Flask(__name__, 
+            static_url_path='', 
+            static_folder=resource_path('build'), 
+            template_folder=resource_path('build'))
 # APP_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 if getattr(sys, 'frozen', False):

@@ -24,4 +24,6 @@ dependencies:
     - IPython
     - pyproj
     - shapely
+    - rasterio
+    - opencv-python
 prefix: C:\Users\zaengled\.conda\envs\mlpipeline

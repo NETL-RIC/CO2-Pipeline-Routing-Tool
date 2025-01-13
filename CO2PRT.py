@@ -7,7 +7,7 @@
 
 from Flask import base
 import multiprocessing
-import sys, os
+import sys, os, webbrowser
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
@@ -21,5 +21,5 @@ if __name__ == '__main__':
         os.environ['GDAL_DATA'] = gdalPath
     if os.path.isdir(projPath):
         os.environ['PROJ_LIB'] = projPath
-
+    webbrowser.open('http://localhost:5000')
     base.api.run()

@@ -1,16 +1,26 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
-import sys 
+import sys
+
+import pkgutil
+import rasterio
+
 from PyInstaller.compat import is_win,is_darwin
 sys.setrecursionlimit(sys.getrecursionlimit() * 5)
 
 block_cipher = None
 
+# apparently rasterio has had an import issue since 2018 
+additional_packages = []
+for package in pkgutil.iter_modules(rasterio.__path__, prefix="rasterio."):
+    additional_packages.append(package.name)
+
 # Add any data that need to be copied into the pyinstaller bundle
 more_datas = [
     ('Flask/cost_surfaces', 'cost_surfaces'),
     ('Flask/raster','raster'),
+    ('Flask/build','build'),
     ('Flask/report_builder/inputs','report_builder/inputs'),
     ('Flask/report_builder/images','report_builder/images'),
     ('public/documentation', 'documentation')
@@ -51,8 +61,9 @@ a = Analysis(
         'skimage.graph.mcp',
         'skimage.transform._warps',
         'skimage.measure.block',
-        'tqdm'
-        ],
+        'tqdm',
+        'cv2'
+        ] + additional_packages,
     hookspath=["./pyinstaller_hooks"],
     hooksconfig={},
     runtime_hooks=[],
