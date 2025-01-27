@@ -7,9 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import "leaflet/dist/leaflet.css";
 import {BrowserRouter } from 'react-router-dom';
 
-
 var cors = require('cors')
-
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

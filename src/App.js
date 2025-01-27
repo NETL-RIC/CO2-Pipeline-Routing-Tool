@@ -113,11 +113,11 @@ export default function MyApp(){
     axios({
       method: "POST",
       url: urlpipe, 
-      data: {s: start, e:end}
+      data: {s: start, e:end, mode:idMode}
     })
 
     .then((response) => {
-      linevals =response.data['route']
+      linevals = response.data['route']
       zip_file = response.data['zip']
       console.log("Got line data");
       setFinished(true);
@@ -135,6 +135,7 @@ export default function MyApp(){
     })
   }
   }
+
   function openDocs(){
     /// THIS VERSION IS FOR ELECTRON BUILD AS SOMETHING IS BLOCKING NEW WINDOWS
 
@@ -215,57 +216,6 @@ export default function MyApp(){
           </Modal>
         </>
       );
-  }
-
-  function handleFeatureLayer(){
-    showFeatureLayer ? setShowFeatureLayer(false) : setShowFeatureLayer(true);
-    !showFeatureLayer ? setShowFeatureLayer(true) : setShowFeatureLayer(false);
-  }
-
-  function handleTileLayer(){
-    showTileLayer ? setShowTileLayer(false) : setShowTileLayer(true);
-    !showTileLayer ? setShowTileLayer(true) : setShowTileLayer(false);
-  }
-
-  const [showFeatureLayer, setShowFeatureLayer] = useState(false);
-  const [showTileLayer, setShowTileLayer] = useState(false);
-  function FeatureLayerWrapper() {
-        return showFeatureLayer ?
-        <FeatureLayer
-          url={"https://arcgis.netl.doe.gov/server/rest/services/Hosted/CEJST_Disadvantaged_Communities_2022/FeatureServer/2"}/> : null
-  }
-
-
-  function VectorTileLayerWrapper() {
-        return showTileLayer ?
-        <VectorTileLayer 
-          url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/CJEST_Disadvantaged_Communities_2022_ExportFeatures1/VectorTileServer'
-        /> : null
-  }
-
-  function LayerButtons() {
-    return (
-        <div>
-        <div>
-          <input type="checkbox"
-          name="feature-layer"
-          id="feature-layer-on"
-          value="on"
-          onChange={handleFeatureLayer}/>
-          <label htmlFor="feature-layer-on">Feature Layer On (Resource Intensive)</label>
-        </div>
-
-        <div>
-          <input type="checkbox"
-          name="tile-layer"
-          id="tile-layer-on"
-          value="on"
-          onChange={handleTileLayer}/>
-
-          <label htmlFor="feature-layer-on">Tile Layer On</label>
-        </div>
-      </div>
-    );
   }
 
   // The loading message that apperas when the backend is generating after 'Generate Pipeline' in ID Mode
@@ -349,14 +299,10 @@ export default function MyApp(){
     );
   }
     
+
   // Single selected point is outside of US or AK
   function InvalidLocationPopup() {
-    if(global.electronmode === true){
-      console.log("in electron mode")
 
-    }else{
-      console.log("in react mode")
-    }
     const handleClose = () => setShowloc(false);
 
     return (
@@ -447,15 +393,6 @@ export default function MyApp(){
     e.returnValue = "";
   }
 
-  const [uploaz, setUploaz] = useState("")
-  const onModeChange = e => {
-    // If there is a visualized polygon from Eval mode, clear it
-    shpvals = []
-
-    setFinished(false)
-    setUploaz(e.target.value)
-    console.log(uploaz)
-  }
 
   const [location, setLocation] = useState("")
   const onOptionChange = e => {
@@ -917,6 +854,51 @@ export default function MyApp(){
     );
   };
 
+  const [idMode, setIdMode] = useState("")
+  const onIdModeChange = e => {
+    // If there is a visualized polygon from Eval mode, clear it
+    shpvals = []
+
+    setFinished(false)      //needed in idModeChange?
+    const newMode = e.target.value;
+    setIdMode(newMode)
+    console.log(e.target.value + ' mode set.')
+
+  }
+  function IdModeSelector() {
+    return(
+      <div>
+        <input type="radio"
+        name="route"
+        value="route"
+        id="route"
+        checked={idMode==="route"}
+        onChange={onIdModeChange}
+        disabled={uploaz!=="points"}/>
+        <label id="idModeRadioText" htmlFor="route">Use ML Routing</label>
+
+        <input type="radio"
+        name="rail"
+        value="rail"
+        id="rail"
+        checked={idMode==="rail"}
+        onChange={onIdModeChange}
+        disabled={uploaz!=="points"}/>
+        <label id="idModeRadioText" htmlFor="rail">Use Railways</label>
+      </div>
+    )
+  }
+
+  const [uploaz, setUploaz] = useState("")
+  const onModeChange = e => {
+    // If there is a visualized polygon from Eval mode, clear it
+    shpvals = []
+
+    setFinished(false)
+    setUploaz(e.target.value)
+    console.log("onModeChange " + uploaz)
+  }
+
   function ModeSelector() {
     return (
       <div>
@@ -935,17 +917,6 @@ export default function MyApp(){
         checked={uploaz=== "upld"}
         onChange={onModeChange}/>
         <label id="modeRadioText" htmlFor="upld">Evaluate Corridor</label>
-      </div>
-    )
-  }
-
-  function IdMode(){
-    return(
-      <div>
-        <AddStartLoc/>
-        <AddEndLoc/> 
-        <br></br>
-        <IdModeBtns/>
       </div>
     )
   }
@@ -971,6 +942,73 @@ export default function MyApp(){
     )
   }
 
+
+  const [showTileLayer, setShowTileLayer] = useState(false);
+  /*const [tileLayer, setTileLayer] = useState('https://arcgis.netl.doe.gov/server/rest/services/Hosted/CO2_Locate_Public_Wells_Ver_1_Cache/VectorTileServer')*/
+  const [tileLayer, setTileLayer] = useState(null)
+  function VectorTileLayerWrapper() {
+        return showTileLayer ?
+        <VectorTileLayer 
+          url={tileLayer}
+        /> : null
+  }
+
+
+  const [showLayerChecked, setShowLayerChecked] = useState(false);
+  function LayerButtons() {
+    function handleTileLayer(){
+      showTileLayer ? setShowTileLayer(false) : setShowTileLayer(true);
+      !showTileLayer ? setShowTileLayer(true) : setShowTileLayer(false);
+      setShowLayerChecked(!showLayerChecked);
+    }
+    return (
+      <div>
+        <input type="checkbox"
+        checked={showLayerChecked}
+        name="tile-layer"
+        id="tile-layer-on"
+        value="on"
+        disabled={tileLayer===null}
+        onChange={handleTileLayer}/>
+
+        <label htmlFor="tile-layer-on">Show/Hide Tile Layer</label>
+      </div>
+    );
+  }
+
+  /* default layer */
+
+  function LayerInput(){
+
+    const [inputValue, setInputValue] = useState(null)
+    function saveLayer(e){
+      e.preventDefault();
+      if (inputValue !== null){
+        setTileLayer(inputValue)
+      }
+    }
+
+    function resetLayer(){
+      setTileLayer(null);
+      // also hide the tile layer because the url will be null 
+      setShowTileLayer(false);
+      setShowLayerChecked(false);
+    }
+
+    const mystyle = {
+      padding: "10px",
+    }
+    return(
+      <div style={mystyle}>
+        <label>
+          Enter tile layer URL: <input name="layerInput" onChange={(e) => setInputValue(e.target.value)} />
+        </label>
+        <button onClick={saveLayer}>Save to Variable</button>
+        <button onClick={resetLayer}>Clear Variable and Hide Tile Layer</button>
+      </div>
+    )
+  }
+
   // Footer node
   function Footer() {
     return (
@@ -983,6 +1021,7 @@ export default function MyApp(){
 
   return(
     <div>
+      {/* Utility components */}
       {/*Initial popup */}
       <DisclaimerPopup/>
 
@@ -1001,19 +1040,20 @@ export default function MyApp(){
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <VectorTileLayerWrapper/>
-        <FeatureLayerWrapper/>
+        <VectorTileLayerWrapper tileLayer={tileLayer}/>
 
         <StartMarkers/>
         <EndMarkers/>
         <ScaleControl position="bottomright" />
         <ShowPipeline/>
         <Showshp/>
-
       </MapContainer>
-      <LayerButtons/>
+
+      <LayerInput/>
+      <LayerButtons tileLayer={tileLayer}/>
 
       <ModeSelector/>
+      <IdModeSelector/>
       
       <div>
         <input type="radio" 

@@ -11,10 +11,15 @@ from IPython import display
 
 from extra_utils import resource_path
 
-def least_cost_path_ml(start, dest):
+def least_cost_path_ml(start, dest, mode):
     """Simple wrapper function to return just the list that composes the ML-generated line
     """
-    wrapper = MLWrapper()
+    # error checking .tifs
+    try:
+        wrapper = MLWrapper(mode=mode)
+    except FileNotFoundError as e:
+        print(e.args)
+
     res = wrapper.route(start, dest)
     return res[0]
     # lucy_route_cntr = res[0]
@@ -459,14 +464,21 @@ class MLWrapper:
 
     def __init__(
             self, 
+            mode,
             trajectories=100, 
             num_workers=1, 
-            raster_path=resource_path('cost_surfaces/10km_RAIL/cost_10km_aea_RAIL_ready.tif'),
             cost_degree=2,
             distance_factor=1.0
             ):
         self.cost_surface = CostSurface()
         # self.cost_surface.load_rasters(raster_dir)
+
+        if (mode == 'route'):
+            raster_path=resource_path('cost_surfaces/raw_cost_10km_aea/cost_10km_aea.tif')
+        elif (mode == 'rail'):
+            raster_path=resource_path('cost_surfaces/10km_RAIL/cost_10km_aea_RAIL_ready.tif')    
+        else:
+            raise KeyError("Neither normal nor rail mode selected")
 
         # Use degree to increase the weighting of high cost areas
         self.cost_surface.process_raster(raster_path, degree=cost_degree)

@@ -45,18 +45,14 @@ def open_help():
 # Evaluate button 
 @api.route('/uploads', methods = ['POST'])
 def uploads_file():
-    print('hello')
     try:
         delete_dir_contents(resource_path('user_uploads'))     #clear out stuff from a previous tool run
     except PermissionError as e:
         print("Got permission error from locked file:", e)
     name = ''
     file = request.files
-    print(file)
     for i in file:
-        print(i)
         name = file[i].filename
-        print(name)
         # file[i].save(os.path.join(UPLOAD_FOLDER, name))
         # cur_dir = os.path.dirname(__file__)
         file_path = os.path.join(resource_path('user_uploads'), name)
@@ -65,8 +61,6 @@ def uploads_file():
     ret = []
     c = fiona.open(file_path)
     shptype = c.schema["geometry"]
-    print('The uploaded shapefile is of type:')
-    print('\t'+shptype)
     
     with fiona.open(file_path) as lines:
         for line in lines:
@@ -83,18 +77,16 @@ def uploads_file():
         'array': ret,
         'typ': shptype
     }
-    print('The uploaded shapefile is of type:')
-    print('\t'+shptype)
 
 
     pdf_path = None
     if shptype == "LineString":
-        print("Creating PDF report for LineString shapefile")
+        print("Creating PDF report for LineString shapefile...")
         # first_point = v['array'][0] # unnessecary right now, but in case it's needed later
         # last_point = v['array'][-1] # unnessecary right now, but in case it's needed later
         pdf_path = run_line_eval_mode()
     elif shptype == "Polygon":
-        print("Creating PDF report for Polygon shapefile")
+        print("Creating PDF report for Polygon shapefile...")
         pdf_path = run_line_eval_mode()
     else:
         print("Uploaded shapefile is neither a polygon or a line. Please upload an appropriate shapefile.")
@@ -114,8 +106,7 @@ def run_line_eval_mode():
     for file in os.listdir(resource_path("user_uploads")):
         if file.endswith(".shp"):
             shp_extension_file = file
-            print(f"Found user-uploaded file: {shp_extension_file}")
-
+            print(f"Using user-uploaded file: {shp_extension_file}")
     if shp_extension_file == None:
         print('No .shp file found in user_uploads')
 
@@ -126,14 +117,13 @@ def run_line_eval_mode():
         public_abspath = resource_path('public')
         if not os.path.exists(public_abspath):
             os.mkdir(public_abspath)
-            print(f"Created public folder at {public_abspath}")
+            print(f"Created public folder at {public_abspath} (none existed)")
         pdfname = report_builder(shapefile=output_shp_abspath, out_path=public_abspath)    # create pdf report in '../public' so front-end can grab it easily
         print("Created pdf report")
         new_pdf_path = os.path.join(public_abspath, "route_report.pdf")
         os.rename(os.path.join(public_abspath, pdfname), new_pdf_path)
         
         return new_pdf_path
-
 
 def delete_dir_contents(rel_path):
     """ Delete everything in provided folder name that exists in Flask. Ie 'output_shapefiles'
@@ -143,10 +133,7 @@ def delete_dir_contents(rel_path):
     """
     if not os.path.exists(rel_path):
         os.mkdir(rel_path)
-    if (len(os.listdir((rel_path)))) == 0:
-        print(f"Directory {rel_path} is already empty, no need to delete.")
-    else:
-        print('\tdelete_dir_contants called, deleting contents of '+rel_path+'...')
+    if (len(os.listdir((rel_path)))) != 0:
         rel_path = os.path.abspath(rel_path)
         rel_path  = rel_path +'/*'
         files = glob.glob(rel_path)
@@ -154,7 +141,6 @@ def delete_dir_contents(rel_path):
         for f in files:
             os.remove(f)
             count = count + 1
-        print(f'\tdeleted all {count} contents of {rel_path}.')
 
 def delete_prev_zips_pdfs():
     """ Delete *.zip from ../public
@@ -168,10 +154,7 @@ def delete_prev_zips_pdfs():
 
         for file in dircontents:
             if file.endswith(".zip") or file.endswith(".pdf"):
-                print(f"\t delete_prev_zips: deleting old file {file}")
                 os.remove(os.path.join(public_path, file))
-    else:
-        print(f'There was no public folder {public_path} to delete zips from')
 
 def create_output_zip(zipname):
     """ Creates .zip based on contents of output_shapefiles in the proj root dir's /public folder
@@ -187,7 +170,6 @@ def create_output_zip(zipname):
     print(f"\tcreate_output_shp_zip: created zipfile at f{dest_path}")
     return dest_path + '.zip'
 
-
 @api.route('/token', methods=['GET', 'POST'])
 def a():
     """ API endpoint for generating route based on user-specified points. Makes report and sends to .zip in /public in the root project dir.
@@ -196,19 +178,17 @@ def a():
     """
 
     if request.method == 'POST':
-        print("Generate Pipeline request recieved")
 
         start = request.json.get("s", None)
         end = request.json.get("e", None)
-        print(f"From frontend, start is: {start}")
-        print(f"From frontend, end is: {end}")
+        # rail or route mode
+        mode = request.json.get("mode", None)
 
-        route = generate_line_ml(start, end)    # calculate line with ML
+        route = generate_line_ml(start, end, mode)    # calculate line with ML
+        print("Pipeline generated")
 
         first_point = route[0]
         last_point = route[-1]  
-        print(f"After ML, start point is {first_point}")
-        print(f"After ML, dest: point is {last_point}")
 
         delete_dir_contents(resource_path('output'))   # delete the shapefiles/pdfs from the last tool run
 
@@ -219,73 +199,13 @@ def a():
         pdf_name = report_builder(output_shp_abspath, first_point, last_point, "output")    # create pdf report in './output
         # delete_prev_zips_pdfs()                   # delete zip from last run if exist
         zip_path = create_output_zip(output_shp_filename) # create zip of pdf/shp files in ../public so front-end can easily grab
+        print('Output zip created')
+
         route_correct_swap = []
         for coord in route:
             route_correct_swap.append((coord[1], coord[0]))
             
-        print(f"First and last coord, about to go to frontend {route[0]}, {route[-1]}")
         return {'route': route_correct_swap, 'zip':zip_path}
-
-def generate_line_ml_old(start, dest):
-    """ Call machine learning functions to generate line between parameter points
-
-    Paramters: start, dest: tuple, the start and end points of the line that will be generated, passed in as WGS84 coords
-    Returns: route: list, the list of coordinates that composes the line
-    """
-
-    raspath = resource_path('raster/ras_10km_resampled_071323_WGS84.tif')    # old raster
-    # raspath = './cost_surfaces/raw_cost_10km_aea/cost_10km_aea.tif' # new raster for new ml. needs translation functions
-
-    print("/Flask/base.generate_line_ml:")
-    print("\tOriginal wgs84 start: " + str(start))
-    print("\tOriginal wgs84 dest: " + str(dest))
-    print("\n")
-
-    startlocal = CoordinatesToIndices(raspath, start)   # translate WGS84 coords into local raster index coords for ML processing
-    destlocal = CoordinatesToIndices(raspath, dest)
-    print("Start Coord passed to ML:" + str(startlocal))
-    print("Dest Coord passed to ML:" + str(destlocal))
-
-    pipecontrol = PipelineController(startlocal, destlocal)
-    route_local = pipecontrol.ml_run()
-
-    print("First point in list of points, as Lucy Local System:" + str(route_local[0]))
-    print("Last point in list of points, as Lucy Local System:" + str(route_local[-1]))
-
-
-    route_wgs = translateLine(raspath, route_local)
-    print("\troute_wgs[0]: " + str(route_wgs[0]))
-    print("\troute_wgs[1]: " + str(route_wgs[-1]))
-    print("\n")
-
-
-    # Using dummy values until translation is accurate
-    return route_wgs
-
-def generate_dummy_line(start=(37.779259, -122.419329), dest=(39.739236, -104.990251)):
-    """ Generates a line object via interpolation between two supplied WGS points for testing purposes
-    Default vals are SFO and Denver in WGS84, respectively, by default.
-    
-    Paramters: start, dest: tuple, start and end point of the line to generate
-    Return: interpline: list, the generated line between the two supplied points as a list of coordinates
-    """
-    listlen = 501 # the ML code seems to always return a list of length 501
-    linerange_x = abs(start[0] - dest[0])
-    linerange_y = abs(start[1] - dest[1])
-    
-    step_x = linerange_x / listlen
-    step_y = linerange_y / listlen
-
-    dummyline = []
-
-    for i in range(listlen):
-        x = start[0] + (i * step_x)
-        y = start[1] + (i * step_y)
-        # y = np.interp(x, start, dest)
-        dummyline.append((x,y))
-
-    print("Using dummy line from SFO to Denver")
-    return dummyline
 
 def translateLine_old(raster_wgs84, routelist):
     """ Translates provided line from local ml coord (raster indices) system to WGS84.
@@ -458,25 +378,24 @@ def translateLine(raster, routelist):
 
 
 #Edited line 89
-def generate_line_ml(start, dest):
+def generate_line_ml(start, dest, mode):
     """ Call machine learning functions to generate line between parameter points
        Paramters: start, dest: tuple, the start and end points of the line that will be generated, passed in as WGS84 coords
        Returns: route: list, the list of coordinates that composes the line
        """
+
+    print('Generating Pipeline...')
+
     raspath = resource_path('raster/cost_10km_aea.tif' )
 
-    startlocal = CoordinatesToIndices(raspath,
-                                      start)  # translate WGS84 coords into local raster index coords for ML processing
+    startlocal = CoordinatesToIndices(raspath, start)  # translate WGS84 coords into local raster index coords for ML processing
     destlocal = CoordinatesToIndices(raspath, dest)
-    pipecontrol = PipelineController(startlocal, destlocal)
+
+    pipecontrol = PipelineController(startlocal, destlocal, mode)
+
     route_local = pipecontrol.ml_run()
     route_wgs = translateLine(raspath, route_local)
-    """
-    # write post-ml route list to a file for Ben to troubleshoot. Only needed for ben's troubleshooting
-    with open('report_builder_input.txt','w') as f:
-        for line in route_wgs:
-            f.write(f"{line}\n")
-    """
+
     return route_wgs
 
 
@@ -687,51 +606,3 @@ if __name__ == "__main__":
     -104.7279322	32.20383914	-784549.8711	-877454.8434
 
     """
-
-    def test_ml():
-        """ Dummy function to test point translation and ml function without needing to interact with frontend
-        """
-        raspath = resource_path('raster/ras_10km_resampled_071323_WGS84.tif')
-
-        startwgs = (35.23, -101.71) # amarillo, tx
-        destwgs =(31.9973, -102.0779) # midland, tx
-
-        print("Original wgs84 start: " + str(startwgs))
-        print("Original wgs84 dest: " + str(destwgs))
-        print("\n")
-
-        startlocal = CoordinatesToIndices(raspath, startwgs)
-        destlocal = CoordinatesToIndices(raspath, destwgs)
-
-        # Some coords supplied by ben to test funcitonality
-        startlocal2 = (274, 390)
-        destlocal2 = (248, 364)
-        startlocal3 = (256, 557)
-        destlocal3 = (268, 579)
-        startlocal4 = (242, 476)
-        destlocal4 = (261, 476)
-
-        print("Translated start into local coords (as x,y): " + str(startlocal))
-        print("Translated dest into local coords (as x,y):" + str(destlocal))
-        print("\n")
-
-        pipecontrol = PipelineController(startlocal, destlocal)
-
-        # this is in Y, X
-        route_local = pipecontrol.ml_run() #list of all points that compose the line route
-        print("\n")
-        print("Length of list:" + str(len(route_local)))
-
-        print("First point in list of points, as Lucy Local System:" + str(route_local[0]))
-        print("Last point in list of points, as Lucy Local System:" + str(route_local[-1]))
-        print("\n")
-
-        # translate back to wgs84 to give back to front-end
-        # this is in X, Y
-        route_wgs = translateLine(raspath, route_local)
-        print("First point from list of points, translated back to wgs84: " + str(route_wgs[0]))
-        print("Last point from list of points, translated back to wgs84: " + str(route_wgs[-1]))
-        print("\n")
-
-    #test_ml()
-
