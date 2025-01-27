@@ -6,7 +6,7 @@ from pathlib import Path
 
 import shutil
 import glob
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, send_file
 import fiona
 import torch
 from osgeo import gdal, ogr, osr
@@ -194,6 +194,31 @@ def create_output_zip(zipname):
     print(f"\tcreate_output_shp_zip: created zipfile at f{dest_path}")
     return dest_path + '.zip'
 
+@api.route('/download_report', methods=['POST'])
+def send_report():
+    """API Endpoint for sending appropriate file to the front end.
+    """
+    public_f = resource_path('public')
+    if request.method == 'POST':
+        print("Request for file download recieved")
+        print(request.json)
+        ext = request.json.get("extension", None)
+        print(ext)
+        try:
+            if ext == '.pdf':
+                file_path = os.path.join(public_f, 'route_report.pdf')  
+                os.path.exists(file_path)
+                return send_file(file_path, as_attachment=True, download_name='route_report.pdf')
+            elif ext == '.zip':
+                file_path = os.path.join(public_f, 'route_shapefile_and_report.zip')
+                os.path.exists(file_path)
+                return send_file(file_path, as_attachment=True, download_name='route_shapefile_and_report.zip')
+            else:
+                print(f"file extension provided: {ext} is not handled.")
+                return "Invalid file extension provided", 404
+        except FileNotFoundError:
+            print("unable to locate requested filetype")
+            return f"{ext} file not found", 404
 
 @api.route('/token', methods=['GET', 'POST'])
 def a():

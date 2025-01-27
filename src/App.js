@@ -141,7 +141,7 @@ export default function MyApp(){
     let urldoc = ''
 
     if(global.electronmode === true){
-      urldoc = 'http://127.00.1:5000/help'
+      urldoc = 'http://127.0.0.1:5000/help'
     }else{
       urldoc = '/help'
     }
@@ -158,8 +158,57 @@ export default function MyApp(){
     });
 
     /// THIS VERSION CAN BE USED FOR DEVELOPMENT
-     console.log("trying documentation open")
-     window.open("documentation/_build/html/index.html", "helpWindow", "noreferrer")
+    //  console.log("trying documentation open")
+    //  window.open("documentation/_build/html/index.html", "helpWindow", "noreferrer")
+  }
+
+  function handleDownload(extension) {
+    let url_dl = ''
+    if(global.electronmode === true){
+      url_dl = 'http://127.0.0.1:5000/download_report'
+    } else {
+      url_dl = '/download_report'
+    }
+    // const response = await axios.post(url_dl, { extension }, { responseType: 'blob' });
+    
+    axios({
+      method: "POST",
+      url: url_dl,
+      responseType:'blob',
+      data: { extension: extension }
+    })
+    .then((response) => {
+
+      const url = window.URL.createObjectURL(response.data);
+      const a = document.createElement('a');
+      a.href = url;
+      
+      let fname = 'report_results';
+      const contentDisposition = response.headers.get('Content-Disposition');
+      if (contentDisposition && contentDisposition.indexOf('filename') > -1)
+      {
+        fname = contentDisposition.split('filename=')[1].split(';')[0].trim().replace(/"/g,"");
+      }
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    })
+    .catch((error) => {
+      if (error.response) {
+        console.log("Error downloading file");
+      }
+    });
+
+  };
+
+  function handlePDFDownload() {
+    handleDownload('.pdf');
+  }
+  
+  function handleZIPDownload() {
+     handleDownload('.zip');
   }
 
   function DisclaimerPopup() {
@@ -889,12 +938,12 @@ export default function MyApp(){
           <Button id="gen-btn" type="button" onClick={generatePipeline} disabled={uploaz!=="points"}> Generate Pipeline </Button>
         </p>
 
-        <p><a href={zip_file} target="_blank" rel="noopener noreferrer" download>
-          <Button disabled={uploaz!=="points"}>
+        <p>
+          <Button disabled={uploaz!=="points"} onClick={handleZIPDownload}>
             <i className="fas fa-download"/>
             Download Report and Shapefile
           </Button>
-        </a></p>
+        </p>
         <br/>
       </div>
     )
@@ -960,12 +1009,12 @@ export default function MyApp(){
         <button type="submit" disabled={uploaz!=="upld"}>Evaluate</button>
       </form>
       <br></br>
-      <p><a href={pdf_file} target="_blank" rel="noopener noreferrer" download>
-        <Button disabled={uploaz!=="upld"}>
+      <p>
+        <Button disabled={uploaz!=="upld"} onClick={handlePDFDownload}>
           <i className="fas fa-download"/>
           Download Report
         </Button>
-      </a></p>
+      </p>
       <br/>
     </div>
     )
@@ -1066,12 +1115,12 @@ export default function MyApp(){
           <button type="submit" disabled={uploaz!=="upld"}>Evaluate</button>
         </form>
         <br></br>
-        <p><a href={pdf_file} target="_blank" rel="noopener noreferrer" download>
-          <Button disabled={uploaz!=="upld"}>
+        <p>
+          <Button disabled={uploaz!=="upld"} onClick={handlePDFDownload}>
             <i className="fas fa-download"/>
             Download Report
           </Button>
-        </a></p>
+        </p>
         <br/>
       </div>
       <Footer/>

@@ -83,7 +83,7 @@ exe = EXE(
     a.datas, # Comment in for singlefile
     [],
     exclude_binaries=True, #False, # by setting to false and removing call to COLLECT this bundles in onefile mode
-    name='CO2PRT_Flask',
+    name='Smart_CO2_Transport',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -94,6 +94,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='public/icon.png',
 )
 
 # Comment out below for singlefile
@@ -105,5 +106,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='CO2PRT_Flask',
+    name='Smart_CO2_Transport',
 )
