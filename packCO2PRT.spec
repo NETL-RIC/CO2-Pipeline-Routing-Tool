@@ -1,16 +1,26 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
-import sys 
+import sys
+
+import pkgutil
+import rasterio
+
 from PyInstaller.compat import is_win,is_darwin
 sys.setrecursionlimit(sys.getrecursionlimit() * 5)
 
 block_cipher = None
 
+# apparently rasterio has had an import issue since 2018 
+additional_packages = []
+for package in pkgutil.iter_modules(rasterio.__path__, prefix="rasterio."):
+    additional_packages.append(package.name)
+
 # Add any data that need to be copied into the pyinstaller bundle
 more_datas = [
     ('Flask/cost_surfaces', 'cost_surfaces'),
     ('Flask/raster','raster'),
+    ('Flask/build','build'),
     ('Flask/report_builder/inputs','report_builder/inputs'),
     ('Flask/report_builder/images','report_builder/images'),
     ('public/documentation', 'documentation')
@@ -51,8 +61,9 @@ a = Analysis(
         'skimage.graph.mcp',
         'skimage.transform._warps',
         'skimage.measure.block',
-        'tqdm'
-        ],
+        'tqdm',
+        'cv2'
+        ] + additional_packages,
     hookspath=["./pyinstaller_hooks"],
     hooksconfig={},
     runtime_hooks=[],
@@ -71,8 +82,8 @@ exe = EXE(
     a.zipfiles, # Comment in for singlefile
     a.datas, # Comment in for singlefile
     [],
-    exclude_binaries=False, # by setting to false and removing call to COLLECT this bundles in onefile mode
-    name='CO2PRT_Flask',
+    exclude_binaries=True, #False, # by setting to false and removing call to COLLECT this bundles in onefile mode
+    name='Smart_CO2_Transport',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -83,16 +94,17 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='public/icon.png',
 )
 
 # Comment out below for singlefile
-# coll = COLLECT(
-#     exe,
-#     a.binaries,
-#     a.zipfiles,
-#     a.datas,
-#     strip=False,
-#     upx=True,
-#     upx_exclude=[],
-#     name='CO2PRT_Flask',
-# )
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='Smart_CO2_Transport',
+)
