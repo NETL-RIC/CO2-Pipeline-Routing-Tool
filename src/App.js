@@ -23,8 +23,6 @@ global.Buffer = require('buffer').Buffer;
 // visualizes Id mode line
 let linevals = []
 
-// visualizes Evalulate mode polygon
-let shpvals = []
 
 let zip_file = ''
 let pdf_file = ''
@@ -41,6 +39,7 @@ let shptyp = ''
 
 export default function MyApp(){
 
+  const [shpvals, setShpVals] = useState([])
   const [srcLat, setSrcLat] = useState('')
   const [srcLon, setSrcLon] = useState('')
   const [destLat, setDestLat] = useState('')
@@ -62,7 +61,7 @@ export default function MyApp(){
   const [location, setLocation] = useState("")
   const [files, setFiles] = useState([]);
   const [startloc, setStartloc] = useState('')
-  const [idMode, setIdMode] = useState("")
+  const [idMode, setIdMode] = useState("route")
   const [uploaz, setUploaz] = useState("points")
   const [showTileLayer, setShowTileLayer] = useState(false);
   const [tileLayer, setTileLayer] = useState(null)
@@ -97,7 +96,7 @@ export default function MyApp(){
     axios
     .post(urlfile, formData)
     .then((response) => {
-      shpvals = response.data['array']
+      setShpVals(response.data['array'])
       shptyp = response.data['typ']
       pdf_file = response.data['pdf']
       console.log(response)
@@ -441,7 +440,10 @@ export default function MyApp(){
   }
 
   // Displays line or polygon onto map from Eval Mode output
-  function Showshp(){
+  function Showshp(shpvals, uploaz){
+    if (uploaz === 'upld'){
+      shpvals=[]
+    }
     if (finished2){
       if (shptyp === 'Polygon'){
         return <Polygon pathOptions={PURPLE_OPTIONS} positions={shpvals} />
@@ -664,72 +666,6 @@ export default function MyApp(){
     );
   };
 
-  const onIdModeChange = e => {
-    // If there is a visualized polygon from Eval mode, clear it
-    shpvals = []
-
-    setFinished(false)      //needed in idModeChange?
-    const newMode = e.target.value;
-    setIdMode(newMode)
-    console.log(e.target.value + ' mode set.')
-
-  }
-  function IdModeSelector() {
-    return(
-      <div>
-        <input type="radio"
-        name="route"
-        value="route"
-        id="route"
-        checked={idMode==="route"}
-        onChange={onIdModeChange}
-        disabled={uploaz!=="points"}/>
-        <label id="idModeRadioText" htmlFor="route">Use ML Routing</label>
-
-        <input type="radio"
-        name="rail"
-        value="rail"
-        id="rail"
-        checked={idMode==="rail"}
-        onChange={onIdModeChange}
-        disabled={uploaz!=="points"}/>
-        <label id="idModeRadioText" htmlFor="rail">Use Railways</label>
-      </div>
-    )
-  }
-
-  const onModeChange = e => {
-    // If there is a visualized polygon from Eval mode, clear it
-    shpvals = []
-
-    setFinished(false)
-    setUploaz(e.target.value)
-    console.log("onModeChange " + uploaz)
-  }
-
-  function ModeSelector() {
-    return (
-      <div>
-        <input type="radio"
-        name="selectpoints"
-        value="points"
-        id="points"
-        checked={uploaz=== "points"}
-        onChange={onModeChange}/>
-        <label id="modeRadioText" htmlFor="points">Identify Route</label>
-
-        <input type="radio"
-        name="selectpoints"
-        value="upld"
-        id="upld"
-        checked={uploaz=== "upld"}
-        onChange={onModeChange}/>
-        <label id="modeRadioText" htmlFor="upld">Evaluate Corridor</label>
-      </div>
-    )
-  }
-
-
   function VectorTileLayerWrapper() {
         return showTileLayer ?
         <VectorTileLayer 
@@ -830,12 +766,12 @@ export default function MyApp(){
         <EndMarkers/>
         <ScaleControl position="bottomright" />
         <ShowPipeline/>
-        <Showshp/>
+        <Showshp uploaz={uploaz} shpvals={shpvals}/>
       </MapContainer>
 
       <LayerInput/>
       <LayerButtons tileLayer={tileLayer}/>
-      <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"}/>
+      <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"} setShpVals={setShpVals}/>
       {uploaz === 'points' ? 
       <IdMode 
       location={location} 
@@ -848,6 +784,7 @@ export default function MyApp(){
       srcLat={srcLat} srcLon={srcLon} destLat={destLat} destLon={destLon} setUpdateSrcLat={setUpdateSrcLat} 
       setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} setupdateDestLon={setupdateDestLon} 
       setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon}
+      shpvals={shpvals}
       /> : null }
       {uploaz==='points' ? <IdModeBtns/> : null}
       {uploaz === 'upld' ? 
