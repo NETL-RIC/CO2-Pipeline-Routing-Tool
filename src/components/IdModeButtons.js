@@ -4,24 +4,26 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 export default function IdModeButtons( {setBtnGroupState, btntxt1, btntxt2, toolMode} ) {
-  const [mode, setMode] = React.useState('');
+  const [mode, setMode] = React.useState('route');
 
 
   const handleChange = (event, newMode) => {
-
-    if (newMode === 'rail'){
-      setBtnGroupState('rail')
-    } else if (newMode === 'route'){
-      setBtnGroupState('route')
+    // to prevent de-selection, ensures one button is pressed at all times
+    if (newMode !== null){
+      if (newMode === 'rail'){
+        setBtnGroupState('rail')
+      } else if (newMode === 'route'){
+        setBtnGroupState('route')
+      }
+      setMode(newMode)
     }
-    setMode(newMode)
   };
 
   const children = [
-    <ToggleButton value="rail" key="rail">
+    <ToggleButton value="route" key="route">
       {btntxt1}
     </ToggleButton>,
-    <ToggleButton value="route" key="route">
+    <ToggleButton value="rail" key="rail">
       {btntxt2}
     </ToggleButton>,
   ];

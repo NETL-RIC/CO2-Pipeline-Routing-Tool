@@ -9,12 +9,14 @@ import axios from "axios";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
+import MainToolModeButtons from "./components/MainToolModeButtons"
+import IdMode from './components/IdMode';
+import EvalMode from './components/EvalMode';
+
 import netlLogo from "./NETL_Square_GREEN_E.png";
 import doeLogo from "./DOE_Logo_Color.png";
 import discoverLogo from "./discover.jpg";
 import bilLogo from "./BIL.png"
-import MainToolModeButtons from "./components/MainToolModeButtons"
-import IdMode from './components/IdMode';
 
 global.Buffer = require('buffer').Buffer;
 
@@ -51,52 +53,28 @@ export default function MyApp(){
   const [endloc, setEndloc] = useState('')
   const [value1, setValue1] = useState('Select known CCS project as start location')
   const [value2, setValue2] = useState('Select known CCS project as destination location')
-
-
   const [isLoadingIdMode, setIsLoadingIdMode] = useState(false)
   const [isLoadingEvalMode, setIsLoadingEvalMode] = useState(false)
   const [finished2, setFinished2] = useState('')
-
   const [pipeshow, setpipeloc] = useState(false);
   const [finished, setFinished] = useState('')
   const [showServerError, setShowServerError] = useState(false);
-
   const [location, setLocation] = useState("")
-
   const [files, setFiles] = useState([]);
-
   const [startloc, setStartloc] = useState('')
-
   const [idMode, setIdMode] = useState("")
-
-
-
-  const [uploaz, setUploaz] = useState("")
-
+  const [uploaz, setUploaz] = useState("points")
   const [showTileLayer, setShowTileLayer] = useState(false);
-  /*const [tileLayer, setTileLayer] = useState('https://arcgis.netl.doe.gov/server/rest/services/Hosted/CO2_Locate_Public_Wells_Ver_1_Cache/VectorTileServer')*/
   const [tileLayer, setTileLayer] = useState(null)
-
   const [showLayerChecked, setShowLayerChecked] = useState(false);
-
   const customIcon1 = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
     iconSize: [30,30]
   })
-
   const customIcon2 = new Icon({
     iconUrl: require("./placeholder.png"),
     iconSize: [30,30]
   })
-
-
-
-
-
-
-
-
-
 
   
   // 'Evaluate' button (handleMultipleSubmit() formerly)
@@ -751,27 +729,6 @@ export default function MyApp(){
     )
   }
 
-  // When used in a react component, the 'x files selected / no files uploaded' text doesn't change
-  function EvalMode(){
-    return(
-      <div>
-      <form onSubmit={evaluateCorridor} disabled={uploaz!=="upld"}>
-        <h4> Upload Shapefiles</h4>
-        <input type="file" multiple onChange={handleMultipleChange} disabled={uploaz!=="upld"} />
-        <button type="submit" disabled={uploaz!=="upld"}>Evaluate</button>
-      </form>
-      <br></br>
-      <p>
-        <Button disabled={uploaz!=="upld"} onClick={handlePDFDownload}>
-          <i className="fas fa-download"/>
-          Download Report
-        </Button>
-      </p>
-      <br/>
-    </div>
-    )
-  }
-
 
   function VectorTileLayerWrapper() {
         return showTileLayer ?
@@ -846,6 +803,7 @@ export default function MyApp(){
     )
   }
 
+
   return(
     <div>
       {/* Utility components */}
@@ -877,26 +835,25 @@ export default function MyApp(){
 
       <LayerInput/>
       <LayerButtons tileLayer={tileLayer}/>
-
       <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"}/>
-      {uploaz === 'points' ? <IdMode location={location} setLocation={setLocation} value1={value1} setValue1={setValue1} value2={value2} setValue2={setValue2} setShowLoc={setShowloc} setEndLoc={setEndloc} setBtnGroupState={setIdMode} btntxt1={"Route Mode"} btntxt2={"Rail Mode"} toolMode={uploaz} srcLat={srcLat} srcLon={srcLon} destLat={destLat} destLon={destLon} setUpdateSrcLat={setUpdateSrcLat} setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} setupdateDestLon={setupdateDestLon} setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon}/> : null }
+      {uploaz === 'points' ? 
+      <IdMode 
+      location={location} 
+      setLocation={setLocation} 
+      value1={value1} 
+      setValue1={setValue1} 
+      value2={value2} 
+      setValue2={setValue2} setShowLoc={setShowloc} setEndLoc={setEndloc} setBtnGroupState={setIdMode} 
+      btntxt1={"Pipeline Mode"} btntxt2={"Railway Mode"} toolMode={uploaz} 
+      srcLat={srcLat} srcLon={srcLon} destLat={destLat} destLon={destLon} setUpdateSrcLat={setUpdateSrcLat} 
+      setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} setupdateDestLon={setupdateDestLon} 
+      setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon}
+      /> : null }
       {uploaz==='points' ? <IdModeBtns/> : null}
-      <br></br>
-      <div>
-        <form onSubmit={evaluateCorridor} disabled={uploaz!=="upld"}>
-          <h4> Upload Shapefiles</h4>
-          <input type="file" multiple onChange={handleMultipleChange} disabled={uploaz!=="upld"} />
-          <button type="submit" disabled={uploaz!=="upld"}>Evaluate</button>
-        </form>
-        <br></br>
-        <p>
-          <Button disabled={uploaz!=="upld"} onClick={handlePDFDownload}>
-            <i className="fas fa-download"/>
-            Download Report
-          </Button>
-        </p>
-        <br/>
-      </div>
+      {uploaz === 'upld' ? 
+      <EvalMode
+      evaluateCorridor={evaluateCorridor} handleMultipleChange={handleMultipleChange} handlePDFDownload={handlePDFDownload}
+      /> : null}
       <Footer/>
     </div>
   )

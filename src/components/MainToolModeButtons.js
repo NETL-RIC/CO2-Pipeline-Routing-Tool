@@ -4,15 +4,19 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 export default function MainToolModeButtons( {setBtnGroupState, btntxt1, btntxt2} ) {
-  const [mode, setMode] = React.useState('');
 
+  const [mode, setMode] = React.useState('idmode');
   const handleChange = (event, newMode) => {
-    if (newMode === 'idmode'){
-      setBtnGroupState('points')
-    } else if (newMode === 'evalmode'){
-      setBtnGroupState('upld')
+
+    // ensure one button is always active
+    if (newMode !== null){
+      if (newMode === 'idmode'){
+        setBtnGroupState('points')
+      } else if (newMode === 'evalmode'){
+        setBtnGroupState('upld')
+      }
+      setMode(newMode);
     }
-    setMode(newMode);
   };
 
   const children = [

@@ -127,7 +127,10 @@ function StartEndButtons( {location, setLocation} ){
         </div>
 )
 }
-function StartEndDetails( {value1, setValue1, value2, setValue2, setShowloc, setEndloc, srcLat, srcLon, destLat, destLon, setUpdateSrcLat, setupdateSrcLon, setupdateDestLat, setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon} ){
+function StartEndDetails( {value1, setValue1, value2, setValue2, 
+  setShowloc, setEndloc, srcLat, 
+  srcLon, destLat, destLon, setUpdateSrcLat, 
+  setupdateSrcLon, setupdateDestLat, setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon} ){
 
   // Dropdown component for start point
   function DropdownStart() {
@@ -280,12 +283,22 @@ return(
 )
 }
 
-export default function IdMode( {location, setLocation, value1, setValue1, value2, setValue2, setShowLoc, setEndLoc, setBtnGroupState, btntxt1, btntxt2, toolMode, srcLat, srcLon, destLat, destLon, setUpdateSrcLat, setupdateSrcLon, setupdateDestLat, setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon} ){
+export default function IdMode( {location, setLocation, value1, setValue1, value2, 
+  setValue2, setShowLoc, setEndLoc, setBtnGroupState, 
+  btntxt1, btntxt2, toolMode, srcLat, srcLon, destLat, 
+  destLon, setUpdateSrcLat, setupdateSrcLon, setupdateDestLat, 
+  setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon} ){
     return(
         <div>
             <IdModeButtons setBtnGroupState={setBtnGroupState} btntxt1={btntxt1} btntxt2={btntxt2} toolMode={toolMode}/>
             <StartEndButtons location={location} setLocation={setLocation}/>
-            <StartEndDetails value1={value1} setValue1={setValue1} value2={value2} setValue2={setValue2} setShowloc={setShowLoc} setEndloc={setEndLoc} srcLat={srcLat} srcLon={srcLon} destLat={destLat} destLon={destLon} setUpdateSrcLat={setUpdateSrcLat} setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} setupdateDestLon={setupdateDestLon} setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon} />
+            <StartEndDetails value1={value1} setValue1={setValue1} value2={value2} setValue2={setValue2} 
+              setShowloc={setShowLoc} setEndloc={setEndLoc} srcLat={srcLat} 
+              srcLon={srcLon} destLat={destLat} destLon={destLon} setUpdateSrcLat={setUpdateSrcLat} 
+              setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} 
+              setupdateDestLon={setupdateDestLon} setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon} 
+            />
+            <br></br>
         </div>
     )
 }
