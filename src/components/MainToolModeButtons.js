@@ -3,7 +3,7 @@ import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
-export default function MainToolModeButtons( {setBtnGroupState, btntxt1, btntxt2, setShpVals, setLineVals} ) {
+export default function MainToolModeButtons( {setBtnGroupState, btntxt1, btntxt2, setEvalModePolygon, setIdModePolygon} ) {
 
   const [mode, setMode] = React.useState('idmode');
   const handleChange = (event, newMode) => {
@@ -12,11 +12,11 @@ export default function MainToolModeButtons( {setBtnGroupState, btntxt1, btntxt2
     if (newMode !== null){
       if (newMode === 'idmode'){
         // clear Eval Mode pipeline from map
-        setShpVals([])
+        setEvalModePolygon([])
         setBtnGroupState('points')
       } else if (newMode === 'evalmode'){
         // clear Id Mode pipeline from map
-        setLineVals([])
+        setIdModePolygon([])
         setBtnGroupState('upld')
       }
       setMode(newMode);

@@ -3,7 +3,7 @@ import axios from "axios";
 import Button from 'react-bootstrap/Button';
 import { DropdownList } from "react-widgets";
 
-import IdModeButtons from './IdModeButtons';
+import RouteOrRailButtons from './RouteOrRailButtons';
 
 let start = [0,0]
 let laststart = -999
@@ -290,7 +290,7 @@ export default function IdMode( {location, setLocation, value1, setValue1, value
   setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon} ){
     return(
         <div>
-            <IdModeButtons setBtnGroupState={setBtnGroupState} btntxt1={btntxt1} btntxt2={btntxt2} toolMode={toolMode}/>
+            <RouteOrRailButtons setBtnGroupState={setBtnGroupState} btntxt1={btntxt1} btntxt2={btntxt2} toolMode={toolMode}/>
             <StartEndButtons location={location} setLocation={setLocation}/>
             <StartEndDetails value1={value1} setValue1={setValue1} value2={value2} setValue2={setValue2} 
               setShowloc={setShowLoc} setEndloc={setEndLoc} srcLat={srcLat} 

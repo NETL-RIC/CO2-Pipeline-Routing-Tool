@@ -85,7 +85,17 @@ code {
   margin-right: 50px;
 }
 
-#gen-btn{
+#submit-btn{
   background-color:green;
   border-color:#035703;
+}
+
+#submit-btn-eval{
+  background-color:green;
+  border-color:#035703;
+  padding-left:10px;
+}
+
+#eval-form {
+  padding-left:10px;
 }

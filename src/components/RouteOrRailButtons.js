@@ -3,7 +3,7 @@ import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
-export default function IdModeButtons( {setBtnGroupState, btntxt1, btntxt2, toolMode} ) {
+export default function RouteOrRailButtons( {setBtnGroupState, btntxt1, btntxt2, toolMode} ) {
   const [mode, setMode] = React.useState('route');
 
 

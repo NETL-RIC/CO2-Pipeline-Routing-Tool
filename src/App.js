@@ -38,8 +38,8 @@ let shptyp = ''
 
 export default function MyApp(){
 
-  const [shpvals, setShpVals] = useState([])
-  const [linevals, setLineVals] = useState([])
+  const [evalModePolygon, setEvalModePolygon] = useState([])
+  const [idModePolygon, setIdModePolygon] = useState([])
 
   const [srcLat, setSrcLat] = useState('')
   const [srcLon, setSrcLon] = useState('')
@@ -97,7 +97,7 @@ export default function MyApp(){
     axios
     .post(urlfile, formData)
     .then((response) => {
-      setShpVals(response.data['array'])
+      setEvalModePolygon(response.data['array'])
       shptyp = response.data['typ']
       pdf_file = response.data['pdf']
       console.log(response)
@@ -140,7 +140,7 @@ export default function MyApp(){
     })
 
     .then((response) => {
-      setLineVals(response.data['route'])
+      setIdModePolygon(response.data['route'])
       zip_file = response.data['zip']
       console.log("Got line data");
       setFinished(true);
@@ -435,8 +435,8 @@ export default function MyApp(){
     if (finished){
     console.log("Returning line data as Polyline for map")
     console.log("Line array in front end: ")
-    console.log(linevals)
-    return <Polyline pathOptions={LIME_OPTIONS} positions={linevals} />
+    console.log(idModePolygon)
+    return <Polyline pathOptions={LIME_OPTIONS} positions={idModePolygon} />
     }
   }
 
@@ -444,10 +444,10 @@ export default function MyApp(){
   function ShowEvalModeShape(){
     if (finished2){
       if (shptyp === 'Polygon'){
-        return <Polygon pathOptions={PURPLE_OPTIONS} positions={shpvals} />
+        return <Polygon pathOptions={PURPLE_OPTIONS} positions={evalModePolygon} />
       }
       else if (shptyp === 'LineString'){
-        return <Polyline pathOptions={PURPLE_OPTIONS} positions={shpvals} />
+        return <Polyline pathOptions={PURPLE_OPTIONS} positions={evalModePolygon} />
       }
     }
   }
@@ -629,11 +629,11 @@ export default function MyApp(){
 
   }
 
-  function IdModeBtns() {
+  function GenAndDownloadButtons() {
     return(
       <div>
         <p>
-          <Button id="gen-btn" type="button" onClick={generatePipeline}> Generate Pipeline </Button>
+          <Button id="submit-btn" type="button" onClick={generatePipeline}> Generate Pipeline </Button>
         </p>
 
         <p>
@@ -769,7 +769,7 @@ export default function MyApp(){
 
       <LayerInput/>
       <LayerButtons tileLayer={tileLayer}/>
-      <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"} setShpVals={setShpVals} setLineVals={setLineVals}/>
+      <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"} setEvalModePolygon={setEvalModePolygon} setIdModePolygon={setIdModePolygon}/>
       {uploaz === 'points' ? 
       <IdMode 
       location={location} 
@@ -782,11 +782,10 @@ export default function MyApp(){
       srcLat={srcLat} srcLon={srcLon} destLat={destLat} destLon={destLon} setUpdateSrcLat={setUpdateSrcLat} 
       setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} setupdateDestLon={setupdateDestLon} 
       setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon}
-      shpvals={shpvals}
       /> : null }
 
       {uploaz==='points' ? 
-      <IdModeBtns
+      <GenAndDownloadButtons
       /> : null}
 
       {uploaz === 'upld' ? 
