@@ -21,7 +21,6 @@ import bilLogo from "./BIL.png"
 global.Buffer = require('buffer').Buffer;
 
 // visualizes Id mode line
-let linevals = []
 
 
 let zip_file = ''
@@ -40,6 +39,8 @@ let shptyp = ''
 export default function MyApp(){
 
   const [shpvals, setShpVals] = useState([])
+  const [linevals, setLineVals] = useState([])
+
   const [srcLat, setSrcLat] = useState('')
   const [srcLon, setSrcLon] = useState('')
   const [destLat, setDestLat] = useState('')
@@ -139,7 +140,7 @@ export default function MyApp(){
     })
 
     .then((response) => {
-      linevals = response.data['route']
+      setLineVals(response.data['route'])
       zip_file = response.data['zip']
       console.log("Got line data");
       setFinished(true);
@@ -430,7 +431,7 @@ export default function MyApp(){
 
 
   // Displays pipeline onto map from ID Mode output
-  function ShowPipeline(){
+  function ShowIdModeLine(){
     if (finished){
     console.log("Returning line data as Polyline for map")
     console.log("Line array in front end: ")
@@ -440,10 +441,7 @@ export default function MyApp(){
   }
 
   // Displays line or polygon onto map from Eval Mode output
-  function Showshp(shpvals, uploaz){
-    if (uploaz === 'upld'){
-      shpvals=[]
-    }
+  function ShowEvalModeShape(){
     if (finished2){
       if (shptyp === 'Polygon'){
         return <Polygon pathOptions={PURPLE_OPTIONS} positions={shpvals} />
@@ -635,11 +633,11 @@ export default function MyApp(){
     return(
       <div>
         <p>
-          <Button id="gen-btn" type="button" onClick={generatePipeline} disabled={uploaz!=="points"}> Generate Pipeline </Button>
+          <Button id="gen-btn" type="button" onClick={generatePipeline}> Generate Pipeline </Button>
         </p>
 
         <p>
-          <Button disabled={uploaz!=="points"} onClick={handleZIPDownload}>
+          <Button onClick={handleZIPDownload}>
             <i className="fas fa-download"/>
             Download Report and Shapefile
           </Button>
@@ -765,13 +763,13 @@ export default function MyApp(){
         <StartMarkers/>
         <EndMarkers/>
         <ScaleControl position="bottomright" />
-        <ShowPipeline/>
-        <Showshp uploaz={uploaz} shpvals={shpvals}/>
+        <ShowIdModeLine/>
+        <ShowEvalModeShape/>
       </MapContainer>
 
       <LayerInput/>
       <LayerButtons tileLayer={tileLayer}/>
-      <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"} setShpVals={setShpVals}/>
+      <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"} setShpVals={setShpVals} setLineVals={setLineVals}/>
       {uploaz === 'points' ? 
       <IdMode 
       location={location} 
@@ -786,7 +784,11 @@ export default function MyApp(){
       setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon}
       shpvals={shpvals}
       /> : null }
-      {uploaz==='points' ? <IdModeBtns/> : null}
+
+      {uploaz==='points' ? 
+      <IdModeBtns
+      /> : null}
+
       {uploaz === 'upld' ? 
       <EvalMode
       evaluateCorridor={evaluateCorridor} handleMultipleChange={handleMultipleChange} handlePDFDownload={handlePDFDownload}
