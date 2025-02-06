@@ -17,6 +17,7 @@ def least_cost_path_ml(start, dest, mode):
     # error checking .tifs
     try:
         wrapper = MLWrapper(mode=mode)
+        print("Starting least cost path in " + mode + " mode")
     except FileNotFoundError as e:
         print(e.args)
 
@@ -475,8 +476,14 @@ class MLWrapper:
 
         if (mode == 'route'):
             raster_path=resource_path('cost_surfaces/raw_cost_10km_aea/cost_10km_aea.tif')
+            print("Route Mode")
+
         elif (mode == 'rail'):
             raster_path=resource_path('cost_surfaces/10km_RAIL/cost_10km_aea_RAIL_ready.tif')    
+            cost_degree = 1
+            distance_factor = 0.5
+            print("Rail Mode")
+
         else:
             raise KeyError("Neither normal nor rail mode selected")
 

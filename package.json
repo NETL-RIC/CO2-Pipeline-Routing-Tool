@@ -8,6 +8,9 @@
   "proxy": "http://127.0.0.1:5000",
   "main": "./public/electron.js",
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^6.4.2",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -21,6 +24,7 @@
     "esri-leaflet": "^3.0.13",
     "esri-leaflet-vector": "^4.2.5",
     "leaflet": "^1.9.4",
+    "maplibre-gl": "^5.1.0",
     "react": "^18.3.1",
     "react-bootstrap": "^2.9.0",
     "react-dom": "^18.3.1",

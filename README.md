@@ -25,16 +25,19 @@ If node.js and npm are not installed on your computer, contact IT to install it 
 Select the Windows installer at https://nodejs.org/en/download. npm comes packaged with node.js, so if node.js is installed,
 npm will be installed also. Now retry step 1 to determine if both are installed.
 
-Before running the project, certain library dependencies must be installed for the project to function. These are:
+## Installing Dependencies
+All project dependencies are listed in the package.json. You can install them all by entering
 
-    leaflet
-    react-leaflet
-    react-widgets
-    react-bootstrap
-    axios
+    npm install
 
-To install these libraries, open the terminal and enter npm install leaflet, npm install react-leaflet, npm install react-widgets,
-npm install react-bootstrap bootstrap, and npm install axios respectively.
+in the root project folder where the file is. If that command yields errors, try adding the following flag to the command:
+
+    npm install --legacy-peer-deps
+
+## Dependency Errors
+If 'module not found, can't resolve: examplepackage' errors occur, try installing the package manually via:
+
+    npm install examplepackage --legacy-peer-deps
 
 ## Missing Large Files
 Some crucial large files (.tifs) are missing from the repo because they exceed Github's 100MB file size limit without using Github LFS, which

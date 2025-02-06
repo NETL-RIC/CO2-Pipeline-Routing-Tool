@@ -13,6 +13,8 @@ import netlLogo from "./NETL_Square_GREEN_E.png";
 import doeLogo from "./DOE_Logo_Color.png";
 import discoverLogo from "./discover.jpg";
 import bilLogo from "./BIL.png"
+import MainToolModeButtons from "./components/MainToolModeButtons"
+import IdMode from './components/IdMode';
 
 global.Buffer = require('buffer').Buffer;
 
@@ -37,6 +39,46 @@ let shptyp = ''
 
 export default function MyApp(){
 
+  const [srcLat, setSrcLat] = useState('')
+  const [srcLon, setSrcLon] = useState('')
+  const [destLat, setDestLat] = useState('')
+  const [destLon, setDestLon] = useState('')
+  const [updateSrcLat, setUpdateSrcLat] = useState(srcLat)
+  const [updateSrcLon, setupdateSrcLon] = useState(srcLon)
+  const [updateDestLat, setupdateDestLat] = useState(destLat)
+  const [updateDestLon, setupdateDestLon] = useState(destLon)
+  const [show, setShowloc] = useState(false);
+  const [endloc, setEndloc] = useState('')
+  const [value1, setValue1] = useState('Select known CCS project as start location')
+  const [value2, setValue2] = useState('Select known CCS project as destination location')
+
+
+  const [isLoadingIdMode, setIsLoadingIdMode] = useState(false)
+  const [isLoadingEvalMode, setIsLoadingEvalMode] = useState(false)
+  const [finished2, setFinished2] = useState('')
+
+  const [pipeshow, setpipeloc] = useState(false);
+  const [finished, setFinished] = useState('')
+  const [showServerError, setShowServerError] = useState(false);
+
+  const [location, setLocation] = useState("")
+
+  const [files, setFiles] = useState([]);
+
+  const [startloc, setStartloc] = useState('')
+
+  const [idMode, setIdMode] = useState("")
+
+
+
+  const [uploaz, setUploaz] = useState("")
+
+  const [showTileLayer, setShowTileLayer] = useState(false);
+  /*const [tileLayer, setTileLayer] = useState('https://arcgis.netl.doe.gov/server/rest/services/Hosted/CO2_Locate_Public_Wells_Ver_1_Cache/VectorTileServer')*/
+  const [tileLayer, setTileLayer] = useState(null)
+
+  const [showLayerChecked, setShowLayerChecked] = useState(false);
+
   const customIcon1 = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
     iconSize: [30,30]
@@ -47,9 +89,16 @@ export default function MyApp(){
     iconSize: [30,30]
   })
 
-  const [isLoadingIdMode, setIsLoadingIdMode] = useState(false)
-  const [isLoadingEvalMode, setIsLoadingEvalMode] = useState(false)
-  const [finished2, setFinished2] = useState('')
+
+
+
+
+
+
+
+
+
+  
   // 'Evaluate' button (handleMultipleSubmit() formerly)
   function evaluateCorridor(event) {
     event.preventDefault();
@@ -85,10 +134,6 @@ export default function MyApp(){
     });
   }
 
-  const [pipeshow, setpipeloc] = useState(false);
-  const [finished, setFinished] = useState('')
-  const [showServerError, setShowServerError] = useState(false);
-  const [endloc, setEndloc] = useState('')
 
   // 'Generate Pipeline' button (sendData() formerly)
   function generatePipeline() {
@@ -348,7 +393,6 @@ export default function MyApp(){
     );
   }
     
-
   // Single selected point is outside of US or AK
   function InvalidLocationPopup() {
 
@@ -443,209 +487,14 @@ export default function MyApp(){
   }
 
 
-  const [location, setLocation] = useState("")
-  const onOptionChange = e => {
-    setLocation(e.target.value)
-    console.log(location)
-  }
-
-  const [files, setFiles] = useState([]);
   function handleMultipleChange(event) {
     setFiles([...event.target.files]);
   } 
 
-  const [show, setShowloc] = useState(false);
-  const [srcLat, setSrcLat] = useState('')
-  const [srcLon, setSrcLon] = useState('')
-  const [updateSrcLat, setUpdateSrcLat] = useState(srcLat)
-  const [updateSrcLon, setupdateSrcLon] = useState(srcLon)
+
   // Handle START point click
-  const HandleClick1 = () => {
-    laststart = 0
-    let stlat = Number(srcLat)
-    let stlon = Number(srcLon)
-
-    let pt2 = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+stlat+"&lon="+stlon;
-
-    axios({
-      method: "GET",
-      url: pt2,
-    })
-    .then((response) => {
-      let enddata = response.data['address']
-
-      if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
-        setShowloc(true)
-
-      }else{
-
-        if(enddata['state'] === "Alaska"){
-          setEndloc('Alaska')
-        }else{
-          setEndloc('US')
-        }
-        setUpdateSrcLat(srcLat)
-        setupdateSrcLon(srcLon)
-        start[0] = Number(srcLat)
-        start[1] = Number(srcLon)
-      }
-
-    }).catch((error) => {
-      if (error.response) {
-        console.log(error.response)
-        console.log(error.response.status)
-        console.log(error.response.headers)
-        }
-    })
-  }
-
-  const [destLat, setDestLat] = useState('')
-  const [destLon, setDestLon] = useState('')
-  const [updateDestLat, setupdateDestLat] = useState(destLat)
-  const [updateDestLon, setupdateDestLon] = useState(destLon)
-  // Handle END point click
-  const HandleClick2 = () =>{
-    lastend = 0
-    let dtlat = Number(destLat)
-    let dtlon = Number(destLon)
-
-    let pt3 = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+dtlat+"&lon="+dtlon;
-
-    axios({
-      method: "GET",
-      url: pt3,
-    })
-    .then((response) => {
-      let enddata = response.data['address']
-
-      if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
-        setShowloc(true)
-
-      }else{
-
-        if(enddata['state'] === "Alaska"){
-          setEndloc('Alaska')
-        }else{
-          setEndloc('US')
-        }
-        setupdateDestLat(destLat)
-        setupdateDestLon(destLon)
-        end[0] = Number(destLat)
-        end[1] = Number(destLon)
-      }
-
-    }).catch((error) => {
-      if (error.response) {
-        console.log(error.response)
-        console.log(error.response.status)
-        console.log(error.response.headers)
-        }
-    })
-  }
-
-  const handleChangeSrcLat = (event) =>{
-    setSrcLat(event.target.value)
-  }
-
-  const handleChangeSrcLon = (event) =>{
-    setSrcLon(event.target.value)
-  }
-
-  const handleChangeDestLat = (event) => {
-    setDestLat(event.target.value)
-  }
-
-  const handleChangeDestLon = (event) => {
-    setDestLon(event.target.value)
-  }
-
-  let colors1 = [
-    { id: [39.87, -88.89], name: 'Illinois Industrial Carbon Capture and Storage Project'},
-    { id: [45, -85], name: 'MRCSP Development Phase - Michigan Basin Project' },
-    { id: [35, -98], name: 'PurdySho-Vel-Tum EOR Project'},
-    { id: [30, -101], name: 'Val Verde NG Plants'},
-    { id: [39.863, -88.913], name: 'Illinois Industrial Carbon Capture and Storage'},
-    { id: [37.106767, -100.7977], name: 'Arkalon'},
-    { id: [37.959112, -100.83676], name: 'Bonanza BioEnergy'},
-    { id: [37.047329, -95.604094], name: 'Coffeyville Plant'},
-    { id: [45.113, -84.652], name: 'Core Energy CO2-EOR'},
-    { id: [46.8839, -102.3157], name: 'Red Trail'},
-    { id: [36.378636, -97.762739], name: 'Enid Fertilizer'},
-    { id: [29.866, -93.967], name: 'Air Products Port Arthur Facility'},
-    { id: [30.3718, -101.8449], name: 'Terrell Gas Processing'},
-    { id: [31.009, -88.025], name: 'SECARB Development Phase - Citronelle Project'},
-    { id: [37.536, -105.104], name: 'Oakdale NG Processing'},
-    { id: [40.530, -89.682], name: 'NRG Powerton Station'},
-    { id: [38.272, -89.668], name: 'Prairie State Energy Campus'},
-    { id: [37.046, -95.604], name: 'CO2 Capture from Coffeyville Fertilizer Plant'},
-    { id: [37.7903, -84.7144], name: 'EW Brown Generating Station'},
-    { id: [39.594529, -78.745292], name: 'AES Warrior Run'},
-    { id: [42.0916, -71.48352], name: 'Bellingham Cogeneration Facility'},
-    { id: [47.3727, -101.15679], name: 'Great River Energy'},
-    { id: [40.90214, -82.03784], name: 'Touchstone Bioconversion Pilot Plant'},
-    { id: [36.37858, -97.76379], name: 'Purdy Sho-Vel-Tum EOR Project'},
-    { id: [29.86493, -93.966697], name: 'Air Products and Chemicals Inc. CCS Project'},
-    { id: [31, -103], name: 'Century Plant Gas Processing'},
-    { id: [33.216456, -97.772382], name: 'Mitchell Energy Bridgeport Plant'},
-    { id: [29.47678, -95.637769], name: 'W.A. Parish Post-Combustion CO2 Capture and Sequestration Project'},
-    { id: [39.501027, -112.581819], name: 'Intermountain Power Agency'},
-    { id: [42.535541, -87.903483], name: 'We Energies Pleasant Prairie Field Pilot'},
-    { id: [35.760591, -117.379211], name: 'Searles Valley Minerals'},
-    { id: [41.88568, -110.0926], name: 'Shute Creek Plant'},
-    { id: [30.692226, -88.042569], name: 'Fuel Cell Carbon Capture Pilot Plant'},
-    { id: [31.01124, -88.024597], name: 'Linde/BASF FEED'},
-    { id: [33.2343, -86.4836], name: 'National Carbon Capture Center (NCCC)'},
-    { id: [33.417905, -111.928358], name: 'Center for Negative Carbon Emissions'},
-    { id: [35.27444, -119.32301], name: 'Elk Hills CCS'},
-    { id: [37.510632, -121.997288], name: 'Membrane Technology & Research, Inc.'},
-    { id: [37.458009, -122.175774], name: 'SRI International Post-combustion Sorbent'},
-    { id: [39.79121, -105.137092], name: 'TDA Research Post-combustion'},
-    { id: [39.791215, -105.136744], name: 'TDA Research Pre-combustion'},
-    { id: [31.006474, -88.008697], name: 'Gas Technology Institute'},
-    { id: [40.116306, -88.243522], name: 'Linde/Illinois'},
-    { id: [38.24935, -89.75296], name: 'Prairie State Generating Station CCS'},
-    { id: [37.106778, -100.799611], name: 'Arkalon Bioethanol'},
-    { id: [37.958806, -100.836556], name: 'Bonanza Bioethanol'},
-    { id: [37.050663, -95.604763], name: 'Coffeyville Fertilizer'},
-    { id: [38.03501, -84.504821], name: 'University of Kentucky Center for Applied Energy Research'},
-    { id: [38.03501, -84.504821], name: 'University of Kentucky Research Foundation'},
-    { id: [30.218533, -91.052119], name: 'PCS Nitrogen'},
-    { id: [39.594529, -78.745292], name: 'Warrior Run'},
-    { id: [45.1, -84.65], name: 'Core Energy'},
-    { id: [41.0809508, -101.1433768], name: 'Gerald Gentleman Coal Power Plant'},
-    { id: [40.764619, -73.971056], name: 'Global Thermostat'},
-    { id: [40.71217, -74.007155], name: 'Infinitree'},
-    { id: [35.905909, -78.863898], name: 'Research Triangle Institute'},
-    { id: [47.11495, -101.1725], name: 'Project Tundra'},
-    { id: [47.9198, -97.0605], name: 'University of North Dakota Energy and Environmental Research Center'},
-    { id: [35.194006, -94.646982], name: 'Shady Point'},
-    { id: [29.865806, -93.967361], name: 'Air Products Steam Methane Reformer'},
-    { id: [30.608764, -102.57876], name: 'Century Plant'},
-    { id: [29.646611, -95.055917], name: 'NET Power'},
-    { id: [33.63559, -96.60902], name: 'Panda Energy Fund'},
-    { id: [29.477964, -95.635209], name: 'Petra Nova'},
-    { id: [29.477964, -95.635209], name: 'Petra Nova'},
-    { id: [32.972554, -102.74361], name: 'University of Texas'},
-    { id: [44.388212, -105.459617], name: 'Dry Fork Power Plant CCS'},
-    { id: [43.280518, -107.6022], name: 'Lost Cabin'},
-    { id: [44.388212, -105.45961], name: 'Wyoming Integrated Test Center'},
-    { id: [47.361953, -101.838103], name: 'Great Plains Synfuel Plant'},
-  ];
-
-  let colors2 = [
-    { id: [39.87, -88.89], name: 'Illinois Industrial Carbon Capture and Storage Project'},
-    { id: [43, -106], name: 'LINC Energy - Wyoming EOR'},
-    { id: [45, -85], name: 'MRCSP Development Phase - Michigan Basin Project' },
-    { id: [35, -98], name: 'PurdySho-Vel-Tum EOR Project'},
-    { id: [40, -109], name: 'Rangely-Webber EOR'},
-    { id: [42, -109], name: 'Salt CreekMonellSussex Unit EOR'},
-    { id: [36, -101], name: 'SWP Development Phase - Farnsworth Unit Ochiltree Project'},
-    { id: [30, -101], name: 'Val Verde NG Plants'},
-    { id: [31, -102], name: 'Yates Oil Field EOR Operations'},
-  ];
 
   //----------------------------------------------SUPPORTING COMPONENTS----------------------------
-  const [startloc, setStartloc] = useState('')
   // Marker point component
   const StartMarkers = () => {
 
@@ -801,72 +650,6 @@ export default function MyApp(){
     )}
 
   }
-  
-  const [value1, setValue1] = useState('Select known CCS project as start location')
-  // Dropdown component for start point
-  function DropdownStart() {
-    laststart = 1
-    return (
-      <DropdownList
-        containerClassName='dropdown'
-        data={colors1}
-        datakey = 'id'
-        textField='name'
-        value={value1}
-        onChange={value1 => setValue1(value1)}
-        disabled={uploaz!=="points"}
-      />
-    )
-  }
-
-  const [value2, setValue2] = useState('Select known CCS project as destination location')
-  // Dropdown component for start point
-  function DropdownEnd() {
-
-    lastend = 1
-
-    return (
-      <DropdownList
-        containerClassName='dropdown'
-        data={colors2}
-        datakey = 'id'
-        textField='name'
-        value={value2}
-        onChange={value2 => setValue2(value2)}
-        disabled={uploaz!=="points"}
-      />
-    )
-  }
-
-  function AddStartLoc() {
-    return(
-      <div>
-        <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
-
-        <p> 
-          Latitude:   <input type="number" name="myInput1"  onChange={handleChangeSrcLat} value={srcLat} disabled={uploaz!=="points"}/> 
-          Longitude:  <input type="number" name="myInput2"  onChange={handleChangeSrcLon} value={srcLon} disabled={uploaz!=="points"}/>  
-          <Button size="sm" onClick={HandleClick1} disabled={uploaz!=="points"}> Save Start </Button >                      
-        </p> 
-        <div><DropdownStart/></div>
-      </div>
-    )
-  }
-
-  function AddEndLoc() {
-    return(
-      <div>
-        <h4>Add End Location in WGS84</h4>
-
-        <p> 
-          Latitude:   <input type="number" name="myInput3" onChange={handleChangeDestLat} value={destLat} disabled={uploaz!=="points"}/> 
-          Longitude:  <input type="number" name="myInput4" onChange={handleChangeDestLon} value={destLon} disabled={uploaz!=="points"}/>
-          <Button size="sm"  onClick={HandleClick2} disabled={uploaz!=="points"}> Save Destination </Button >            
-        </p>
-        <div><DropdownEnd/></div>
-      </div>
-    )
-  }
 
   function IdModeBtns() {
     return(
@@ -903,7 +686,6 @@ export default function MyApp(){
     );
   };
 
-  const [idMode, setIdMode] = useState("")
   const onIdModeChange = e => {
     // If there is a visualized polygon from Eval mode, clear it
     shpvals = []
@@ -938,7 +720,6 @@ export default function MyApp(){
     )
   }
 
-  const [uploaz, setUploaz] = useState("")
   const onModeChange = e => {
     // If there is a visualized polygon from Eval mode, clear it
     shpvals = []
@@ -992,9 +773,6 @@ export default function MyApp(){
   }
 
 
-  const [showTileLayer, setShowTileLayer] = useState(false);
-  /*const [tileLayer, setTileLayer] = useState('https://arcgis.netl.doe.gov/server/rest/services/Hosted/CO2_Locate_Public_Wells_Ver_1_Cache/VectorTileServer')*/
-  const [tileLayer, setTileLayer] = useState(null)
   function VectorTileLayerWrapper() {
         return showTileLayer ?
         <VectorTileLayer 
@@ -1003,7 +781,6 @@ export default function MyApp(){
   }
 
 
-  const [showLayerChecked, setShowLayerChecked] = useState(false);
   function LayerButtons() {
     function handleTileLayer(){
       showTileLayer ? setShowTileLayer(false) : setShowTileLayer(true);
@@ -1058,6 +835,7 @@ export default function MyApp(){
     )
   }
 
+
   // Footer node
   function Footer() {
     return (
@@ -1083,14 +861,13 @@ export default function MyApp(){
 
       {/*Regular page*/}
       <Header/>
+
       <MapContainer center={[39.8283, -98.5795]} zoom={5}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-
         <VectorTileLayerWrapper tileLayer={tileLayer}/>
-
         <StartMarkers/>
         <EndMarkers/>
         <ScaleControl position="bottomright" />
@@ -1101,53 +878,10 @@ export default function MyApp(){
       <LayerInput/>
       <LayerButtons tileLayer={tileLayer}/>
 
-      <ModeSelector/>
-      <IdModeSelector/>
-      
-      <div>
-        <input type="radio" 
-        name="location" 
-        value="start" 
-        id="start" 
-        checked={location === "start"} 
-        onChange={onOptionChange}
-        disabled={uploaz!=="points"}/>
-        <label htmlFor="start">Start</label>
-
-        <input type="radio" 
-        name="location" 
-        value="end" 
-        id="end" 
-        checked={location === "end"} 
-        onChange={onOptionChange}
-        disabled={uploaz!=="points"}/>
-        <label htmlFor="end">End</label>
-      </div>
-
-      <div>
-        <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
-
-        <p> 
-          Latitude:   <input type="number" name="myInput1"  onChange={handleChangeSrcLat} value={srcLat} disabled={uploaz!=="points"}/> 
-          Longitude:  <input type="number" name="myInput2"  onChange={handleChangeSrcLon} value={srcLon} disabled={uploaz!=="points"}/>  
-          <Button size="sm" onClick={HandleClick1} disabled={uploaz!=="points"}> Save Start </Button >                      
-        </p> 
-        <div><DropdownStart/></div>
-      </div>
-
-      <div>
-        <h4>Add End Location in WGS84</h4>
-
-        <p> 
-          Latitude:   <input type="number" name="myInput3" onChange={handleChangeDestLat} value={destLat} disabled={uploaz!=="points"}/> 
-          Longitude:  <input type="number" name="myInput4" onChange={handleChangeDestLon} value={destLon} disabled={uploaz!=="points"}/>
-          <Button size="sm"  onClick={HandleClick2} disabled={uploaz!=="points"}> Save Destination </Button >            
-        </p>
-        <div><DropdownEnd/></div>
-      </div>
-
+      <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"}/>
+      {uploaz === 'points' ? <IdMode location={location} setLocation={setLocation} value1={value1} setValue1={setValue1} value2={value2} setValue2={setValue2} setShowLoc={setShowloc} setEndLoc={setEndloc} setBtnGroupState={setIdMode} btntxt1={"Route Mode"} btntxt2={"Rail Mode"} toolMode={uploaz} srcLat={srcLat} srcLon={srcLon} destLat={destLat} destLon={destLon} setUpdateSrcLat={setUpdateSrcLat} setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} setupdateDestLon={setupdateDestLon} setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon}/> : null }
+      {uploaz==='points' ? <IdModeBtns/> : null}
       <br></br>
-      <IdModeBtns/>
       <div>
         <form onSubmit={evaluateCorridor} disabled={uploaz!=="upld"}>
           <h4> Upload Shapefiles</h4>
