@@ -1,6 +1,6 @@
 import { React, useState, useEffect } from 'react';
 import { DropdownList } from "react-widgets";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, ScaleControl, Polyline, Polygon } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, LayersControl, LayerGroup, Rectangle, Circle, FeatureGroup, useMapEvents, ScaleControl, Polyline, Polygon } from "react-leaflet";
 import { FeatureLayer} from "react-esri-leaflet";
 import VectorTileLayer from "react-esri-leaflet/plugins/VectorTileLayer";
 import { Icon } from "leaflet";
@@ -16,7 +16,7 @@ import EvalMode from './components/EvalMode';
 import netlLogo from "./NETL_Square_GREEN_E.png";
 import doeLogo from "./DOE_Logo_Color.png";
 import discoverLogo from "./discover.jpg";
-import bilLogo from "./BIL.png"
+
 
 global.Buffer = require('buffer').Buffer;
 
@@ -252,7 +252,6 @@ export default function MyApp(){
             <Modal.Header >
               <Modal.Title></Modal.Title>
                 <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
-                <img src={bilLogo} alt='BIL Logo' />
                 <img src={netlLogo} width={50} height={50}  alt='NETL Logo' />
                 <img src={doeLogo}  alt='DOE Logo' />
             </Modal.Header>
@@ -731,7 +730,6 @@ export default function MyApp(){
   function Footer() {
     return (
       <p>
-      <img src={bilLogo} alt='BIL Logo' />
       <Link to="https://www.netl.doe.gov/home/disclaimer">Disclaimer</Link>
       </p>
     )
@@ -739,6 +737,7 @@ export default function MyApp(){
 
 
   return(
+    
     <div>
       {/* Utility components */}
       {/*Initial popup */}
@@ -759,7 +758,26 @@ export default function MyApp(){
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <VectorTileLayerWrapper tileLayer={tileLayer}/>
+
+        <LayersControl position="topright"> 
+          <LayersControl.Overlay name="Intermodal facilities"> 
+            <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer' /> 
+          </LayersControl.Overlay> 
+
+          <LayersControl.Overlay name="Public infrastructure/HCAs "> 
+            <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Public_Infrastructure_Vector_Tile_Flat/VectorTileServer' /> 
+          </LayersControl.Overlay> 
+
+          <LayersControl.Overlay name="Natural gas pipelines"> 
+            <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Natural_Gas_Pipelines/VectorTileServer' /> 
+          </LayersControl.Overlay> 
+
+          <LayersControl.Overlay name="Hydrocarbon pipelines"> 
+            <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Hydrocarbon_Pipelines_Flat/VectorTileServer' /> 
+          </LayersControl.Overlay> 
+
+          </LayersControl>     
+
         <StartMarkers/>
         <EndMarkers/>
         <ScaleControl position="bottomright" />
