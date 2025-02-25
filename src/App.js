@@ -776,6 +776,10 @@ export default function MyApp(){
             <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Hydrocarbon_Pipelines_Flat/VectorTileServer' /> 
           </LayersControl.Overlay> 
 
+          <LayersControl.Overlay name="Frost Action Potential (High)"> 
+            <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat/VectorTileServer' /> 
+          </LayersControl.Overlay>
+
           </LayersControl>     
 
         <StartMarkers/>
