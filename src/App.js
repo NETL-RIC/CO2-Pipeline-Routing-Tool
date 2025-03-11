@@ -777,7 +777,7 @@ export default function MyApp(){
           </LayersControl.Overlay> 
 
           <LayersControl.Overlay name="Frost Action Potential (High)"> 
-            <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat/VectorTileServer' /> 
+            <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat_v2/VectorTileServer' /> 
           </LayersControl.Overlay>
 
           </LayersControl>     
