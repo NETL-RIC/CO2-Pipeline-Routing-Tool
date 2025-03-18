@@ -780,6 +780,10 @@ export default function MyApp(){
             <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat_v2/VectorTileServer' /> 
           </LayersControl.Overlay>
 
+          <LayersControl.Overlay name="Corrosion Potential"> 
+            <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Soil_Steel_Corrosion_Potential_v2/VectorTileServer' /> 
+          </LayersControl.Overlay> 
+
           </LayersControl>     
 
         <StartMarkers/>
