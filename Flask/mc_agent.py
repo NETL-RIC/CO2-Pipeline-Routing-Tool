@@ -119,6 +119,28 @@ def get_contiguous_area(bool_raster, min_size):
 
     return contiguous, output
 
+def find_transitions(arr):
+    """
+    Finds the indices where an array transitions from one value to another.
+
+    This function can be used to determine where to crop an input raster that
+    is not of the expected dimensions. Usually when this occurs the outside area
+    is 0 (non valid areas) and the raster begins where the values transition to
+    -1.
+
+    Args:
+        arr (np.ndarray): The input array.
+
+    Returns:
+        (y1, x1), (y2, x2) tuple: The indices of the top left corner and bottom
+            right corner.
+    """
+    diff = np.diff(arr)
+    transition_indices = np.where(diff != 0)
+    y1, y2 = transition_indices[0][0], transition_indices[0][-1]
+    x1, x2 = transition_indices[1][0], transition_indices[1][-1]
+    return (y1+1, x1+1), (y2+1, x2+1)
+
 class CostSurface:
     """
     A class for manipulating cost surfaces in both coordinates systems
@@ -155,8 +177,14 @@ class CostSurface:
         # Set all values less than -1 to -1 to represent out of bounds/no-go
         raster[raster<-1]=-1
 
-        # Make a copy of the raw raster array to modify
-        raster = arr.copy()
+        # Make sure the raster has been cropped, if not crop it
+        if raster[0,0] != -1.0:
+            # Find boundaries
+            (y1, x1), (y2, x2) = find_transitions(raster)
+            raster = raster[y1:y2, x1:x2]
+
+        else:
+            (y1, x1), (y2, x2) = (0, 0), (-1, -1)
 
         # Reset values which are outside expected range (these values should be -1)
         raster[raster==np.inf] = -1
@@ -208,7 +236,7 @@ class CostSurface:
 
         if visualize:
             fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(15,12))
-            ax[0,0].imshow(arr, cmap='gray')
+            ax[0,0].imshow(arr[y1:y2, x1:x2], cmap='gray')
             ax[0,0].set_title('Original\n{}'.format(arr.shape))
 
             ax[0,1].imshow(contiguous, cmap='gray')
