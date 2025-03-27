@@ -504,6 +504,10 @@ class MLWrapper:
 
         if (mode == 'route'):
             raster_path=resource_path('cost_surfaces/raw_cost_10km_aea/cost_10km_aea.tif')
+            """
+            cost_degree = 2
+            distance_factor = 0.2
+            """
             print("Route Mode")
 
         elif (mode == 'rail'):
@@ -520,9 +524,6 @@ class MLWrapper:
         self.agent = MCAgent(trajectories=trajectories, num_workers=num_workers, distance_factor=distance_factor)
 
     def route(self, start, target, show_viz=False):
-        print("In mc_agent.MLWrapper.route:") 
-        print(f"start is {start}")
-        print(f"target is {target}")
 
         surface = self.cost_surface.cost
         no_go = self.cost_surface.no_go

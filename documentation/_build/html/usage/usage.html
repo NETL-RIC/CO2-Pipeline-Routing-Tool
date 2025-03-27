@@ -50,7 +50,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Usage</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Operation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#identification-mode">Identification Mode</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#identify-route">Identify Route</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pipeline-mode-vs-railway-mode">Pipeline Mode vs Railway Mode</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#start-and-end-points">Start and End Points</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#clicking-on-the-map">Clicking On The Map</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#entering-coordinates">Entering Coordinates</a></li>
@@ -61,7 +62,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#download-report">Download Report</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#evaluation-mode">Evaluation Mode</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#evaluate-corridor">Evaluate Corridor</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#upload-shapefile">Upload Shapefile</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id1">Download Report</a></li>
 </ul>
@@ -98,12 +99,16 @@
   <section id="operation">
 <h1>Operation<a class="headerlink" href="#operation" title="Permalink to this heading"></a></h1>
 <p>The CO2 Pipeline-Routing Tool has two primary modes: Identification and Evaluation.
-Identification mode allows the user to select two points, generate a proposed pipeline route, and download a shapefile of the route and relevant PDF report on route details.
+Identification mode allows the user to select two points, generate a proposed pipeline route, and download a shapefile of the route and relevant PDF report on route details. Identification mode has two sub-modes: Pipeline Mode and Railway Mode
 Evaluation mode allows the user to upload a shapefile of an existing route, and generate a PDF report on route details.</p>
 </section>
-<section id="identification-mode">
-<h1>Identification Mode<a class="headerlink" href="#identification-mode" title="Permalink to this heading"></a></h1>
-<p>To start evaluation mode, click on the <code class="docutils literal notranslate"><span class="pre">Identify</span> <span class="pre">Route</span></code> radio button below the map. This enables all Identification Mode buttons and fields that are otherwise greyed-out.</p>
+<section id="identify-route">
+<h1>Identify Route<a class="headerlink" href="#identify-route" title="Permalink to this heading"></a></h1>
+<p>To start evaluation mode, click on the <code class="docutils literal notranslate"><span class="pre">Identify</span> <span class="pre">Route</span></code> button below the map. This enables all Identification Mode buttons and fields that are otherwise greyed-out.</p>
+<section id="pipeline-mode-vs-railway-mode">
+<h2>Pipeline Mode vs Railway Mode<a class="headerlink" href="#pipeline-mode-vs-railway-mode" title="Permalink to this heading"></a></h2>
+<p>Beneath the <code class="docutils literal notranslate"><span class="pre">Identify</span> <span class="pre">Route</span></code> and <code class="docutils literal notranslate"><span class="pre">Evaluate</span> <span class="pre">Corridor</span></code> buttons are the two modes of the former: <code class="docutils literal notranslate"><span class="pre">Pipeline</span> <span class="pre">Mode</span></code> and <code class="docutils literal notranslate"><span class="pre">Railway</span> <span class="pre">Mode</span></code>. Pipeline Mode is selected by default, and will use the machine learning logic of the tool to identify a route without regard to existing railways. Conversely, Railway Mode’s machine learning logic will consider existing railways and attempt to utilize them as part of the projected route path.</p>
+</section>
 <section id="start-and-end-points">
 <h2>Start and End Points<a class="headerlink" href="#start-and-end-points" title="Permalink to this heading"></a></h2>
 <p>There are two ways to enter the start and end points of the desired pipeline route.</p>
@@ -143,8 +148,8 @@ Evaluation mode allows the user to upload a shapefile of an existing route, and 
 *A PDF report outlining relevant statistics and details of the generated line</p>
 </section>
 </section>
-<section id="evaluation-mode">
-<h1>Evaluation Mode<a class="headerlink" href="#evaluation-mode" title="Permalink to this heading"></a></h1>
+<section id="evaluate-corridor">
+<h1>Evaluate Corridor<a class="headerlink" href="#evaluate-corridor" title="Permalink to this heading"></a></h1>
 <p>To initiate evaluation mode, click on the <code class="docutils literal notranslate"><span class="pre">Evaluate</span> <span class="pre">Corridor</span></code> radio button directly beneath the map. This will enable the otherwise greyed-out Evaluation Mode buttons to be interacted with.</p>
 <section id="upload-shapefile">
 <h2>Upload Shapefile<a class="headerlink" href="#upload-shapefile" title="Permalink to this heading"></a></h2>

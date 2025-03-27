@@ -164,7 +164,7 @@ class PDF(FPDF):
         curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
         # Logo
         #TODO: uncomment/delete
-        self.image(resource_path("report_builder/images/DOE_NETL_Logos.png"), 10, 10, 60)
+        self.image(resource_path("report_builder/images/DOE_NETL_Logosnew.png"), 10, 10, 60)
 #         self.image(r"C:\Users\romeolf\Desktop\GitHub\SMART_CO2_TRANPORT_ROUTING_TOOL\CO2-Pipeline-Routing-Tool\Flask\report_builder\images\DOE_NETL_Logos.png", 10, 10, 60)
         # Arial bold 15
         self.set_font('Helvetica', 'B', 14)
@@ -274,15 +274,18 @@ def render_toc(pdf, outline):
         link = pdf.add_link()
         pdf.set_link(link, page=section.page_number)
         if section.name in sub_title:
+            pass
+            """
             p(pdf, "text",
               f'{" " * section.level * 2} {section.name} {"." * (160 - section.level * 2 - len(section.name))} {section.page_number}',
               font_size=5,
               level=2,
               link=link)
+            """
         else:
             p(pdf,
               "text", f'{" " * section.level * 2} {section.name} {"." * (120 - section.level * 2 - len(section.name))} {section.page_number}',
-              font_size=7,
+              font_size=9,
               level=0,
               link=link)
         #print(f'{" " * section.level * 2} {section.name} {"." * (60 - section.level*2 - len(section.name))} {section.page_number}')
@@ -305,7 +308,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     # Hardcoded data for evaluation
     vg_shp = os.path.join(report_input, "vg_base.shp")
     vg_id = 'OID_'
-    vg_table = os.path.join(report_input, "10km_SpatialJoin_42_51_55_59_28.csv")
+    vg_table = os.path.join(report_input, "data_by_10km_grid.csv")
 
     tract_shp = os.path.join(report_input, "tract_base.shp")
     tract_id = 'OID_'
@@ -313,7 +316,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     county_fld = "CNTY_NAME"
     tract_fld = "TRACTCE_1"
 
-    tract_table = os.path.join(report_input, "census_tract_boundaries_USA_AK.csv")
+    tract_table = os.path.join(report_input, "data_by_census_tract.csv")
 
     def_table = os.path.join(report_input, "report_base.csv")
     category = "Category"

@@ -44,7 +44,7 @@ def my_profile():
 
 @api.route('/help', methods = ['POST'])
 def open_help():
-    h_path = resource_path("documentation/_build/html/index.html")
+    h_path = resource_path("../documentation/_build/html/index.html")
     print(os.path.exists(h_path))
     webbrowser.open(f"file://{h_path}")
     return(h_path)
@@ -167,12 +167,15 @@ def create_output_zip(zipname):
     """ Creates .zip based on contents of output_shapefiles in the proj root dir's /public folder
     params: zipname: string, the name of the zip to be created
     """
+    
     zipname = 'route_shapefile_and_report'    
-    # dest_path = os.path.join(os.path.realpath('public'), zipname)
     public_f = resource_path('public')
     dest_path = os.path.join(public_f, zipname)
+
     if not os.path.exists(public_f):
         os.mkdir(public_f)
+    # copy the reference sheet pdf into the folder that will be zipped up
+    shutil.copy(resource_path('other_assets/reference_sheet.pdf'), resource_path('output'))
     shutil.make_archive(dest_path, 'zip', resource_path('output'))
     print(f"\tcreate_output_shp_zip: created zipfile at f{dest_path}")
     return dest_path + '.zip'

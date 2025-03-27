@@ -1,10 +1,13 @@
 # Operation
 The CO2 Pipeline-Routing Tool has two primary modes: Identification and Evaluation. 
-Identification mode allows the user to select two points, generate a proposed pipeline route, and download a shapefile of the route and relevant PDF report on route details.
+Identification mode allows the user to select two points, generate a proposed pipeline route, and download a shapefile of the route and relevant PDF report on route details. Identification mode has two sub-modes: Pipeline Mode and Railway Mode
 Evaluation mode allows the user to upload a shapefile of an existing route, and generate a PDF report on route details.
 
-# Identification Mode
-To start evaluation mode, click on the `Identify Route` radio button below the map. This enables all Identification Mode buttons and fields that are otherwise greyed-out.
+# Identify Route
+To start evaluation mode, click on the `Identify Route` button below the map. This enables all Identification Mode buttons and fields that are otherwise greyed-out.
+
+## Pipeline Mode vs Railway Mode
+Beneath the `Identify Route` and `Evaluate Corridor` buttons are the two modes of the former: `Pipeline Mode` and `Railway Mode`. Pipeline Mode is selected by default, and will use the machine learning logic of the tool to identify a route without regard to existing railways. Conversely, Railway Mode's machine learning logic will consider existing railways and attempt to utilize them as part of the projected route path. 
 
 ## Start and End Points
 There are two ways to enter the start and end points of the desired pipeline route.
@@ -42,7 +45,7 @@ After the Generate Pipeline button has been pressed, the tool will create two ki
 *A shapefile representing the proposed line
 *A PDF report outlining relevant statistics and details of the generated line
 
-# Evaluation Mode
+# Evaluate Corridor
 To initiate evaluation mode, click on the `Evaluate Corridor` radio button directly beneath the map. This will enable the otherwise greyed-out Evaluation Mode buttons to be interacted with.
 
 ## Upload Shapefile

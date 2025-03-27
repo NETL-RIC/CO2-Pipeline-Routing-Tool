@@ -15,6 +15,7 @@ import EvalMode from './components/EvalMode';
 
 import netlLogo from "./NETL_Square_GREEN_E.png";
 import doeLogo from "./DOE_Logo_Color.png";
+import netlDoeCombo from "./DOENETL.png"
 import discoverLogo from "./discover.jpg";
 
 
@@ -251,9 +252,11 @@ export default function MyApp(){
           >
             <Modal.Header >
               <Modal.Title></Modal.Title>
+              <div style={{margin: 'auto'}}>
+                <img  src={netlLogo} width={50} height={50}  alt='NETL Logo' />
+                <img src={doeLogo}  height={50} alt='DOE Logo' />
                 <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
-                <img src={netlLogo} width={50} height={50}  alt='NETL Logo' />
-                <img src={doeLogo}  alt='DOE Logo' />
+                </div>
             </Modal.Header>
             <div id="disTitle" className="modal-body">
               <label id="disTitleText">
@@ -651,7 +654,7 @@ export default function MyApp(){
     return (
       <div className="header">
         <img src={netlLogo} width={50} height={50}  alt='NETL Logo' />
-        <img src={doeLogo}  alt='DOE Logo' />
+        <img src={doeLogo}  height={50} alt='DOE Logo' />
         <img src={discoverLogo}  width={120} height={50} alt='Discover Logo' />
         <h1>Smart CO2 Transport-Routing Tool</h1>
         <div id="docButton">
@@ -793,8 +796,6 @@ export default function MyApp(){
         <ShowEvalModeShape/>
       </MapContainer>
 
-      <LayerInput/>
-      <LayerButtons tileLayer={tileLayer}/>
       <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"} setEvalModePolygon={setEvalModePolygon} setIdModePolygon={setIdModePolygon}/>
       {uploaz === 'points' ? 
       <IdMode 
