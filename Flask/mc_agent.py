@@ -414,10 +414,6 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
     """
 
     for _ in range(num_trajectories):
-        
-        # Check if the root node has valid children
-        if not [child for child in root.children if not child.is_no_go]:
-            return None, None
 
         root.selections += 1
         current_node = root
@@ -475,6 +471,10 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
         if not current_node is root and not backtracked:
             current_node.backpropagate()
             current_node.selections += 1
+
+        # Check if the root node has valid children
+        if not [child for child in root.children if not child.is_no_go]:
+            return None, None
 
     max_value = -np.inf
     most_selections = 0
