@@ -262,6 +262,7 @@ class Node:
         self.value = 0       # Expected discounted returns when in this state
         self.path = path
         self.distance_factor=distance_factor
+        self.is_no_go = False  # New flag to mark nodes as no-go
         self.action_to_direction = {
             0: np.array([-1, 0]),  # Up
             1: np.array([-1, 1]),  # Up/Right
@@ -272,6 +273,12 @@ class Node:
             6: np.array([0, -1]),  # Left
             7: np.array([-1, -1]), # Up/Left
         }
+
+    def mark_as_no_go(self):
+        """
+        Mark this node as no-go to prevent revisiting
+        """
+        self.is_no_go = True
 
     def calculate_euclidean_reward(self, new_location, target_location):
 
@@ -295,10 +302,21 @@ class Node:
     def select(self, c=np.sqrt(2)):
         """
         Select child node to investigate using UCB
+
+        This function selects the child node with the highest UCB score.
+
+        Args:
+            c (float): Exploration parameter
+
+        Returns:
+            selected_child (Node): The child node with the highest UCB score
         """
         high_score = -np.inf
         selected_child = None
         for child in self.children:
+            # Check if child is no-go
+            if child.is_no_go:
+                continue
             ucb = child.reward + child.value + c*np.sqrt(np.log(self.selections)/(child.selections + 0.001))
 
             if ucb > high_score:
@@ -307,11 +325,9 @@ class Node:
 
         return selected_child
 
-
     def expand(self, cost_surface, target_location):
         rewards = []
         for a in self.action_to_direction.values():
-            
             child_location = a + self.location
             location_hash_key = str(child_location[0]).zfill(3) \
                                 + ',' + str(child_location[1]).zfill(3)
@@ -322,26 +338,23 @@ class Node:
 
             cost_reward = -cost_surface[child_location[0], child_location[1]]
 
-            # Do not allow out of bounds moves, any index in the cost array with
-            # a value of 1 represents an out of bounds value
+            # Do not allow out of bounds moves or moves into no-go areas
             if cost_reward == 1:
                 continue
 
             if np.array_equal(child_location, target_location):
                 reward = 100
-
             else:
                 euclidean_reward = self.calculate_euclidean_reward(child_location, target_location)
                 reward = euclidean_reward + cost_reward*2
             
             path = self.path.copy()
             path[location_hash_key] = True
-            self.children.append(Node(child_location, self, reward, path, self.distance_factor))
+            child = Node(child_location, self, reward, path, self.distance_factor)
+            self.children.append(child)
             rewards.append(reward)
             
         self.value = np.mean(rewards)
-        if not self.children:
-            raise ValueError('Unable to find pipeline route')
     
     def backpropagate(self, discount=0.98):
         self.parent.value += (self.value*discount - self.parent.value)/self.parent.selections
@@ -364,12 +377,16 @@ class MCTree:
         self.root = Node(location=start, parent=None, reward=None, path=path, distance_factor=distance_factor)
 
     def traverse(self, node):
+        # Traverse the tree and return the path
         locations = [node.location.tolist()]
         for child in node.children:
             locations.extend(self.traverse(child))
         return locations   
 
-    def prune(self, new_root):
+    def select_root(self, new_root):
+        """
+        Select a new root node without deleting parent connections.
+        """
         if isinstance(new_root, str):
             next_root_found = False
             for child in self.root.children:
@@ -382,16 +399,13 @@ class MCTree:
             if not next_root_found:
                 child_locations = [child.location for child in self.root.children]
                 raise ValueError('Unable to find the child node at {} from following locations: {}'.format(new_root, child_locations))
-            #assert next_root_found, 'Unable to find the child node at {}'.format(new_root)
 
         else:
             assert isinstance(new_root, Node), 'new_root must be str or Node'
 
         assert isinstance(new_root, Node)
         assert not np.array_equal(new_root.location, self.target), 'Root node cannot be terminal node'
-        del self.root
-        self.root = new_root
-        self.root.parent = None
+        self.root = new_root  # Simply update the root pointer without deleting anything
 
 def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
     """
@@ -399,25 +413,66 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
     back-propagating values.
     """
 
-    for i in range(num_trajectories):
+    for _ in range(num_trajectories):
+        
+        # Check if the root node has valid children
+        if not [child for child in root.children if not child.is_no_go]:
+            return None, None
+
         root.selections += 1
         current_node = root
+        backtracked = False
 
-        # Run until a leaf node is encountered
+        # Run until a leaf node is encountered, a node not yet expanded
         while current_node.children:
             
             # Select new child node to investigate using UCB
-            current_node = current_node.select(c=c)
+            selected_child = current_node.select(c=c)
+
+            # Check if all children are no-go, if so current node is also no-go
+            if selected_child is None:
+                
+                # Flag to indicate that the current node has been backtracked
+                backtracked = True
+                
+                # Set the current node as no-go
+                current_node.mark_as_no_go()
+
+                # Backtrack to parent node
+                current_node = current_node.parent
+
+                # If no parent, raise error
+                if current_node is None:
+                    raise ValueError('Unable to find pipeline route')
+
+                continue
+
+            else:
+                current_node = selected_child
 
             # Check if new node is terminal
             if np.array_equal(current_node.location, target):
                 break
         
-        if not np.array_equal(current_node.location, target):
+        if not np.array_equal(current_node.location, target) and not backtracked:
+            
             # Expand non-terminal nodes
             current_node.expand(cost_surface, target)
-        
-        if not current_node is root:
+            
+            # Check to make sure current node has valid children
+            if not current_node.children:
+
+                # Flag to indicate that the current node has been backtracked
+                backtracked = True
+
+                # Mark current node as no-go
+                current_node.mark_as_no_go()
+
+                # Backtrack to parent node
+                current_node = current_node.parent
+                    
+        # Backpropagate values if valid selection
+        if not current_node is root and not backtracked:
             current_node.backpropagate()
             current_node.selections += 1
 
@@ -425,7 +480,10 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
     most_selections = 0
     next_node = None
 
+    # Iterate through children to find the next node using the most selections
     for child in root.children:
+        if child.is_no_go:
+            continue
 
         # First check for terminal node
         if np.array_equal(child.location, target):
@@ -436,6 +494,10 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
             most_selections = child.selections
             next_node = child
 
+    # All children are no-go
+    if next_node is None and root.children:
+        return None, None
+        
     return root, next_node
 
 
@@ -465,12 +527,34 @@ class MCAgent:
                 results = pool.starmap(search, args)
                 votes = {}
 
+            
+            valid_root = True
+
+            # Iterate over results get vote from each tree
             for (root, node), tree in zip(results, forest):
+
+                # Determine if the root is invalid (all children are no-go)
+                if root is None or node is None:
+                    valid_root = False
+                    break
+
                 y = str(node.location[0]).zfill(3)
                 x = str(node.location[1]).zfill(3)
                 key = y + ',' + x
                 votes[key] = votes.get(key, 0) + 1
                 tree.root = root
+
+            if not valid_root:
+                # If no valid root, backtrack
+                for tree in forest:
+                    # Set root node of all trees to no-go
+                    tree.root.mark_as_no_go()
+                    # Select the parent node as the new root
+                    tree.root = tree.root.parent
+
+                # Remove last entry from path (the invalid root)
+                path.pop()
+                continue
             
             next_location_str = max(votes, key=votes.get)
             next_location_arr = np.array([int(next_location_str.split(',')[0]), int(next_location_str.split(',')[1])])
@@ -484,7 +568,7 @@ class MCAgent:
                 break
 
             for tree in forest:
-                tree.prune(next_location_str)
+                tree.select_root(next_location_str)  # Use select_root instead of prune
 
         return path
 
