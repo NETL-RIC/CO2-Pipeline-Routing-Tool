@@ -59,3 +59,4 @@ yarn-error.log*
 node_modules/.cache/default-development/0.pack
 Flask/report_builder/inputs/10km_SpatialJoin_42_51_55_59_28.csv
 Flask/report_builder/inputs/tract_base.shp
+/Flask/build
