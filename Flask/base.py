@@ -44,7 +44,7 @@ def my_profile():
 
 @api.route('/help', methods = ['POST'])
 def open_help():
-    h_path = resource_path("../documentation/_build/html/index.html")
+    h_path = resource_path("documentation/_build/html/index.html")
     print(os.path.exists(h_path))
     webbrowser.open(f"file://{h_path}")
     return(h_path)
