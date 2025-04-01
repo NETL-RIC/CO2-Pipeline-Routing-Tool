@@ -12,6 +12,7 @@ import Modal from 'react-bootstrap/Modal';
 import MainToolModeButtons from "./components/MainToolModeButtons"
 import IdMode from './components/IdMode';
 import EvalMode from './components/EvalMode';
+import { VectorTileLayerTestInputs } from './components/VectorTileLayerTestComponents';
 
 import netlLogo from "./NETL_Square_GREEN_E.png";
 import doeLogo from "./DOE_Logo_Color.png";
@@ -228,9 +229,6 @@ export default function MyApp(){
 
   };
 
-  function handlePDFDownload() {
-    handleDownload('.pdf');
-  }
   
   function handleZIPDownload() {
      handleDownload('.zip');
@@ -757,6 +755,7 @@ export default function MyApp(){
       <Header/>
 
       <MapContainer center={[39.8283, -98.5795]} zoom={5}>
+        {/* <VectorTileLayerTestWrapper tileLayer={ tileLayer } showTileLayer={ showTileLayer }/> */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -796,6 +795,14 @@ export default function MyApp(){
         <ShowEvalModeShape/>
       </MapContainer>
 
+      {/*
+      <VectorTileLayerTestInputs
+        tileLayer={ tileLayer } setTileLayer={ setTileLayer }
+        showTileLayer={ showTileLayer } setShowTileLayer={ setShowTileLayer }
+        showLayerChecked={ showLayerChecked } setShowLayerChecked={ setShowLayerChecked }
+      />
+      */}
+
       <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"} setEvalModePolygon={setEvalModePolygon} setIdModePolygon={setIdModePolygon}/>
       {uploaz === 'points' ? 
       <IdMode 
@@ -817,7 +824,7 @@ export default function MyApp(){
 
       {uploaz === 'upld' ? 
       <EvalMode
-      evaluateCorridor={evaluateCorridor} handleMultipleChange={handleMultipleChange} handlePDFDownload={handlePDFDownload}
+      evaluateCorridor={evaluateCorridor} handleMultipleChange={handleMultipleChange} handleDownload={handleDownload}
       /> : null}
       <Footer/>
     </div>

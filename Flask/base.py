@@ -58,6 +58,7 @@ def uploads_file():
         print("Got permission error from locked file:", e)
     name = ''
     file = request.files
+    print(file)
     for i in file:
         name = file[i].filename
         # file[i].save(os.path.join(UPLOAD_FOLDER, name))

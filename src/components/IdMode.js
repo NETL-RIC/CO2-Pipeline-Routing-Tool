@@ -163,6 +163,7 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
       />
     )
   }
+
   const HandleClick1 = () => {
     laststart = 0
     let stlat = Number(srcLat)
@@ -174,8 +175,14 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
       method: "GET",
       url: pt2,
     })
+
     .then((response) => {
       let enddata = response.data['address']
+
+      if(response.data.error){
+        console.error('Bad response from axios request with start data with Lat ' + stlat + ' and Lon ' + stlon)
+        console.error(response.data.error)
+      }
 
       if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
         setShowloc(true)
