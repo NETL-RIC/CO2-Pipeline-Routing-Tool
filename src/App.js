@@ -101,10 +101,11 @@ export default function MyApp(){
   // needs to start at [0,0], can't start at null. use conditional rendering later
   // controls where the markers appear on the map
   const [startMarkerRenderCoords, setStartMarkerRenderCoords] = useState([0,0])  // given to Marker leaflet component to draw marker pos on the map
+  const [destMarkerRenderCoords, setDestMarkerRenderCoords] = useState([0,0])
 
   // right now, marker coord data and data used for processing are seperate because they were before refactor
   const [startCoords, setStartCoords] = useState([null, null])
-  const [endCoords, setEndCoords] = useState([null, null])
+  const [destCoords, setDestCoords] = useState([null, null])
 
   // icons for the markers RENAME
   const customIcon1 = new Icon({
@@ -171,12 +172,11 @@ export default function MyApp(){
         urlpipe = "/token"
       }
 
-      debugger;
-    console.log('Sending start ' + startCoords[0] +', '+ startCoords[1] +' and end ' + end[0] + ', ' + end[1]  + ' to backend')
+    console.log('Sending start ' + startCoords[0] +', '+ startCoords[1] +' and end ' + destCoords[0] + ', ' + destCoords[1]  + ' to backend')
     axios({
       method: "POST",
       url: urlpipe, 
-      data: {s: startCoords, e:end, mode:idMode}
+      data: {s: startCoords, e:destCoords, mode:idMode}
     })
 
     .then((response) => {
@@ -563,7 +563,6 @@ export default function MyApp(){
             //markers.push(e.latlng);
             //setMarkers((prevValue) => [...prevValue, e.latlng]);
             setStartMarkerRenderCoords([e.latlng['lat'], e.latlng['lng']])
-            debugger;
         }
 
         }).catch((error) => {
@@ -631,10 +630,12 @@ export default function MyApp(){
               setEndloc('US')
             }
             
+            //emarkers.push(f.latlng);
+            //seteMarkers((prevValue) => [...prevValue, f.latlng]);
+            setDestCoords([f.latlng['lat'], f.latlng['lng']])
+            setDestMarkerRenderCoords([f.latlng['lat'], f.latlng['lng']])
             end[0] = f.latlng['lat']
             end[1] = f.latlng['lng']
-            emarkers.push(f.latlng);
-            seteMarkers((prevValue) => [...prevValue, f.latlng]);
           
           }
     
@@ -651,7 +652,7 @@ export default function MyApp(){
 
     if(uploaz === "points"){
     return (
-      <Marker position={[end[0], end[1]]} icon={customIcon2}>
+      <Marker position={destMarkerRenderCoords} icon={customIcon2}>
         <Popup>End Location ({(end[0].toFixed(6))}, {end[1].toFixed(6)})</Popup>
       </Marker>
     )
@@ -789,9 +790,10 @@ export default function MyApp(){
         setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} setupdateDestLon={setupdateDestLon} 
         setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon}
         setStartMarkerRenderCoords = {setStartMarkerRenderCoords}
+        setDestMarkerRenderCoords={ setDestMarkerRenderCoords }
         start={start}
         end={end}
-        setStartCoords={ setStartCoords } setEndCoords={ setEndCoords }
+        setStartCoords={ setStartCoords } setDestCoords={ setDestCoords }
          /> 
       : null }
 

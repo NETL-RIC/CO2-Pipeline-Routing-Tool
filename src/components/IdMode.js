@@ -128,8 +128,8 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
   setShowloc, setEndloc, srcLat, 
   srcLon, destLat, destLon, setUpdateSrcLat, 
   setupdateSrcLon, setupdateDestLat, setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon,
-  setStartMarkerRenderCoords,
-  setStartCoords, setEndCoords,
+  setStartMarkerRenderCoords, setDestMarkerRenderCoords,
+  setStartCoords, setDestCoords,
   start,
   end, laststart, lastend
   } ){
@@ -158,6 +158,11 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
   // what does value2 correspond to?
   function DropdownEnd() {
     lastend = 1
+    function onChange(ccsSite){
+      setDestMarkerRenderCoords(ccsSite.id)
+      setValue2(ccsSite)
+      setDestCoords(ccsSite.id)
+    }
     return (
       <DropdownList
         containerClassName='dropdown'
@@ -165,7 +170,7 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
         datakey = 'id'
         textField='name'
         value={value2}
-        onChange={value2 => setValue2(value2)}
+        onChange={onChange}
       />
     )
   }
@@ -186,7 +191,6 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
     .then((response) => {
 
       let pointAddress = response.data['address']
-
       // error catch for 200 from serer (resopnse, not error) but error is contained in response
       if(response.data.error){
         console.error('Bad response from axios request with start data with Lat ' + stlat + ' and Lon ' + stlon)
@@ -194,12 +198,10 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
       } else {
         console.log(response.data)
       }
-
       // if invalid point
       if((pointAddress === undefined) || (pointAddress["state"] === "Hawaii") || (pointAddress["country"] !== "United States")){
-        // I think this brings up the 'select a valid point in the US' modal
+        // brings up the 'select a valid point in the US' modal
         setShowloc(true)
-
       // if valid point
       }else{
 
@@ -218,7 +220,6 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
         setStartCoords([Number(srcLat), Number(srcLon)])
         start[0] = Number(srcLat)
         start[1] = Number(srcLon)
-
       }
 
     }).catch((error) => {
@@ -256,8 +257,13 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
         }
         setupdateDestLat(destLat)
         setupdateDestLon(destLon)
+        // 'start' and 'end' are the data actually send to the backend
         end[0] = Number(destLat)
         end[1] = Number(destLon)
+        const newDestCoords = [Number(destLat), Number(destLon)]
+        console.log(newDestCoords)
+        setDestMarkerRenderCoords(newDestCoords)
+        setDestCoords([Number(destLat), Number(destLon)])
 
       }
 
@@ -316,7 +322,7 @@ export default function IdMode( {location, setLocation, value1, setValue1, value
   destLon, setUpdateSrcLat, setupdateSrcLon, setupdateDestLat, 
   setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon,
   setStartMarkerRenderCoords, start, end, laststart, lastend,
-  setStartCoords, setEndCoords} ){
+  setStartCoords, setDestCoords, setDestMarkerRenderCoords} ){
     return(
         <div>
             <RouteOrRailButtons setBtnGroupState={setBtnGroupState} btntxt1={btntxt1} btntxt2={btntxt2} toolMode={toolMode}/>
@@ -333,11 +339,12 @@ export default function IdMode( {location, setLocation, value1, setValue1, value
               setupdateSrcLon={setupdateSrcLon} 
               setupdateDestLat={setupdateDestLat} 
               setupdateDestLon={setupdateDestLon} 
-              setStartMarkerRenderCoords = {setStartMarkerRenderCoords}
+              setStartMarkerRenderCoords = { setStartMarkerRenderCoords }
+              setDestMarkerRenderCoords = { setDestMarkerRenderCoords }
               start={start}
               end={end}
               laststart={ laststart } lastend={ lastend }
-              setStartCoords={ setStartCoords } setEndCoords = { setEndCoords }
+              setStartCoords={ setStartCoords } setDestCoords = { setDestCoords }
             />
             <br></br>
         </div>
