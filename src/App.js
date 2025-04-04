@@ -40,9 +40,40 @@ let shptyp = ''
 
 export default function MyApp(){
 
+  // the polygons / lines that are drawn on the map for each mode, stored as a list of coords
   const [evalModePolygon, setEvalModePolygon] = useState([])
   const [idModePolygon, setIdModePolygon] = useState([])
 
+  // what is displayed on dropdowns 1 and 2 respectively
+  // TODO: rename
+  const [value1, setValue1] = useState('Select known CCS project as start location')
+  const [value2, setValue2] = useState('Select known CCS project as destination location')
+
+  const [isLoadingIdMode, setIsLoadingIdMode] = useState(false)
+  const [isLoadingEvalMode, setIsLoadingEvalMode] = useState(false)
+
+
+  // why two? what do they do
+  const [finished2, setFinished2] = useState('')
+  const [finished, setFinished] = useState('')
+
+  // show the line of the pipeline on the map or not
+  const [pipeshow, setpipeloc] = useState(false);
+
+  // display the catch-all server error Modal
+  const [showServerError, setShowServerError] = useState(false);
+
+  // what location?
+  const [location, setLocation] = useState("")
+
+
+  // files for upload mode I think
+  const [files, setFiles] = useState([]);
+
+  // "route" vs "rail" for what id mode is currently selected
+  const [idMode, setIdMode] = useState("route")
+
+  // redundant, to be removed and reduced to the start/end globals, or xMarkerRenderCoords
   const [srcLat, setSrcLat] = useState('')
   const [srcLon, setSrcLon] = useState('')
   const [destLat, setDestLat] = useState('')
@@ -51,24 +82,31 @@ export default function MyApp(){
   const [updateSrcLon, setupdateSrcLon] = useState(srcLon)
   const [updateDestLat, setupdateDestLat] = useState(destLat)
   const [updateDestLon, setupdateDestLon] = useState(destLon)
-  const [show, setShowloc] = useState(false);
+
+  // not the location but whether in US or AK
+  const [startloc, setStartloc] = useState('')      
   const [endloc, setEndloc] = useState('')
-  const [value1, setValue1] = useState('Select known CCS project as start location')
-  const [value2, setValue2] = useState('Select known CCS project as destination location')
-  const [isLoadingIdMode, setIsLoadingIdMode] = useState(false)
-  const [isLoadingEvalMode, setIsLoadingEvalMode] = useState(false)
-  const [finished2, setFinished2] = useState('')
-  const [pipeshow, setpipeloc] = useState(false);
-  const [finished, setFinished] = useState('')
-  const [showServerError, setShowServerError] = useState(false);
-  const [location, setLocation] = useState("")
-  const [files, setFiles] = useState([]);
-  const [startloc, setStartloc] = useState('')
-  const [idMode, setIdMode] = useState("route")
-  const [uploaz, setUploaz] = useState("points")
+
+  // I think this displays the 'both points need to be in the US or AK' modal
+  const [show, setShowloc] = useState(false);
+
+  // this means 'are we in evaluate corridor mode'
+  const [uploaz, setUploaz] = useState("points")    
+
+  // used only for tile layer testing UI to test layers with. keep 
   const [showTileLayer, setShowTileLayer] = useState(false);
   const [tileLayer, setTileLayer] = useState(null)
   const [showLayerChecked, setShowLayerChecked] = useState(false);
+
+  // needs to start at [0,0], can't start at null. use conditional rendering later
+  // controls where the markers appear on the map
+  const [startMarkerRenderCoords, setStartMarkerRenderCoords] = useState([0,0])  // given to Marker leaflet component to draw marker pos on the map
+
+  // right now, marker coord data and data used for processing are seperate because they were before refactor
+  const [startCoords, setStartCoords] = useState([null, null])
+  const [endCoords, setEndCoords] = useState([null, null])
+
+  // icons for the markers RENAME
   const customIcon1 = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
     iconSize: [30,30]
@@ -78,7 +116,6 @@ export default function MyApp(){
     iconSize: [30,30]
   })
 
-  
   // 'Evaluate' button (handleMultipleSubmit() formerly)
   function evaluateCorridor(event) {
     event.preventDefault();
@@ -123,22 +160,23 @@ export default function MyApp(){
     setIsLoadingEvalMode(false);
     let urlpipe = ''
 
+    // setpipeloc means the pipe location is valid
     if ((endloc !== startloc) && (endloc !== '' && startloc !== '')){
       setpipeloc(true);
+    } else {
+      if (global.electronmode === true){
+        urlpipe = "http://127.0.0.1:5000/token"
+        
+      } else {
+        urlpipe = "/token"
+      }
 
-    }else{
-    if(global.electronmode === true){
-      urlpipe = "http://127.0.0.1:5000/token"
-      
-    }
-    else{
-      urlpipe = "/token"
-      
-    }
+      debugger;
+    console.log('Sending start ' + startCoords[0] +', '+ startCoords[1] +' and end ' + end[0] + ', ' + end[1]  + ' to backend')
     axios({
       method: "POST",
       url: urlpipe, 
-      data: {s: start, e:end, mode:idMode}
+      data: {s: startCoords, e:end, mode:idMode}
     })
 
     .then((response) => {
@@ -486,6 +524,7 @@ export default function MyApp(){
     const initialMarkers= [0,0]
     const [markers, setMarkers] = useState(initialMarkers);
   
+    // handleClick basically
     const map = useMapEvents({
       click(e) {
         if(uploaz==="points"){if (location ==='start'){
@@ -494,7 +533,6 @@ export default function MyApp(){
 
         let pt = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+s1+"&lon="+s2;
         
-
         axios({
           method: "GET",
           url: pt,
@@ -508,25 +546,24 @@ export default function MyApp(){
           if((startdata === undefined) ||(startdata["state"] === "Hawaii") || (startdata["country"] !== "United States")){
             setShowloc(true)
 
-          // Need logic to check for NoGo zone... currently just handled by backend serving a general server error
-            
           }else{
             if(startdata['state'] === "Alaska"){
-              console.log('a')
               setStartloc('Alaska')
             }else{
               setStartloc('US')
-              console.log('b')
             }
             
-            console.log(startloc)
-            console.log(endloc)
-            
-            
+            // old version of state
             start[0] = e.latlng['lat']
             start[1] = e.latlng['lng']
-            markers.push(e.latlng);
-            setMarkers((prevValue) => [...prevValue, e.latlng]);
+            // new version of state
+            setStartCoords(e.latlng['lat'], e.latlng['lng'])
+
+            //console.log(start[0])
+            //markers.push(e.latlng);
+            //setMarkers((prevValue) => [...prevValue, e.latlng]);
+            setStartMarkerRenderCoords([e.latlng['lat'], e.latlng['lng']])
+            debugger;
         }
 
         }).catch((error) => {
@@ -542,7 +579,7 @@ export default function MyApp(){
     
     if (uploaz==="points"){
     return (
-      <Marker position={[start[0], start[1]]} icon={customIcon1}>
+      <Marker position={startMarkerRenderCoords} icon={customIcon1}>
         <Popup>Start Location ({(start[0].toFixed(6))}, {start[1].toFixed(6)})</Popup>
       </Marker>
     ) 
@@ -582,7 +619,6 @@ export default function MyApp(){
         })
         .then((response) => {
           let enddata = response.data['address']
-
 
           if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
             setShowloc(true)
@@ -663,70 +699,6 @@ export default function MyApp(){
       </div>
     );
   };
-
-  function VectorTileLayerWrapper() {
-        return showTileLayer ?
-        <VectorTileLayer 
-          url={tileLayer}
-        /> : null
-  }
-
-
-  function LayerButtons() {
-    function handleTileLayer(){
-      showTileLayer ? setShowTileLayer(false) : setShowTileLayer(true);
-      !showTileLayer ? setShowTileLayer(true) : setShowTileLayer(false);
-      setShowLayerChecked(!showLayerChecked);
-    }
-    return (
-      <div>
-        <input type="checkbox"
-        checked={showLayerChecked}
-        name="tile-layer"
-        id="tile-layer-on"
-        value="on"
-        disabled={tileLayer===null}
-        onChange={handleTileLayer}/>
-
-        <label htmlFor="tile-layer-on">Show/Hide Tile Layer</label>
-      </div>
-    );
-  }
-
-  /* default layer */
-
-  function LayerInput(){
-
-    const [inputValue, setInputValue] = useState(null)
-    function saveLayer(e){
-      e.preventDefault();
-      if (inputValue !== null){
-        setTileLayer(inputValue)
-      }
-    }
-
-    function resetLayer(){
-      setTileLayer(null);
-      // also hide the tile layer because the url will be null 
-      setShowTileLayer(false);
-      setShowLayerChecked(false);
-    }
-
-    const mystyle = {
-      padding: "10px",
-    }
-    return(
-      <div style={mystyle}>
-        <label>
-          Enter tile layer URL: <input name="layerInput" onChange={(e) => setInputValue(e.target.value)} />
-        </label>
-        <button onClick={saveLayer}>Save to Variable</button>
-        <button onClick={resetLayer}>Clear Variable and Hide Tile Layer</button>
-      </div>
-    )
-  }
-
-
   // Footer node
   function Footer() {
     return (
@@ -805,18 +777,23 @@ export default function MyApp(){
 
       <MainToolModeButtons setBtnGroupState={setUploaz} btntxt1={"Identify Route"} btntxt2={"Evaluate Corridor"} setEvalModePolygon={setEvalModePolygon} setIdModePolygon={setIdModePolygon}/>
       {uploaz === 'points' ? 
-      <IdMode 
-      location={location} 
-      setLocation={setLocation} 
-      value1={value1} 
-      setValue1={setValue1} 
-      value2={value2} 
-      setValue2={setValue2} setShowLoc={setShowloc} setEndLoc={setEndloc} setBtnGroupState={setIdMode} 
-      btntxt1={"Pipeline Mode"} btntxt2={"Railway Mode"} toolMode={uploaz} 
-      srcLat={srcLat} srcLon={srcLon} destLat={destLat} destLon={destLon} setUpdateSrcLat={setUpdateSrcLat} 
-      setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} setupdateDestLon={setupdateDestLon} 
-      setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon}
-      /> : null }
+        <IdMode 
+        location={location} 
+        setLocation={setLocation} 
+        value1={value1} 
+        setValue1={setValue1} 
+        value2={value2} 
+        setValue2={setValue2} setShowLoc={setShowloc} setEndLoc={setEndloc} setBtnGroupState={setIdMode} 
+        btntxt1={"Pipeline Mode"} btntxt2={"Railway Mode"} toolMode={uploaz} 
+        srcLat={srcLat} srcLon={srcLon} destLat={destLat} destLon={destLon} setUpdateSrcLat={setUpdateSrcLat} 
+        setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} setupdateDestLon={setupdateDestLon} 
+        setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon}
+        setStartMarkerRenderCoords = {setStartMarkerRenderCoords}
+        start={start}
+        end={end}
+        setStartCoords={ setStartCoords } setEndCoords={ setEndCoords }
+         /> 
+      : null }
 
       {uploaz==='points' ? 
       <GenAndDownloadButtons

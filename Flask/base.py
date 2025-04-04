@@ -218,9 +218,13 @@ def a():
 
         start = request.json.get("s", None)
         end = request.json.get("e", None)
+        print('Start')
+        print(start)
+        print('End')
+        print(end)
+        # print('Got start ' + start[0] + ", " + start[1] + " and end " + end[0] + ", " + end[1] + "from backend")
         # rail or route mode
         mode = request.json.get("mode", None)
-
         route = generate_line_ml(start, end, mode)    # calculate line with ML
         print("Pipeline generated")
 

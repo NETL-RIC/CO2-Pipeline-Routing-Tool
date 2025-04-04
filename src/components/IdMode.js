@@ -5,17 +5,13 @@ import { DropdownList } from "react-widgets";
 
 import RouteOrRailButtons from './RouteOrRailButtons';
 
-let start = [0,0]
-let laststart = -999
-let lastend = -999  
-let end = [0,0]
 let prevstart = 'Select known CCS project as start location'
 let prevend = 'Select known CCS project as destination location'
 let a = true;
 const LIME_OPTIONS = { color: 'lime' }
 const PURPLE_OPTIONS = { color: 'purple' }
 let shptyp = ''
-let colors1 = [
+let ccsSitesLarge = [
 { id: [39.87, -88.89], name: 'Illinois Industrial Carbon Capture and Storage Project'},
 { id: [45, -85], name: 'MRCSP Development Phase - Michigan Basin Project' },
 { id: [35, -98], name: 'PurdySho-Vel-Tum EOR Project'},
@@ -87,7 +83,7 @@ let colors1 = [
 { id: [44.388212, -105.45961], name: 'Wyoming Integrated Test Center'},
 { id: [47.361953, -101.838103], name: 'Great Plains Synfuel Plant'},
 ];
-let colors2 = [
+let ccsSitesSmall = [
 { id: [39.87, -88.89], name: 'Illinois Industrial Carbon Capture and Storage Project'},
 { id: [43, -106], name: 'LINC Energy - Wyoming EOR'},
 { id: [45, -85], name: 'MRCSP Development Phase - Michigan Basin Project' },
@@ -106,56 +102,66 @@ function StartEndButtons( {location, setLocation} ){
     console.log(location)
   }
     return(
-        <div>
-        <input type="radio" 
-        name="location" 
-        value="start" 
-        id="start" 
-        checked={location === "start"} 
-        onChange={onOptionChange}
-        />
-        <label htmlFor="start">Start</label>
+      <div>
+      <input type="radio" 
+      name="location" 
+      value="start" 
+      id="start" 
+      checked={location === "start"} 
+      onChange={onOptionChange}
+      />
+      <label htmlFor="start">Start</label>
 
-        <input type="radio" 
-        name="location" 
-        value="end" 
-        id="end" 
-        checked={location === "end"} 
-        onChange={onOptionChange}
-        />
-        <label htmlFor="end">End</label>
-        </div>
-)
+      <input type="radio" 
+      name="location" 
+      value="end" 
+      id="end" 
+      checked={location === "end"} 
+      onChange={onOptionChange}
+      />
+      <label htmlFor="end">End</label>
+      </div>
+    )
 }
+
 function StartEndDetails( {value1, setValue1, value2, setValue2, 
   setShowloc, setEndloc, srcLat, 
   srcLon, destLat, destLon, setUpdateSrcLat, 
-  setupdateSrcLon, setupdateDestLat, setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon} ){
+  setupdateSrcLon, setupdateDestLat, setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon,
+  setStartMarkerRenderCoords,
+  setStartCoords, setEndCoords,
+  start,
+  end, laststart, lastend
+  } ){
 
   // Dropdown component for start point
   function DropdownStart() {
     laststart = 1
+    function onChange(ccsSite){
+      setStartMarkerRenderCoords(ccsSite.id)
+      setValue1(ccsSite)
+      setStartCoords(ccsSite.id)
+    }
     return (
       <DropdownList
         containerClassName='dropdown'
-        data={colors1}
+        data={ccsSitesLarge}
         datakey = 'id'
         textField='name'
         value={value1}
-        onChange={value1 => setValue1(value1)}
+        onChange={onChange}
       />
     )
   }
 
-  // Dropdown component for start point
+  // Dropdown component for end point
+  // what does value2 correspond to?
   function DropdownEnd() {
-
     lastend = 1
-
     return (
       <DropdownList
         containerClassName='dropdown'
-        data={colors2}
+        data={ccsSitesSmall}
         datakey = 'id'
         textField='name'
         value={value2}
@@ -164,7 +170,8 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
     )
   }
 
-  const HandleClick1 = () => {
+  const saveStartBtnClick = () => {
+    console.log('Save Start clicked')
     laststart = 0
     let stlat = Number(srcLat)
     let stlon = Number(srcLon)
@@ -177,27 +184,41 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
     })
 
     .then((response) => {
-      let enddata = response.data['address']
 
+      let pointAddress = response.data['address']
+
+      // error catch for 200 from serer (resopnse, not error) but error is contained in response
       if(response.data.error){
         console.error('Bad response from axios request with start data with Lat ' + stlat + ' and Lon ' + stlon)
         console.error(response.data.error)
+      } else {
+        console.log(response.data)
       }
 
-      if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
+      // if invalid point
+      if((pointAddress === undefined) || (pointAddress["state"] === "Hawaii") || (pointAddress["country"] !== "United States")){
+        // I think this brings up the 'select a valid point in the US' modal
         setShowloc(true)
 
+      // if valid point
       }else{
 
-        if(enddata['state'] === "Alaska"){
+        if(pointAddress['state'] === "Alaska"){
           setEndloc('Alaska')
         }else{
           setEndloc('US')
         }
         setUpdateSrcLat(srcLat)
         setupdateSrcLon(srcLon)
+
+        const newStartCoords = [Number(srcLat), Number(srcLon)]
+        console.log(newStartCoords)
+        setStartMarkerRenderCoords(newStartCoords)
+        // 'start' and 'end' are the data actually send to the backend
+        setStartCoords([Number(srcLat), Number(srcLon)])
         start[0] = Number(srcLat)
         start[1] = Number(srcLon)
+
       }
 
     }).catch((error) => {
@@ -209,7 +230,7 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
     })
   }
 
-  const HandleClick2 = () =>{
+  const saveDestBtnClick = () =>{
     lastend = 0
     let dtlat = Number(destLat)
     let dtlon = Number(destLon)
@@ -237,6 +258,7 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
         setupdateDestLon(destLon)
         end[0] = Number(destLat)
         end[1] = Number(destLon)
+
       }
 
     }).catch((error) => {
@@ -266,23 +288,21 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
 return(
     <div>
     <div>
-        <h4>Add Start Location in World Geodetic System WGS 1984(WGS 84)</h4>
-
+        <h4>Add Start Location in World Geodetic System WGS 1984 (WGS 84)</h4>
         <p> 
         Latitude:   <input type="number" name="myInput1"  onChange={handleChangeSrcLat} value={srcLat}/> 
         Longitude:  <input type="number" name="myInput2"  onChange={handleChangeSrcLon} value={srcLon}/>  
-        <Button size="sm" onClick={HandleClick1}> Save Start </Button >                      
+        <Button size="sm" onClick={saveStartBtnClick}> Save Start </Button >                      
         </p> 
         <div><DropdownStart/></div>
     </div>
 
     <div>
         <h4>Add End Location in WGS84</h4>
-
         <p> 
         Latitude:   <input type="number" name="myInput3" onChange={handleChangeDestLat} value={destLat}/> 
         Longitude:  <input type="number" name="myInput4" onChange={handleChangeDestLon} value={destLon}/>
-        <Button size="sm"  onClick={HandleClick2}> Save Destination </Button >            
+        <Button size="sm"  onClick={saveDestBtnClick}> Save Destination </Button >            
         </p>
         <div><DropdownEnd/></div>
     </div>
@@ -294,16 +314,30 @@ export default function IdMode( {location, setLocation, value1, setValue1, value
   setValue2, setShowLoc, setEndLoc, setBtnGroupState, 
   btntxt1, btntxt2, toolMode, srcLat, srcLon, destLat, 
   destLon, setUpdateSrcLat, setupdateSrcLon, setupdateDestLat, 
-  setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon} ){
+  setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon,
+  setStartMarkerRenderCoords, start, end, laststart, lastend,
+  setStartCoords, setEndCoords} ){
     return(
         <div>
             <RouteOrRailButtons setBtnGroupState={setBtnGroupState} btntxt1={btntxt1} btntxt2={btntxt2} toolMode={toolMode}/>
             <StartEndButtons location={location} setLocation={setLocation}/>
-            <StartEndDetails value1={value1} setValue1={setValue1} value2={value2} setValue2={setValue2} 
-              setShowloc={setShowLoc} setEndloc={setEndLoc} srcLat={srcLat} 
-              srcLon={srcLon} destLat={destLat} destLon={destLon} setUpdateSrcLat={setUpdateSrcLat} 
-              setupdateSrcLon={setupdateSrcLon} setupdateDestLat={setupdateDestLat} 
-              setupdateDestLon={setupdateDestLon} setSrcLat={setSrcLat} setSrcLon={setSrcLon} setDestLat={setDestLat} setDestLon={setDestLon} 
+            <StartEndDetails 
+              value1={value1} setValue1={setValue1} 
+              value2={value2} setValue2={setValue2} 
+              srcLat={ srcLat } setSrcLat={ setSrcLat }
+              setShowloc={setShowLoc} setEndloc={setEndLoc}
+              srcLon={srcLon} setSrcLon={setSrcLon} 
+              destLat={destLat} setDestLat={ setDestLat }
+              destLon={destLon} setDestLon={setDestLon} 
+              setUpdateSrcLat={setUpdateSrcLat} 
+              setupdateSrcLon={setupdateSrcLon} 
+              setupdateDestLat={setupdateDestLat} 
+              setupdateDestLon={setupdateDestLon} 
+              setStartMarkerRenderCoords = {setStartMarkerRenderCoords}
+              start={start}
+              end={end}
+              laststart={ laststart } lastend={ lastend }
+              setStartCoords={ setStartCoords } setEndCoords = { setEndCoords }
             />
             <br></br>
         </div>
