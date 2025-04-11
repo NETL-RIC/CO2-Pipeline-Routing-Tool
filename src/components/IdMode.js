@@ -160,6 +160,7 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
     lastend = 1
     function onChange(ccsSite){
       setDestMarkerRenderCoords(ccsSite.id)
+      debugger;
       setValue2(ccsSite)
       setDestCoords(ccsSite.id)
     }

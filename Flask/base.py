@@ -343,6 +343,7 @@ def CoordinatesToIndices(raster, coordinates):
     returns:
         (x, y) as indexed locations
     """
+    print(coordinates)
 
     coordinates = (coordinates[-1], coordinates[0])
     # Convert coordinates from WGS 84 to Albers Equal Area to work with raster
