@@ -541,6 +541,7 @@ export default function MyApp(){
         .then((response) => {
 
           let startdata = response.data['address']
+
           console.log(startdata)
 
           if((startdata === undefined) ||(startdata["state"] === "Hawaii") || (startdata["country"] !== "United States")){
@@ -554,10 +555,11 @@ export default function MyApp(){
             }
             
             // old version of state
-            start[0] = e.latlng['lat']
-            start[1] = e.latlng['lng']
+            start[0] = s1
+            start[1] = s2
             // new version of state
-            setStartCoords(e.latlng['lat'], e.latlng['lng'])
+            setStartCoords([s1, s2])
+            console.log('Start from click: [' + s1 + ', ' + s2 + ']')
 
             //console.log(start[0])
             //markers.push(e.latlng);
