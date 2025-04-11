@@ -1,0 +1,43 @@
+[project]
+name = "Smart_CO2_Transport"
+version = "1.0.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fiona>=1.10.1",
+    "flask>=3.1.0",
+    "fpdf2>=2.8.2",
+    "gdal>=3.10.2",
+    "gymnasium>=1.1.1",
+    "ipython>=8.35.0",
+    "matplotlib>=3.10.1",
+    "opencv-python>=4.11.0.86",
+    "pandas>=2.2.3",
+    "pygame>=2.6.1",
+    "pyinstaller>=6.12.0",
+    "pyproj>=3.7.1",
+    "rasterio>=1.4.3",
+    "scikit-image>=0.25.2",
+    "shapely>=2.1.0",
+    "six>=1.17.0",
+    "torch>=2.6.0",
+    "torchvision>=0.21.0",
+    "tqdm>=4.67.1",
+]
+
+[tool.uv.sources]
+gdal = [
+  { index = "gdal-wheels", marker = "sys_platform == 'linux'" },
+  { index = "geospatial_wheels", marker = "sys_platform == 'win32'" },
+]
+
+[[tool.uv.index]]
+name = "geospatial_wheels"
+url = "https://nathanjmcdougall.github.io/geospatial-wheels-index/"
+explicit = true
+
+[[tool.uv.index]]
+name = "gdal-wheels"
+url = "https://gitlab.com/api/v4/projects/61637378/packages/pypi/simple"
+explicit = true
