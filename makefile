@@ -1,13 +1,15 @@
 # Makefile for building portable flask exe with static react files.
-# Required to be run from a terminal with the correct node and python environments
+# Requires that you have a .venv python setup in the same directory as this file.
+# Requires that you have npm on your system and package.json in the same directory as this file.
 
-REACT_DIR 				?= ./public
-FLASK_DIR 				?= ./Flask
-REACT_BUILD_OUTPUT_DIR 	?= ./build
-REACT_IN_FLASK_DIR 		?= $(FLASK_DIR)/build
+REACT_DIR 				?= .\public
+FLASK_DIR 				?= .\Flask
+REACT_BUILD_OUTPUT_DIR 	?= .\build
+REACT_IN_FLASK_DIR 		?= $(FLASK_DIR)\build
 PYINSTALLER_SPEC_FILE 	?= packCO2PRT.spec
 PACKAGE_BASENAME 		?= Smart_CO2_Transport
-PYINSTALLER_DIST_DIR 	?= ./dist
+PYINSTALLER_DIST_DIR 	?= .\dist
+VENV_DIR 				?= .\.venv
 
 NPM         = npm
 XCOPY       = xcopy
@@ -15,7 +17,7 @@ RMDIR       = rmdir /S /Q
 DEL         = del /Q
 MKDIR       = mkdir
 PYI 		= PyInstaller
-PY      	= python
+PY      	= $(VENV_DIR)/Scripts/python.exe
 POWERSHELL  = powershell -Command
 
 .PHONY: all build_react copy_frontend build_pyinstaller package clean
@@ -29,9 +31,9 @@ build_react:
 
 copy_frontend: build_react
 	@echo --- Copying React build to Flask project ---
-	-$(RMDIR) "$(FLASK_IN_FLASK_DIR)"
-	-$(MKDIR) "$(FLASK_IN_FLASK_DIR)"
-	-$(XCOPY) $(REACT_BUILD_OUTPUT_DIR)/* $(FLASK_IN_FLASK_DIR)/ /Y
+	-$(RMDIR) "$(REACT_IN_FLASK_DIR)"
+	-$(MKDIR) "$(REACT_IN_FLASK_DIR)"
+	-$(XCOPY) $(REACT_BUILD_OUTPUT_DIR) $(REACT_IN_FLASK_DIR) /E /I /Y
 
 build_pyinstaller: copy_frontend
 	@echo --- Building PyInstaller Bundle ---
@@ -48,6 +50,3 @@ clean:
 	-$(RMDIR) "$(REACT_IN_FLASK_DIR)"
 	-$(RMDIR) "$(REACT_BUILD_OUTPUT_DIR)"
 	-$(RMDIR) "$(PYINSTALLER_DIST_DIR)"
-
-check_ps:
-	POWERSHELL $env:PROCESSOR
