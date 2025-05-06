@@ -12,7 +12,17 @@ from IPython import display
 from extra_utils import resource_path
 
 def least_cost_path_ml(start, dest, mode):
-    """Simple wrapper function to return just the list that composes the ML-generated line
+    """
+    Simple wrapper function to return just the list that composes the 
+    ML-generated line.
+
+    Args:
+        start (tuple): The starting location.
+        dest (tuple): The destination location.
+        mode (str): The mode of the MLWrapper.
+
+    Returns:
+        list: The list that composes the ML-generated line.
     """
     # error checking .tifs
     try:
@@ -21,6 +31,7 @@ def least_cost_path_ml(start, dest, mode):
     except FileNotFoundError as e:
         print(e.args)
 
+    # Get route and only return the optimized path
     res = wrapper.route(start, dest)
     return res[0]
     # lucy_route_cntr = res[0]
@@ -28,15 +39,44 @@ def least_cost_path_ml(start, dest, mode):
     # return lucy_route
 
 def normalize(arr, high=1, low=0):
+    """
+    Normalizes the input array to a specified range.
+
+    Args:
+        arr (np.ndarray): The input array to normalize.
+        high (float): The maximum value of the output array.
+        low (float): The minimum value of the output array.
+
+    Returns:
+        np.ndarray: The normalized array.
+    """
     norm = (high-low)*(arr - arr.min())/(arr.max() - arr.min()) + low
     return norm
 
 def exponential(x, degree):
+    """
+    Applies an exponential transformation to the input array.
+
+    Args:
+        x (np.ndarray): The input array to transform.
+        degree (float): The exponent to raise the input array to.
+
+    Returns:
+        np.ndarray: The transformed array.
+    """
     return x**degree
 
 def draw_circle(img, center, radius):
     """
     Modifies the specified img in place by drawing a circle on it.
+
+    Args:
+        img (np.ndarray): The image to modify.
+        center (tuple): The center of the circle.
+        radius (int): The radius of the circle.
+
+    Returns:
+        np.ndarray: The modified image.
     """
     y, x = np.mgrid[:img.shape[0], :img.shape[1]]
     circle = (y-center[0])**2 + (x-center[1])**2
@@ -45,6 +85,20 @@ def draw_circle(img, center, radius):
     return img
 
 def visualize(cost_surface, agent, target, locations=[], path=[], radius=5):
+    """
+    Visualizes the cost surface, agent location, target location, and path.
+
+    Args:
+        cost_surface (np.ndarray): The cost surface raster.
+        agent (tuple): The agent's current location.
+        target (tuple): The target location.
+        locations (list): The locations to visualize.
+        path (list): The path to visualize.
+        radius (int): The radius of the circle in pixels.
+
+    Returns:
+        np.ndarray: The visualized image.
+    """
     
     # Build observation
     shape = (3, *cost_surface.shape)
@@ -79,6 +133,14 @@ def visualize(cost_surface, agent, target, locations=[], path=[], radius=5):
     return obs
     
 def plot_path(obs, done=False):
+    """
+    Plots the real-time path through the cost surface when using Jupyter
+    notebook cells.
+
+    Args:
+        obs (np.ndarray): The observation array.
+        done (bool): Whether the path is done.
+    """
     
     fig = plt.figure(1, figsize=(20,20))
     plt.clf()
@@ -100,8 +162,13 @@ def get_contiguous_area(bool_raster, min_size):
     """
     Get the contiguous areas of AL and US using connected component analysis.
 
-    size (int): The number of connected pixels in order to be considered
-        contiguous portion of US or AL.
+    Args:
+        bool_raster (np.ndarray): The boolean raster to analyze.
+        min_size (int): The minimum number of connected pixels in order to be
+            considered a contiguous portion of US or AL.
+
+    Returns:
+        tuple: A tuple containing the contiguous areas and the output array.
     """
     assert bool_raster.dtype == np.uint8, 'Array must have numpy.uint8 data type'
     contiguous = np.zeros(bool_raster.shape)
@@ -132,7 +199,7 @@ def find_transitions(arr):
         arr (np.ndarray): The input array.
 
     Returns:
-        (y1, x1), (y2, x2) tuple: The indices of the top left corner and bottom
+        tuple: A tuple containing the indices of the top left corner and bottom
             right corner.
     """
     diff = np.diff(arr)
@@ -143,20 +210,44 @@ def find_transitions(arr):
 
 class CostSurface:
     """
-    A class for manipulating cost surfaces in both coordinates systems
+    A class for manipulating cost surfaces in both coordinate systems.
+    
+    This class handles the processing and manipulation of geographic cost 
+    surfaces used for pipeline routing. It can load pre-processed rasters or 
+    process raw raster files to generate normalized cost surfaces and no-go 
+    areas.
+    
+    Attributes:
+        cost (np.ndarray): The processed cost surface raster where values range
+            from 0 (lowest cost) to 1 (highest cost/no-go areas).
+        no_go (np.ndarray): Boolean array where True indicates areas that should
+            not be traversed (out of bounds or otherwise prohibited).
     """
 
     def __init__(self):
+        """
+        Initialize the CostSurface object.
+        """
+        
         self.cost = None
         self.no_go = None
 
     def load_rasters(self, raster_dir):
         """
-        Loads processed rasters arrays.
+        Loads processed raster arrays from disk.
 
         This method should only be used to load arrays which have already been
-        preprocessed.
+        preprocessed and saved as numpy arrays.
+
+        Args:
+            raster_dir (str or Path): Directory containing the preprocessed 
+                raster files. Must contain 'cost.npy' and 'no_go.npy' files.
+
+        Raises:
+            AssertionError: If raster_dir is None.
+            FileNotFoundError: If the required files are not found.
         """
+
         assert raster_dir is not None, 'Must provide raster directory'
         raster_dir = Path(raster_dir)
 
@@ -164,6 +255,29 @@ class CostSurface:
         self.no_go = np.load(raster_dir.joinpath('no_go.npy'))
 
     def process_raster(self, path, degree=2, no_go_cost=None, visualize=False):
+        """
+        Process a raw raster file into a normalized cost surface and no-go areas.
+
+        This method performs several operations on the input raster:
+        1. Crops the raster to its valid area
+        2. Identifies and marks no-go areas (values < 0, non-contiguous areas)
+        3. Applies user-specified exponential weighting to emphasize high-cost 
+            areas
+        4. Normalizes the values to 0-1 range
+        5. Sets no-go areas to maximum cost or specified cost
+
+        Args:
+            path (str or Path): Path to the raw raster file to process.
+            degree (float, optional): Exponent used to increase weighting of high 
+                cost areas. Defaults to 2.
+            no_go_cost (float, optional): Cost value to assign to no-go areas. 
+                If None, uses 1 (maximum cost). Defaults to None.
+            visualize (bool, optional): If True, displays visualizations of the 
+                processing steps. Defaults to False.
+
+        Raises:
+            AssertionError: If the raw raster file does not exist.
+        """
 
         path = Path(path)
         assert path.exists(), 'The raw raster file path does not exist'
@@ -177,56 +291,53 @@ class CostSurface:
         # Set all values less than -1 to -1 to represent out of bounds/no-go
         raster[raster<-1]=-1
 
-        # Make sure the raster has been cropped, if not crop it
+        # Check if the raster needs cropping by checking if corner is valid data
         if raster[0,0] != -1.0:
-            # Find boundaries
+            # Find boundaries of valid data area
             (y1, x1), (y2, x2) = find_transitions(raster)
             raster = raster[y1:y2, x1:x2]
 
         else:
             (y1, x1), (y2, x2) = (0, 0), (-1, -1)
 
-        # Reset values which are outside expected range (these values should be -1)
+        # Reset invalid values to -1 (no-go)
         raster[raster==np.inf] = -1
         raster[raster==-np.inf] = -1
         
-        # Required for proper visualization value color mapping
+        # Special handling for visualization - set negative values to -inf for better display
         if arr.min() < -1 and visualize:
             arr[arr<-1] = -np.inf
 
-        # Create an array where values of 1 represent land and 0 represents 
-        # out of bounds/no-go
+        # Binary raster where 1=land (valid), 0=water/out-of-bounds (invalid)
         check_bounds = raster.copy()
         check_bounds[check_bounds>=0] = 1.0
         check_bounds[check_bounds<0] = 0.0
 
-        # Check for areas not connected to mainland
+        # Use connected component analysis to identify islands not connected to mainland
         contiguous, _ = get_contiguous_area(check_bounds.astype(np.uint8), min_size=1000)
 
-        # Set non-contiguous portions to out of bounds
+        # Set isolated areas to no-go
         raster[contiguous==0] = -1
 
-        # Define no-go areas as given by less than 0 values
+        # Create boolean mask for no-go areas (True where value < 0)
         no_go = raster.copy()
         no_go[no_go>=0] = 1
         no_go[no_go<0] = 0
         no_go = np.invert(no_go.astype(bool))
 
-        # Set out of bounds and no-go areas to 0 so they do not interfere with 
-        # normalization calculation, they must be changed to 1 after normalization
-        # using the no-go surface
+        # Temporarily set no-go areas to 0 for normalization
+        # (This ensures they don't affect the min/max value calculations)
         raster[raster==-1] = 0
 
-        # Apply exponential weighting of cost surface
+        # Apply exponential weighting to emphasize high-cost areas
         raster = exponential(raster, degree)
 
-        # Linear normalization to 0 to 1 scale
+        # Normalize all valid areas to 0-1 range
         raster = normalize(raster)
 
-        # Set values of out of bounds and no go areas, typically this should be
-        # the largest value in the raster unless otherwise specified by the user
+        # Reset no-go areas to maximum cost or user-specified value
         if no_go_cost is None:
-            raster[no_go] = 1
+            raster[no_go] = 1  # Set to max cost
         else:
             raster[no_go] = no_go_cost
         
@@ -252,8 +363,38 @@ class CostSurface:
 
 
 class Node:
+    """
+    Node class for the Monte Carlo Tree Search algorithm.
+    
+    Each node represents a possible location in the pipeline route. Nodes form a 
+    tree structure with parent-child relationships, allowing for backtracking and
+    exploration of different possible routes.
+    
+    Attributes:
+        location (np.ndarray): The (y, x) coordinates of this node on the cost surface.
+        parent (Node): The parent node in the tree (None for root).
+        children (list): List of child nodes.
+        selections (int): Number of times this node has been selected during search.
+        reward (float): The immediate reward received for selecting this node.
+        value (float): The expected discounted returns from this state.
+        path (dict): Dictionary of visited locations using hash keys.
+        distance_factor (float): Weight for the euclidean distance component of rewards.
+        is_no_go (bool): Flag indicating whether this node is marked as no-go.
+        action_to_direction (dict): Mapping from action indices to direction vectors.
+    """
 
     def __init__(self, location, parent, reward, path, distance_factor=1.0):
+        """
+        Initialize a Node object.
+        
+        Args:
+            location (np.ndarray): The (y, x) coordinates of this node.
+            parent (Node): The parent node (None for root).
+            reward (float): The immediate reward for selecting this node.
+            path (dict): Dictionary of locations already visited in this path.
+            distance_factor (float, optional): Weight for euclidean distance in reward 
+                calculation. Defaults to 1.0.
+        """
         self.location = location
         self.parent = parent
         self.children = []
@@ -276,11 +417,28 @@ class Node:
 
     def mark_as_no_go(self):
         """
-        Mark this node as no-go to prevent revisiting
+        Mark this node as no-go to prevent revisiting.
+        
+        This is used when a node is determined to be a dead end or otherwise
+        unsuitable for inclusion in the optimal path.
         """
         self.is_no_go = True
 
     def calculate_euclidean_reward(self, new_location, target_location):
+        """
+        Calculate the euclidean reward component for a potential new location.
+        
+        The reward is based on how much closer the new location is to the target
+        compared to the current location. A small constant is subtracted to 
+        prevent purely distance-based movement.
+        
+        Args:
+            new_location (np.ndarray): The potential new location to evaluate.
+            target_location (np.ndarray): The target destination location.
+            
+        Returns:
+            float: The calculated euclidean reward component.
+        """
 
         ay = new_location[0]
         ax = new_location[1]
@@ -293,30 +451,35 @@ class Node:
         distance_to_target = np.sqrt((ax-tx)**2 + (ay-ty)**2)
         previous_distance = np.sqrt((px-tx)**2 + (py-ty)**2)
 
-        # subtract constant to prevent positive rewards, otherwise agent wants to
-        # keep moving to keep gaining rewards
+        # Subtract constant 1.42 to penalize lateral movement that doesn't make sufficient progress toward target
+        # This encourages more direct paths and discourages wandering behavior
         euclidean_reward = self.distance_factor*(previous_distance - distance_to_target - 1.42)
 
         return euclidean_reward
 
     def select(self, c=np.sqrt(2)):
         """
-        Select child node to investigate using UCB
-
-        This function selects the child node with the highest UCB score.
-
+        Select a child node to investigate using Upper Confidence Bound (UCB).
+        
+        This implements the UCB formula for balancing exploration and exploitation:
+        UCB = reward + value + c * sqrt(ln(parent_visits) / (child_visits + ε))
+        
         Args:
-            c (float): Exploration parameter
-
+            c (float, optional): Exploration parameter. Higher values encourage
+                more exploration. Defaults to sqrt(2).
+                
         Returns:
-            selected_child (Node): The child node with the highest UCB score
+            Node or None: The selected child node with highest UCB score, or None
+                if no valid children exist.
         """
         high_score = -np.inf
         selected_child = None
         for child in self.children:
-            # Check if child is no-go
+            # Skip nodes marked as no-go (dead ends)
             if child.is_no_go:
                 continue
+                
+            # UCB formula: balances exploitation (first terms) and exploration (last term)
             ucb = child.reward + child.value + c*np.sqrt(np.log(self.selections)/(child.selections + 0.001))
 
             if ucb > high_score:
@@ -326,6 +489,19 @@ class Node:
         return selected_child
 
     def expand(self, cost_surface, target_location):
+        """
+        Expand the current node by generating all valid child nodes.
+        
+        This method creates child nodes for all possible actions from the current
+        location, checking for validity (not in path, not out of bounds, etc.).
+        
+        Args:
+            cost_surface (np.ndarray): The cost surface to use for cost rewards.
+            target_location (np.ndarray): The target destination.
+            
+        Returns:
+            self: Returns the node itself after expansion.
+        """
         rewards = []
         for a in self.action_to_direction.values():
             child_location = a + self.location
@@ -357,6 +533,16 @@ class Node:
         self.value = np.mean(rewards)
     
     def backpropagate(self, discount=0.98):
+        """
+        Backpropagate values up the tree to update parent nodes.
+        
+        This recursively updates the value estimates of parent nodes based on 
+        the discounted value of this node.
+        
+        Args:
+            discount (float, optional): Discount factor for future values.
+                Defaults to 0.98.
+        """
         self.parent.value += (self.value*discount - self.parent.value)/self.parent.selections
         if self.parent.parent is not None:
             self.parent.backpropagate()
@@ -368,8 +554,31 @@ class Node:
 
 
 class MCTree:
+    """
+    Monte Carlo Tree Search implementation for pipeline routing.
+    
+    This class represents a search tree where each node corresponds to a location on the 
+    cost surface. The tree is used to find the optimal path from a starting location to a 
+    target location by exploring the state space using Monte Carlo Tree Search principles.
+    
+    Attributes:
+        cost_surface (np.ndarray): The cost surface used for calculating move costs.
+        target (np.ndarray): The target destination coordinates.
+        distance_factor (float): Weight factor for distance in reward calculations.
+        root (Node): The root node of the tree representing the starting location.
+    """
 
     def __init__(self, cost_surface, start, target, distance_factor=1.0):
+        """
+        Initialize a Monte Carlo Tree.
+        
+        Args:
+            cost_surface (np.ndarray): The cost surface used for calculating move costs.
+            start (np.ndarray): The starting location coordinates.
+            target (np.ndarray): The target destination coordinates.
+            distance_factor (float, optional): Weight for euclidean distance in reward 
+                calculation. Defaults to 1.0.
+        """
         self.cost_surface = cost_surface
         self.target = target
         self.distance_factor = distance_factor
@@ -377,6 +586,18 @@ class MCTree:
         self.root = Node(location=start, parent=None, reward=None, path=path, distance_factor=distance_factor)
 
     def traverse(self, node):
+        """
+        Traverse the tree starting from the given node and return all locations.
+        
+        This method recursively collects all locations in the subtree rooted at 
+        the specified node.
+        
+        Args:
+            node (Node): The node to start traversal from.
+            
+        Returns:
+            list: A list of all location coordinates in the subtree.
+        """
         # Traverse the tree and return the path
         locations = [node.location.tolist()]
         for child in node.children:
@@ -386,6 +607,19 @@ class MCTree:
     def select_root(self, new_root):
         """
         Select a new root node without deleting parent connections.
+        
+        This method allows for re-rooting the tree at a different node, which is useful
+        when committing to a particular path segment during search.
+        
+        Args:
+            new_root (str or Node): Either a string representation of the location
+                (format: "y,x" with 3-digit zero padding) or a Node object to become
+                the new root.
+                
+        Raises:
+            ValueError: If the specified node cannot be found or if trying to set
+                the root to the target node.
+            AssertionError: If new_root is not a string or Node, or if it equals the target.
         """
         if isinstance(new_root, str):
             next_root_found = False
@@ -409,23 +643,43 @@ class MCTree:
 
 def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
     """
-    Search a MCTree by selecting the next node, expanding leaf nodes and
-    back-propagating values.
+    Perform Monte Carlo Tree Search from a given root node.
+    
+    This function implements the core MCTS algorithm, consisting of:
+    1. Selection: Traverse the tree from root to leaf following UCB policy
+    2. Expansion: When a leaf node is reached, expand by creating child nodes
+    3. Backpropagation: Update node values based on the search results
+    
+    The search continues until a specified number of trajectories are explored or
+    a terminal state (target) is reached. Nodes that lead to dead ends are marked
+    as no-go to avoid revisiting them.
+    
+    Args:
+        root (Node): The root node to start the search from.
+        target (np.ndarray): The target destination coordinates.
+        num_trajectories (int): The number of search trajectories to perform.
+        cost_surface (np.ndarray): The cost surface for calculating move costs.
+        c (float, optional): Exploration parameter for UCB formula. Defaults to sqrt(2).
+        
+    Returns:
+        tuple: A tuple containing (root_node, next_node) where next_node is the best
+            child to move to, or (None, None) if no valid path exists.
     """
 
     for _ in range(num_trajectories):
 
+        # Track visits to root for UCB calculations
         root.selections += 1
         current_node = root
         backtracked = False
 
-        # Run until a leaf node is encountered, a node not yet expanded
+        # MCTS Selection phase: traverse tree until reaching a leaf node
         while current_node.children:
             
-            # Select new child node to investigate using UCB
+            # Select new child node to investigate using Upper Confidence Bound (UCB)
             selected_child = current_node.select(c=c)
 
-            # Check if all children are no-go, if so current node is also no-go
+            # Dead end detection - if all children are no-go, mark current node as no-go too
             if selected_child is None:
                 
                 # Flag to indicate that the current node has been backtracked
@@ -437,7 +691,7 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
                 # Backtrack to parent node
                 current_node = current_node.parent
 
-                # If no parent, raise error
+                # If no parent, raise error - no possible route exists
                 if current_node is None:
                     raise ValueError('Unable to find pipeline route')
 
@@ -446,16 +700,17 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
             else:
                 current_node = selected_child
 
-            # Check if new node is terminal
+            # Check if we've reached the target
             if np.array_equal(current_node.location, target):
                 break
         
+        # MCTS Expansion phase: expand non-terminal leaf nodes
         if not np.array_equal(current_node.location, target) and not backtracked:
             
-            # Expand non-terminal nodes
+            # Create child nodes for all valid moves from current position
             current_node.expand(cost_surface, target)
             
-            # Check to make sure current node has valid children
+            # Check if expansion produced valid children, otherwise mark as dead end
             if not current_node.children:
 
                 # Flag to indicate that the current node has been backtracked
@@ -467,25 +722,26 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
                 # Backtrack to parent node
                 current_node = current_node.parent
                     
-        # Backpropagate values if valid selection
+        # MCTS Backpropagation phase: update value estimates up the tree
         if not current_node is root and not backtracked:
             current_node.backpropagate()
             current_node.selections += 1
 
-        # Check if the root node has valid children
+        # Check if the root node has any valid children left
         if not [child for child in root.children if not child.is_no_go]:
             return None, None
 
+    # After all trajectories, select the best child based on selection count
     max_value = -np.inf
     most_selections = 0
     next_node = None
 
-    # Iterate through children to find the next node using the most selections
+    # Find the child with the most selections (most promising move)
     for child in root.children:
         if child.is_no_go:
             continue
 
-        # First check for terminal node
+        # If target is directly reachable, select it immediately
         if np.array_equal(child.location, target):
             next_node = child
             break
@@ -502,7 +758,31 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
 
 
 class MCAgent:
+    """
+    Agent that utilizes multiple Monte Carlo Tree Search instances to find an optimal path.
+    
+    This class implements a pipeline routing agent that uses multiple parallel MCTS
+    instances (a "forest" of search trees) to explore the state space efficiently.
+    Each tree can use different exploration parameters to diversify the search.
+    The trees vote on the next best move, providing a more robust routing solution.
+    
+    Attributes:
+        num_workers (int): Number of parallel MCTS instances to run.
+        distance_factor (float): Weight factor for distance in reward calculations.
+        trajectories (int): Number of search trajectories for each tree.
+        c (list): List of exploration parameters, one for each worker.
+    """
     def __init__(self, trajectories, num_workers=None, distance_factor=1.0):
+        """
+        Initialize a Monte Carlo Agent.
+        
+        Args:
+            trajectories (int): Number of search trajectories for each MCTS instance.
+            num_workers (int, optional): Number of parallel MCTS instances to run.
+                If None, uses half the available CPU cores. Defaults to None.
+            distance_factor (float, optional): Weight for euclidean distance in reward
+                calculation. Defaults to 1.0.
+        """
         
         self.num_workers = num_workers
         self.distance_factor = distance_factor
@@ -515,14 +795,35 @@ class MCAgent:
             self.c = [np.sqrt(2)]
 
     def route(self, cost_surface, start, target, max_steps=1000, show_viz=False):
+        """
+        Find an optimal route from start to target on the cost surface.
+        
+        This method uses multiple parallel MCTS instances to determine the best
+        path. At each step, all trees vote on the next location to move to.
+        The search continues until the target is reached or max_steps is exceeded.
+        
+        Args:
+            cost_surface (np.ndarray): The cost surface for calculating move costs.
+            start (list): The starting location coordinates [y, x].
+            target (list): The target destination coordinates [y, x].
+            max_steps (int, optional): Maximum number of steps to take. Defaults to 1000.
+            show_viz (bool, optional): Whether to visualize the search progress.
+                Defaults to False.
+                
+        Returns:
+            list: A list of coordinates representing the optimal path from start to target.
+        """
+        # Create multiple search trees ("forest") for parallel exploration with the same parameters
         forest = [
             MCTree(cost_surface, start, target, distance_factor=self.distance_factor) for _ in range(self.num_workers)
             ]
         path = [start]
         
         for _ in range(max_steps):
+            # Prepare arguments for parallel search across all trees, each with different exploration parameter c
             args = [(tree.root, target, self.trajectories, cost_surface, c) for tree,c in zip(forest, self.c)]
             
+            # Execute MCTS search in parallel using multiprocessing
             with Pool(self.num_workers) as pool:
                 results = pool.starmap(search, args)
                 votes = {}
@@ -530,7 +831,7 @@ class MCAgent:
             
             valid_root = True
 
-            # Iterate over results get vote from each tree
+            # Collect votes from each tree for the next best location to move to
             for (root, node), tree in zip(results, forest):
 
                 # Determine if the root is invalid (all children are no-go)
@@ -538,6 +839,7 @@ class MCAgent:
                     valid_root = False
                     break
 
+                # Format the node location as a string key for voting
                 y = str(node.location[0]).zfill(3)
                 x = str(node.location[1]).zfill(3)
                 key = y + ',' + x
@@ -545,7 +847,7 @@ class MCAgent:
                 tree.root = root
 
             if not valid_root:
-                # If no valid root, backtrack
+                # If no valid path forward, implement backtracking mechanism
                 for tree in forest:
                     # Set root node of all trees to no-go
                     tree.root.mark_as_no_go()
@@ -556,6 +858,7 @@ class MCAgent:
                 path.pop()
                 continue
             
+            # Select the location with the most votes as the next step
             next_location_str = max(votes, key=votes.get)
             next_location_arr = np.array([int(next_location_str.split(',')[0]), int(next_location_str.split(',')[1])])
             path.append(next_location_arr.tolist())
@@ -564,9 +867,11 @@ class MCAgent:
                 obs = visualize(cost_surface, next_location_arr, target, path=path)
                 plot_path(np.moveaxis(obs, 0, -1))
 
+            # Check if we've reached the target
             if np.array_equal(next_location_arr, target):
                 break
 
+            # Update all trees to have the same new root node at the chosen location
             for tree in forest:
                 tree.select_root(next_location_str)  # Use select_root instead of prune
 
@@ -574,6 +879,19 @@ class MCAgent:
 
 
 class MLWrapper:
+    """
+    High-level wrapper for Monte Carlo Tree Search pipeline routing.
+    
+    This class serves as the main interface for using the Monte Carlo Tree Search 
+    algorithm for pipeline routing. It handles cost surface preparation and provides
+    a simple API for routing between points. The class supports different routing modes
+    (standard routing and rail-based routing) with pre-configured parameters optimal 
+    for each mode.
+    
+    Attributes:
+        cost_surface (CostSurface): The cost surface used for routing.
+        agent (MCAgent): The Monte Carlo agent that performs the actual routing.
+    """
 
     def __init__(
             self, 
@@ -583,6 +901,25 @@ class MLWrapper:
             cost_degree=2,
             distance_factor=1.0
             ):
+        """
+        Initialize the ML routing wrapper.
+        
+        Args:
+            mode (str): Routing mode to use. Must be either 'route' (standard routing)
+                or 'rail' (rail-based routing).
+            trajectories (int, optional): Number of search trajectories for the agent.
+                Defaults to 100.
+            num_workers (int, optional): Number of parallel MCTS instances to run.
+                Defaults to 1.
+            cost_degree (float, optional): Exponent used to emphasize high-cost areas 
+                in the cost surface. Defaults to 2.
+            distance_factor (float, optional): Weight for euclidean distance in reward
+                calculation. Defaults to 1.0.
+                
+        Raises:
+            KeyError: If an invalid mode is specified.
+            FileNotFoundError: If required cost surface files are not found.
+        """
         self.cost_surface = CostSurface()
         # self.cost_surface.load_rasters(raster_dir)
 
@@ -606,6 +943,27 @@ class MLWrapper:
         self.agent = MCAgent(trajectories=trajectories, num_workers=num_workers, distance_factor=distance_factor)
 
     def route(self, start, target, show_viz=False):
+        """
+        Find an optimal route from start to target location.
+        
+        This method checks that start and target points are in the same region 
+        (either both in Alabama or both in the rest of the US) and then uses the 
+        Monte Carlo agent to find the best path between them.
+        
+        Args:
+            start (tuple): Starting location coordinates (y, x).
+            target (tuple): Target location coordinates (y, x).
+            show_viz (bool, optional): Whether to visualize the routing process.
+                Defaults to False.
+                
+        Returns:
+            tuple: A tuple containing (optimized_path, raw_path) where:
+                - optimized_path: The final calculated route.
+                - raw_path: The raw path data for debugging.
+                
+        Raises:
+            AssertionError: If start and target are not in the same region.
+        """
 
         surface = self.cost_surface.cost
         no_go = self.cost_surface.no_go
