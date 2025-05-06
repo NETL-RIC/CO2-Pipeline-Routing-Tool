@@ -1,3 +1,6 @@
+/**
+ * Component that contains the 'Identify Route' and 'Evaluate Corridon' buttons
+ */
 import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';

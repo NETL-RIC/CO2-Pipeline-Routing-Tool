@@ -1,3 +1,6 @@
+/**
+ * Component for the logic in 'Identify Route' mode
+ */
 import { React } from 'react';
 import axios from "axios";
 import Button from 'react-bootstrap/Button';
@@ -155,7 +158,6 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
   }
 
   // Dropdown component for end point
-  // what does value2 correspond to?
   function DropdownEnd() {
     lastend = 1
     function onChange(ccsSite){
@@ -176,6 +178,7 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
     )
   }
 
+  // Handler for clicking on the map to set the Start marker
   const saveStartBtnClick = () => {
     console.log('Save Start clicked')
     laststart = 0
@@ -206,6 +209,7 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
       // if valid point
       }else{
 
+        // State for checking that both points are in the same landmass
         if(pointAddress['state'] === "Alaska"){
           setEndloc('Alaska')
         }else{
@@ -232,6 +236,7 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
     })
   }
 
+  // Handler for setting the End/Dest point by clicking on the map
   const saveDestBtnClick = () =>{
     lastend = 0
     let dtlat = Number(destLat)
@@ -251,6 +256,7 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
 
       }else{
 
+        // State for checking that both points are in the same landmass
         if(enddata['state'] === "Alaska"){
           setEndloc('Alaska')
         }else{
@@ -292,6 +298,7 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
   const handleChangeDestLon = (event) => {
     setDestLon(event.target.value)
   }
+
 return(
     <div>
     <div>

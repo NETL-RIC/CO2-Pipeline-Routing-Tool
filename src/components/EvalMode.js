@@ -1,3 +1,7 @@
+/**
+ * Component that contains all of the logic for 'Evaluate Corridor' mode
+ */
+
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 

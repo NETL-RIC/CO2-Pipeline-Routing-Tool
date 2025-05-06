@@ -1,3 +1,7 @@
+/**
+ * Component that contains the 'Pipeline Mode' and 'Railway Mode' buttons
+ */
+
 import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
