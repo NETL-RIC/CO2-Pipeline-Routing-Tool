@@ -5,6 +5,13 @@
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
+/**
+ * All the code for Evaluate Corridor mode contained in one React Component, for organization and clarity 
+ * @param {function} evaluateCorridor - The main functionality of Evaluate Corridor mode
+ * @param {function} handleMultipleChange - Handles uploading multiple files
+ * @param {funciton} handleDownload - Handles user downloading the generated pdf report file
+ * @returns {JSX.element} - All the JSX code for Evaluate Corridor mode
+ */
 export default function EvalMode ( {evaluateCorridor, handleMultipleChange, handleDownload} ){
 
   function handlePDFDownload() {

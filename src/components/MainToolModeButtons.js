@@ -6,8 +6,16 @@ import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
+/**
+ * The two exclusive selection buttons controlling "Pipeline Mode" and "Railway Mode" as a submode of Id Mode
+ * @param {function} setBtnGroupState - Sets the tool's main mode to either Identify Route or Evaluate corridor, via "id" or "eval"
+ * @param {string} btntext1 - Button string for "Identify Route"
+ * @param {string} btntext2 - Button string for "Evaluate Corridor"
+ * @param {funciton} setEvalModePolygon - Setter for the line/polygon drawn by Eval Mode, used here to clear it by setting to []
+ * @param {funciton} setIdModePolygon - Setter for the line/polygon drawn by Id Mode, used here to clear it by setting to []
+ * @returns {JSX.element} React component code for the two buttons
+ */
 export default function MainToolModeButtons( {setBtnGroupState, btntxt1, btntxt2, setEvalModePolygon, setIdModePolygon} ) {
-
   const [mode, setMode] = React.useState('idmode');
   const handleChange = (event, newMode) => {
 
@@ -16,11 +24,11 @@ export default function MainToolModeButtons( {setBtnGroupState, btntxt1, btntxt2
       if (newMode === 'idmode'){
         // clear Eval Mode pipeline from map
         setEvalModePolygon([])
-        setBtnGroupState('points')
+        setBtnGroupState('id')
       } else if (newMode === 'evalmode'){
         // clear Id Mode pipeline from map
         setIdModePolygon([])
-        setBtnGroupState('upld')
+        setBtnGroupState('eval')
       }
       setMode(newMode);
     }
