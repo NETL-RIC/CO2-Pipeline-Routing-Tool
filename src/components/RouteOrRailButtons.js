@@ -13,7 +13,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
  * @param {string} btntext1 - Button string for "Pipeline Mode"
  * @param {string} btntext2 - Button string for "Railway Mode"
  * @param {string} toolMode - String for whether the tool's main currently selected mode is Id, for conditional rendering
- * @returns {JSX.element} React component code for the two buttons
+ * @returns {JSX.element} - React component code for the two buttons
  */
 export default function RouteOrRailButtons( {setBtnGroupState, btntxt1, btntxt2, toolMode} ) {
   const [mode, setMode] = React.useState('route');

@@ -13,7 +13,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
  * @param {string} btntext2 - Button string for "Evaluate Corridor"
  * @param {funciton} setEvalModePolygon - Setter for the line/polygon drawn by Eval Mode, used here to clear it by setting to []
  * @param {funciton} setIdModePolygon - Setter for the line/polygon drawn by Id Mode, used here to clear it by setting to []
- * @returns {JSX.element} React component code for the two buttons
+ * @returns {JSX.element} - React component code for the two buttons
  */
 export default function MainToolModeButtons( {setBtnGroupState, btntxt1, btntxt2, setEvalModePolygon, setIdModePolygon} ) {
   const [mode, setMode] = React.useState('idmode');

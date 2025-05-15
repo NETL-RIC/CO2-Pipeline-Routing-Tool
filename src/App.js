@@ -217,7 +217,7 @@ export default function MyApp() {
   /**
    * Generic download hanlder that handles downloads based on file extension
    * 
-   * @param {string} extension 
+   * @param {string} extension - The file extension you want the handler to consider
    */
   function handleDownload(extension) {
     let url_dl = "";
@@ -270,7 +270,7 @@ export default function MyApp() {
 
   /**
    * Component to draw the line on the map for Id Mode
-   * @returns {JSX.Element} The line element
+   * @returns {JSX.Element} - The line element
    */
   function ShowIdModeLine() {
     const LIME_OPTIONS = { color: "lime" };
@@ -320,7 +320,7 @@ export default function MyApp() {
 
   /**
    * Start marker component drawn on map at position held in startMarkerRenderCoords 
-   * @returns {JSX.element} The marker icon
+   * @returns {JSX.element} - The marker icon
    */
   const StartMarkers = () => {
     // handleClick basically
@@ -401,7 +401,7 @@ export default function MyApp() {
 
   /**
    * Destination marker component drawn on map at position held in destMarkerRenderCoords
-   * @returns {JSX.element} The marker object with icon
+   * @returns {JSX.element} - The marker object with icon
    */
   const EndMarkers = () => {
     const maps = useMapEvents({
@@ -476,7 +476,7 @@ export default function MyApp() {
 
   /**
    * Component containing main function and download button for Id Mode
-   * @returns {JSX.element} Both buttons, the Generate Pipeline button and the corresponding Download button
+   * @returns {JSX.element} - Both buttons, the Generate Pipeline button and the corresponding Download button
    */
   function GenAndDownloadButtons() {
     return (
@@ -501,7 +501,7 @@ export default function MyApp() {
 
   /**
    * Component for page header
-   * @returns {JSX.element} Header for page that contains appropriate icons and Help Documentation button
+   * @returns {JSX.element} - Header for page that contains appropriate icons and Help Documentation button
    */
   const Header = () => {
     return (
@@ -519,7 +519,7 @@ export default function MyApp() {
 
   /**
    * Component for page footer
-   * @returns {JSX.element} Footer that contains link to full disclaimer, opened in new tab or window
+   * @returns {JSX.element} - Footer that contains link to full disclaimer, opened in new tab or window
    */
   function Footer() {
     return (

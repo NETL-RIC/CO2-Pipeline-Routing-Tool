@@ -96,7 +96,7 @@ let ccsSitesSmall = [
  * 
  * @param {string} location - Whether we're setting the point for start or destination ("start" or "end")
  * @param {function} setLocation - Setter function for location
- * @returns {JSX.element} The radio buttons to select whether you're setting the start or end point
+ * @returns {JSX.element} - The radio buttons to select whether you're setting the start or end point
  */
 function StartEndButtons( {location, setLocation} ){
 
@@ -158,7 +158,7 @@ function StartEndDetails( {
 
   /**
    * Component to set start marker via dropdown
-   * @returns {JSX.element} JSX code for the dropdown
+   * @returns {JSX.element} - JSX code for the dropdown
    */
   function DropdownStart() {
     function onChange(ccsSite){
