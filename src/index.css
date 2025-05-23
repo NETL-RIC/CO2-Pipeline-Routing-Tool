@@ -17,6 +17,15 @@ h4 {
  padding: 10px;
 }
 
+.layers {
+  margin-right: 0px;
+  margin-bottom: 5px;
+}
+
+.layerstext {
+  display:inline;
+}
+
 p {
   margin-left: 10px;
 }

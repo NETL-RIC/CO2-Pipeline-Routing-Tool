@@ -764,6 +764,28 @@ export default function MyApp() {
     );
   }
 
+
+  const overlays = {
+    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Intermodal facilities</p>': (
+      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer' /> 
+    ),
+    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Public infrastructure/HCAs</p>': (
+      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Public_Infrastructure_Vector_Tile_Flat/VectorTileServer' /> 
+    ),
+    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Natural gas pipelines</p>': (
+      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Natural_Gas_Pipelines/VectorTileServer' /> 
+    ),
+    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Hydrocarbon pipelines</p>': (
+      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Hydrocarbon_Pipelines_Flat/VectorTileServer' /> 
+    ),
+    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Frost Action Potential (High)</p>': (
+      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat_v2/VectorTileServer' /> 
+    ),
+    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Corrosion Potential</p>': (
+      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Soil_Steel_Corrosion_Potential_v2/VectorTileServer' /> 
+    ),
+  };
+
   // Main return block for App
   return (
     <div>
@@ -789,29 +811,13 @@ export default function MyApp() {
         />
 
         <LayersControl position="topright">
-          <LayersControl.Overlay name="Intermodal facilities">
-            <VectorTileLayer url="https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer" />
-          </LayersControl.Overlay>
 
-          <LayersControl.Overlay name="Public infrastructure/HCAs ">
-            <VectorTileLayer url="https://arcgis.netl.doe.gov/server/rest/services/Hosted/Public_Infrastructure_Vector_Tile_Flat/VectorTileServer" />
+        {Object.entries(overlays).map(([name, layer]) => (
+          <LayersControl.Overlay key={name} name={name}>
+            {layer}
           </LayersControl.Overlay>
-
-          <LayersControl.Overlay name="Natural gas pipelines">
-            <VectorTileLayer url="https://arcgis.netl.doe.gov/server/rest/services/Hosted/Natural_Gas_Pipelines/VectorTileServer" />
-          </LayersControl.Overlay>
-
-          <LayersControl.Overlay name="Hydrocarbon pipelines">
-            <VectorTileLayer url="https://arcgis.netl.doe.gov/server/rest/services/Hosted/Hydrocarbon_Pipelines_Flat/VectorTileServer" />
-          </LayersControl.Overlay>
-
-          <LayersControl.Overlay name="Frost Action Potential (High)">
-            <VectorTileLayer url="https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat_v2/VectorTileServer" />
-          </LayersControl.Overlay>
-
-          <LayersControl.Overlay name="Corrosion Potential">
-            <VectorTileLayer url="https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Soil_Steel_Corrosion_Potential_v2/VectorTileServer" />
-          </LayersControl.Overlay>
+        ))}
+        
         </LayersControl>
 
         <StartMarkers />
