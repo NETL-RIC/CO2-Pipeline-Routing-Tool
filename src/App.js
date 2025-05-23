@@ -1,76 +1,52 @@
 import { React, useState, useEffect } from "react";
-import { DropdownList } from "react-widgets";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
   LayersControl,
-  LayerGroup,
-  Rectangle,
-  Circle,
-  FeatureGroup,
   useMapEvents,
   ScaleControl,
   Polyline,
   Polygon,
 } from "react-leaflet";
-import { FeatureLayer } from "react-esri-leaflet";
 import VectorTileLayer from "react-esri-leaflet/plugins/VectorTileLayer";
 import { Icon } from "leaflet";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
 
 // Local Components
 import MainToolModeButtons from "./components/MainToolModeButtons";
 import IdMode from "./components/IdMode";
 import EvalMode from "./components/EvalMode";
+import { DisclaimerPopup, LoadingMessageIdMode, LoadingMessageEvalMode, ServerErrorPopup, InvalidLocationPopup, InvalidLandmassPopup } from "./components/PopupModals";
 
 // Local Assets
-import netlLogo from "./NETL_Square_GREEN_E.png";
-import doeLogo from "./DOE_Logo_Color.png";
-import netlDoeCombo from "./DOENETL.png";
-import discoverLogo from "./discover.jpg";
+import netlLogo from "./media/NETL_Square_GREEN_E.png";
+import doeLogo from "./media/DOE_Logo_Color.png";
+import discoverLogo from "./media/discover.jpg";
 
 global.Buffer = require("buffer").Buffer;
-let zip_file = "";
-let pdf_file = "";
-let start = [0, 0];
-let laststart = -999;
-let lastend = -999;
-let end = [0, 0];
-let prevstart = "Select known CCS project as start location";
-let prevend = "Select known CCS project as destination location";
-let a = true;
-const LIME_OPTIONS = { color: "lime" };
-const PURPLE_OPTIONS = { color: "purple" };
+let end=[0,0]
 let shptyp = "";
 
+/**
+ * Primary App component that renders all other components and contains topmost level of state
+ * @returns {JSX.element} Entire main page functionality 
+ */
 export default function MyApp() {
   // the polygons / lines that are drawn on the map for each mode, stored as a list of coords
   const [evalModePolygon, setEvalModePolygon] = useState([]);
   const [idModePolygon, setIdModePolygon] = useState([]);
 
-  // what is displayed on dropdowns 1 and 2 respectively
-  // TODO: rename
-  const [value1, setValue1] = useState(
-    "Select known CCS project as start location"
-  );
-  const [value2, setValue2] = useState(
-    "Select known CCS project as destination location"
-  );
-
+  // toggles display of loading message modals for each mode
   const [isLoadingIdMode, setIsLoadingIdMode] = useState(false);
   const [isLoadingEvalMode, setIsLoadingEvalMode] = useState(false);
 
-  // why two? what do they do
-  const [finished2, setFinished2] = useState("");
-  const [finished, setFinished] = useState("");
-
-  // show the line of the pipeline on the map or not
-  const [pipeshow, setpipeloc] = useState(false);
+  // state of commpletion for processing of each main mode
+  const [evalModeDone, setEvalModeDone] = useState("");
+  const [idModeDone, setIdModeDone] = useState("");
 
   // display the catch-all server error Modal
   const [showServerError, setShowServerError] = useState(false);
@@ -78,62 +54,54 @@ export default function MyApp() {
   // what location?
   const [location, setLocation] = useState("");
 
-  // files for upload mode I think
+  // files for upload mode
   const [files, setFiles] = useState([]);
 
-  // "route" vs "rail" for what id mode is currently selected
+  // state for the tool's main mode: "id" or "eval"
+  const [mainMode, setMainMode] = useState("id");
+
+  // state for sub-mode of Id Mode: "route" or "rail"
   const [idMode, setIdMode] = useState("route");
 
-  // redundant, to be removed and reduced to the start/end globals, or xMarkerRenderCoords
-  const [srcLat, setSrcLat] = useState("");
-  const [srcLon, setSrcLon] = useState("");
-  const [destLat, setDestLat] = useState("");
-  const [destLon, setDestLon] = useState("");
-  const [updateSrcLat, setUpdateSrcLat] = useState(srcLat);
-  const [updateSrcLon, setupdateSrcLon] = useState(srcLon);
-  const [updateDestLat, setupdateDestLat] = useState(destLat);
-  const [updateDestLon, setupdateDestLon] = useState(destLon);
-
-  // not the location but whether in US or AK
-  const [startloc, setStartloc] = useState("");
-  const [endloc, setEndloc] = useState("");
+  // whether each point is in the main US landmass or Alaska
+  const [startLandmass, setStartLandmass] = useState("");
+  const [endLandmass, setEndLandmass] = useState("");
 
   // I think this displays the 'both points need to be in the US or AK' modal
-  const [show, setShowloc] = useState(false);
+  const [invalidPoint, setInvalidPoint] = useState(false);
+  const [invalidLandmass, setInvalidLandmass] = useState(false);
 
-  // this means 'are we in evaluate corridor mode'
-  const [uploaz, setUploaz] = useState("points");
-
-  // used only for tile layer testing UI to test layers with. keep
+  // used only for tile layer testing UI to test layers with. keep for posterity
   const [showTileLayer, setShowTileLayer] = useState(false);
   const [tileLayer, setTileLayer] = useState(null);
   const [showLayerChecked, setShowLayerChecked] = useState(false);
 
-  // needs to start at [0,0], can't start at null. use conditional rendering later
-  // controls where the markers appear on the map
-  const [startMarkerRenderCoords, setStartMarkerRenderCoords] = useState([
-    0, 0,
-  ]); // given to Marker leaflet component to draw marker pos on the map
+  // initial state is where markers are rendered before user selection 
+  const [startMarkerRenderCoords, setStartMarkerRenderCoords] = useState([0, 0]); // given to Marker leaflet component to draw marker pos on the map
   const [destMarkerRenderCoords, setDestMarkerRenderCoords] = useState([0, 0]);
 
   // right now, marker coord data and data used for processing are seperate because they were before refactor
   const [startCoords, setStartCoords] = useState([null, null]);
   const [destCoords, setDestCoords] = useState([null, null]);
 
-  // icons for the markers RENAME
-  const customIcon1 = new Icon({
+  // map markers
+  const startMarkerIcon = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
     iconSize: [30, 30],
   });
-  const customIcon2 = new Icon({
-    iconUrl: require("./placeholder.png"),
+  const destMarkerIcon = new Icon({
+    iconUrl: require("./media/red_marker.png"),
     iconSize: [30, 30],
   });
 
-  // 'Evaluate' button (handleMultipleSubmit() formerly)
+  /**
+   * The main functionality of Eval Mode, run an uploaded polygon through the ml analyzation code, draw it on the map, and generate a pdf report.
+   * 
+   * @param {*} event 
+   */
   function evaluateCorridor(event) {
     event.preventDefault();
-    setFinished2(false);
+    setEvalModeDone(false);
     setIsLoadingEvalMode(true);
     setIsLoadingIdMode(false);
     let urlfile = "";
@@ -152,10 +120,9 @@ export default function MyApp() {
       .then((response) => {
         setEvalModePolygon(response.data["array"]);
         shptyp = response.data["typ"];
-        pdf_file = response.data["pdf"];
         console.log(response);
         console.log(response.data);
-        setFinished2(true);
+        setEvalModeDone(true);
         setIsLoadingEvalMode(false);
       })
       .catch((err) => {
@@ -164,17 +131,21 @@ export default function MyApp() {
       });
   }
 
-  // 'Generate Pipeline' button (sendData() formerly)
+  /**
+   * The main functionality of Id Mode, generate a route based on start and dest user input. 
+   * Draw the route on the map, and create a shapefile of it and a corresponding pdf report for user download.
+   */
   function generatePipeline() {
-    setFinished(false);
-    setIsLoadingIdMode(true);
-    setIsLoadingEvalMode(false);
     let urlpipe = "";
 
-    // setpipeloc means the pipe location is valid
-    if (endloc !== startloc && endloc !== "" && startloc !== "") {
-      setpipeloc(true);
+    // check if both points are in the same landmass (mainland USA or Alaska)
+    if (endLandmass !== startLandmass && endLandmass !== "" && startLandmass !== "") {
+      setInvalidLandmass(true);
     } else {
+
+      setIdModeDone(false);
+      setIsLoadingIdMode(true);
+      setIsLoadingEvalMode(false);
       if (global.electronmode === true) {
         urlpipe = "http://127.0.0.1:5000/token";
       } else {
@@ -199,9 +170,8 @@ export default function MyApp() {
       })
         .then((response) => {
           setIdModePolygon(response.data["route"]);
-          zip_file = response.data["zip"];
           console.log("Got line data");
-          setFinished(true);
+          setIdModeDone(true);
           setIsLoadingIdMode(false);
         })
         .catch((error) => {
@@ -219,10 +189,10 @@ export default function MyApp() {
     }
   }
 
-  // Documentation hanlder
+  /**
+   * Handler for clicking the documentation button, opens documentation in a browser window.
+   */
   function openDocs() {
-    /// THIS VERSION IS FOR ELECTRON BUILD AS SOMETHING IS BLOCKING NEW WINDOWS
-
     let urldoc = "";
 
     if (global.electronmode === true) {
@@ -240,12 +210,15 @@ export default function MyApp() {
       }
     });
 
-    /// THIS VERSION CAN BE USED FOR DEVELOPMENT
-    //  console.log("trying documentation open")
+    /// Alt version for quick testing without fetching
     //  window.open("documentation/_build/html/index.html", "helpWindow", "noreferrer")
   }
 
-  // Generic download hanlder
+  /**
+   * Generic download hanlder that handles downloads based on file extension
+   * 
+   * @param {string} extension - The file extension you want the handler to consider
+   */
   function handleDownload(extension) {
     let url_dl = "";
     if (global.electronmode === true) {
@@ -288,229 +261,31 @@ export default function MyApp() {
       });
   }
 
-  // Zip-specific download handler
+  /**
+   * Zip-specific download handler
+   */
   function handleZIPDownload() {
     handleDownload(".zip");
   }
 
-  // Disclaimer modal on initial page load
-  function DisclaimerPopup() {
-    const [showz, setShow] = useState(a);
-    a = false;
-    const handleClose = () => setShow(a);
-
-    return (
-      <>
-        <Modal
-          dialogClassName="dis-modal"
-          show={showz}
-          onHide={handleClose}
-          backdrop="static"
-          keyboard={false}
-        >
-          <Modal.Header>
-            <Modal.Title></Modal.Title>
-            <div style={{ margin: "auto" }}>
-              <img src={netlLogo} width={50} height={50} alt="NETL Logo" />
-              <img src={doeLogo} height={50} alt="DOE Logo" />
-              <img
-                src={discoverLogo}
-                width={120}
-                height={50}
-                alt="Discover Logo"
-              />
-            </div>
-          </Modal.Header>
-          <div id="disTitle" className="modal-body">
-            <label id="disTitleText">Disclaimer</label>
-          </div>
-          <Modal.Body>
-            This project was funded by the United States Department of Energy,
-            National Energy Technology Laboratory, in part, through a site
-            support contract. Neither the United States Government nor any
-            agency thereof, nor any of their employees, nor the support
-            contractor, nor any of their employees, makes any warranty, express
-            or implied, or assumes any legal liability or responsibility for the
-            accuracy, completeness, or usefulness of any information, apparatus,
-            product, or process disclosed, or represents that its use would not
-            infringe privately owned rights. Reference herein to any specific
-            commercial product, process, or service by trade name, trademark,
-            manufacturer, or otherwise does not necessarily constitute or imply
-            its endorsement, recommendation, or favoring by the United States
-            Government or any agency thereof. The views and opinions of authors
-            expressed herein do not necessarily state or reflect those of the
-            United States Government or any agency thereof. Parts of this
-            technical effort were performed in support of the National Energy
-            Technology Laboratory's ongoing research under the Energy Data
-            eXchange for Carbon Capture and Storage (EDX4CCS) Field Work
-            Proposal 1025007 by NETL's Research and Innovation Center, including
-            work performed by Leidos Research Support Team staff under the RSS
-            contract 326663.00.0.2.00.00.2050.033.0.
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={handleClose}>Understood</Button>
-          </Modal.Footer>
-        </Modal>
-      </>
-    );
-  }
-
-  // The loading message that apperas when the backend is generating after 'Generate Pipeline' in ID Mode
-  function LoadingMessageIdMode() {
-    if (isLoadingIdMode) {
-      return (
-        <>
-          <Modal
-            show={isLoadingIdMode}
-            backdrop="static"
-            keyboard={false}
-            aria-labelledby="contained-modal-title-vcenter"
-            centered
-          >
-            <Modal.Header>
-              <Modal.Title>Loading...</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              Optimizing pipeline corridor, this may take several minutes.
-              Please do not close the webpage, or your progress will be lost.
-            </Modal.Body>
-            <Modal.Footer>
-              This notification will close automatically when optimization has
-              concluded.
-            </Modal.Footer>
-          </Modal>
-        </>
-      );
-    }
-  }
-
-  // The loading message that apperas when the backend is generating after 'Evaluate' in Eval Mode
-  function LoadingMessageEvalMode() {
-    if (isLoadingEvalMode) {
-      return (
-        <>
-          <Modal
-            show={isLoadingEvalMode}
-            backdrop="static"
-            keyboard={false}
-            aria-labelledby="contained-modal-title-vcenter"
-            centered
-          >
-            <Modal.Header>
-              <Modal.Title>Loading...</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              Evaluating uploaded corridor, this may take several minutes.
-              Please do not close the webpage, or your progress will be lost.
-            </Modal.Body>
-            <Modal.Footer>
-              This notification will close automatically when evaluation has
-              concluded.
-            </Modal.Footer>
-          </Modal>
-        </>
-      );
-    }
-  }
-
-  // Catch-all for invalid points, bad logic issues, etc. In the future should have more specific messages for different server errors
-  function ServerErrorPopup() {
-    const handleClose = () => setShowServerError(false);
-    return (
-      <>
-        <Modal
-          show={showServerError}
-          onHide={handleClose}
-          backdrop="static"
-          keyboard={false}
-          aria-labelledby="contained-modal-title-vcenter"
-          centered
-        >
-          <Modal.Header>
-            <Modal.Title>Server Error</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            An invalid point location may have been selected, the server may not
-            have been started, or a different server error has occured.
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={handleClose}>Understood</Button>
-          </Modal.Footer>
-        </Modal>
-      </>
-    );
-  }
-
-  // Single selected point is outside of US or AK
-  function InvalidLocationPopup() {
-    const handleClose = () => setShowloc(false);
-
-    return (
-      <>
-        <Modal
-          show={show}
-          onHide={handleClose}
-          backdrop="static"
-          keyboard={false}
-          aria-labelledby="contained-modal-title-vcenter"
-          centered
-        >
-          <Modal.Header>
-            <Modal.Title>Invalid Location!</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            Please select a point within the USA or Alaska.
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={handleClose}>Understood</Button>
-          </Modal.Footer>
-        </Modal>
-      </>
-    );
-  }
-
-  // Both selected points are in different landmasses (US or AK)
-  function InvalidPipeline() {
-    const handleClose = () => setpipeloc(false);
-
-    return (
-      <>
-        <Modal
-          show={pipeshow}
-          onHide={handleClose}
-          backdrop="static"
-          keyboard={false}
-          aria-labelledby="contained-modal-title-vcenter"
-          centered
-        >
-          <Modal.Header>
-            <Modal.Title>Invalid Pipeline!</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            Start and end locations must be both in Alaska or both in
-            continental USA.
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={handleClose}>Understood</Button>
-          </Modal.Footer>
-        </Modal>
-      </>
-    );
-  }
-
-  // Displays pipeline onto map from ID Mode output
+  /**
+   * Component to draw the line on the map for Id Mode
+   * @returns {JSX.Element} - The line element
+   */
   function ShowIdModeLine() {
-    if (finished) {
-      console.log("Returning line data as Polyline for map");
-      console.log("Line array in front end: ");
-      console.log(idModePolygon);
+    const LIME_OPTIONS = { color: "lime" };
+    if (idModeDone) {
       return <Polyline pathOptions={LIME_OPTIONS} positions={idModePolygon} />;
     }
   }
 
-  // Displays line or polygon onto map from Eval Mode output
+  /**
+   * Component to draw the line or polygon element on the map for Eval Mode 
+   * @returns {JSX.Element} The line or polygon element
+   */
   function ShowEvalModeShape() {
-    if (finished2) {
+    const PURPLE_OPTIONS = { color: "purple" };
+    if (evalModeDone) {
       if (shptyp === "Polygon") {
         return (
           <Polygon pathOptions={PURPLE_OPTIONS} positions={evalModePolygon} />
@@ -535,26 +310,23 @@ export default function MyApp() {
     e.returnValue = "";
   };
 
+  /**
+   * Sets uploaded files to a files variable in state 
+   * @param {*} event 
+   */
   function handleMultipleChange(event) {
     setFiles([...event.target.files]);
   }
 
-  // Start marker on map
+  /**
+   * Start marker component drawn on map at position held in startMarkerRenderCoords 
+   * @returns {JSX.element} - The marker icon
+   */
   const StartMarkers = () => {
-    if (prevstart !== value1 && laststart === 1) {
-      prevstart = value1;
-      laststart = 1;
-      start[0] = value1["id"][0];
-      start[1] = value1["id"][1];
-    }
-
-    const initialMarkers = [0, 0];
-    const [markers, setMarkers] = useState(initialMarkers);
-
     // handleClick basically
     const map = useMapEvents({
       click(e) {
-        if (uploaz === "points") {
+        if (mainMode === "id") {
           if (location === "start") {
             let s1 = e.latlng["lat"];
             let s2 = e.latlng["lng"];
@@ -579,24 +351,17 @@ export default function MyApp() {
                   startdata["state"] === "Hawaii" ||
                   startdata["country"] !== "United States"
                 ) {
-                  setShowloc(true);
+                  setInvalidPoint(true);
                 } else {
                   if (startdata["state"] === "Alaska") {
-                    setStartloc("Alaska");
+                    setStartLandmass("Alaska");
                   } else {
-                    setStartloc("US");
+                    setStartLandmass("US");
                   }
 
-                  // old version of state
-                  start[0] = s1;
-                  start[1] = s2;
-                  // new version of state
                   setStartCoords([s1, s2]);
                   console.log("Start from click: [" + s1 + ", " + s2 + "]");
 
-                  //console.log(start[0])
-                  //markers.push(e.latlng);
-                  //setMarkers((prevValue) => [...prevValue, e.latlng]);
                   setStartMarkerRenderCoords([
                     e.latlng["lat"],
                     e.latlng["lng"],
@@ -615,17 +380,17 @@ export default function MyApp() {
       },
     });
 
-    if (uploaz === "points") {
+    if (mainMode === "id") {
       return (
-        <Marker position={startMarkerRenderCoords} icon={customIcon1}>
+        <Marker position={startMarkerRenderCoords} icon={startMarkerIcon}>
           <Popup>
-            Start Location ({start[0].toFixed(6)}, {start[1].toFixed(6)})
+            Start Location ({0},{0})
           </Popup>
         </Marker>
       );
-    } else if (uploaz === "upld") {
+    } else if (mainMode === "eval") {
       return (
-        <Marker position={[0, 0]} icon={customIcon1}>
+        <Marker position={[0, 0]} icon={startMarkerIcon}>
           <Popup>
             Start Location ({0}, {0})
           </Popup>
@@ -634,21 +399,14 @@ export default function MyApp() {
     }
   };
 
-  // End marker on map
+  /**
+   * Destination marker component drawn on map at position held in destMarkerRenderCoords
+   * @returns {JSX.element} - The marker object with icon
+   */
   const EndMarkers = () => {
-    if (prevend !== value2 && lastend === 1) {
-      prevend = value2;
-      lastend = 1;
-      end[0] = value2["id"][0];
-      end[1] = value2["id"][1];
-    }
-
-    const endMarkers = [0, 0];
-    const [emarkers, seteMarkers] = useState(endMarkers);
-
     const maps = useMapEvents({
       click(f) {
-        if (uploaz === "points") {
+        if (mainMode === "id") {
           if (location === "end") {
             let e1 = f.latlng["lat"];
             let e2 = f.latlng["lng"];
@@ -671,16 +429,14 @@ export default function MyApp() {
                   enddata["state"] === "Hawaii" ||
                   enddata["country"] !== "United States"
                 ) {
-                  setShowloc(true);
+                  setInvalidPoint(true);
                 } else {
                   if (enddata["state"] === "Alaska") {
-                    setEndloc("Alaska");
+                    setEndLandmass("Alaska");
                   } else {
-                    setEndloc("US");
+                    setEndLandmass("US");
                   }
 
-                  //emarkers.push(f.latlng);
-                  //seteMarkers((prevValue) => [...prevValue, f.latlng]);
                   setDestCoords([f.latlng["lat"], f.latlng["lng"]]);
                   setDestMarkerRenderCoords([f.latlng["lat"], f.latlng["lng"]]);
                   end[0] = f.latlng["lat"];
@@ -699,17 +455,17 @@ export default function MyApp() {
       },
     });
 
-    if (uploaz === "points") {
+    if (mainMode === "id") {
       return (
-        <Marker position={destMarkerRenderCoords} icon={customIcon2}>
+        <Marker position={destMarkerRenderCoords} icon={destMarkerIcon}>
           <Popup>
             End Location ({end[0].toFixed(6)}, {end[1].toFixed(6)})
           </Popup>
         </Marker>
       );
-    } else if (uploaz === "uploads") {
+    } else if (mainMode === "eval") {
       return (
-        <Marker position={[0, 0]} icon={customIcon2}>
+        <Marker position={[0, 0]} icon={destMarkerIcon}>
           <Popup>
             End Location ({0}, {0})
           </Popup>
@@ -718,7 +474,10 @@ export default function MyApp() {
     }
   };
 
-  // Generate Pipeline and Download Report and Shapefile buttons
+  /**
+   * Component containing main function and download button for Id Mode
+   * @returns {JSX.element} - Both buttons, the Generate Pipeline button and the corresponding Download button
+   */
   function GenAndDownloadButtons() {
     return (
       <div>
@@ -740,7 +499,10 @@ export default function MyApp() {
     );
   }
 
-  // Top page banner
+  /**
+   * Component for page header
+   * @returns {JSX.element} - Header for page that contains appropriate icons and Help Documentation button
+   */
   const Header = () => {
     return (
       <div className="header">
@@ -755,7 +517,10 @@ export default function MyApp() {
     );
   };
 
-  // Bottom of page banner
+  /**
+   * Component for page footer
+   * @returns {JSX.element} - Footer that contains link to full disclaimer, opened in new tab or window
+   */
   function Footer() {
     return (
       <p>
@@ -789,16 +554,15 @@ export default function MyApp() {
   // Main return block for App
   return (
     <div>
-      {/* Utility components */}
       {/*Initial popup */}
-      <DisclaimerPopup />
+      <DisclaimerPopup/>
 
       {/*Hidden by default popups*/}
-      <InvalidLocationPopup />
-      <ServerErrorPopup />
-      <InvalidPipeline />
-      <LoadingMessageEvalMode />
-      <LoadingMessageIdMode />
+      <InvalidLandmassPopup invalidLandmass={invalidLandmass} setInvalidLandmass={setInvalidLandmass} />
+      <InvalidLocationPopup invalidPoint={invalidPoint} setInvalidPoint={setInvalidPoint}/> 
+      <ServerErrorPopup showServerError={showServerError} setShowServerError={setShowServerError} />
+      <LoadingMessageEvalMode isLoadingEvalMode={isLoadingEvalMode}/>
+      <LoadingMessageIdMode isLoadingIdMode={isLoadingIdMode}/>
 
       {/*Regular page*/}
       <Header />
@@ -827,59 +591,34 @@ export default function MyApp() {
         <ShowEvalModeShape />
       </MapContainer>
 
-      {/*
-      <VectorTileLayerTestInputs
-        tileLayer={ tileLayer } setTileLayer={ setTileLayer }
-        showTileLayer={ showTileLayer } setShowTileLayer={ setShowTileLayer }
-        showLayerChecked={ showLayerChecked } setShowLayerChecked={ setShowLayerChecked }
-      />
-      */}
-
       <MainToolModeButtons
-        setBtnGroupState={setUploaz}
+        setBtnGroupState={setMainMode}
         btntxt1={"Identify Route"}
         btntxt2={"Evaluate Corridor"}
         setEvalModePolygon={setEvalModePolygon}
         setIdModePolygon={setIdModePolygon}
       />
-      {uploaz === "points" ? (
+      {mainMode === "id" ? (
         <IdMode
           location={location}
           setLocation={setLocation}
-          value1={value1}
-          setValue1={setValue1}
-          value2={value2}
-          setValue2={setValue2}
-          setShowLoc={setShowloc}
-          setEndLoc={setEndloc}
+          setInvalidPoint={setInvalidPoint}
+          setStartLandmass={setStartLandmass}
+          setEndLandmass={setEndLandmass}
           setBtnGroupState={setIdMode}
           btntxt1={"Pipeline Mode"}
           btntxt2={"Railway Mode"}
-          toolMode={uploaz}
-          srcLat={srcLat}
-          srcLon={srcLon}
-          destLat={destLat}
-          destLon={destLon}
-          setUpdateSrcLat={setUpdateSrcLat}
-          setupdateSrcLon={setupdateSrcLon}
-          setupdateDestLat={setupdateDestLat}
-          setupdateDestLon={setupdateDestLon}
-          setSrcLat={setSrcLat}
-          setSrcLon={setSrcLon}
-          setDestLat={setDestLat}
-          setDestLon={setDestLon}
+          toolMode={mainMode}
           setStartMarkerRenderCoords={setStartMarkerRenderCoords}
           setDestMarkerRenderCoords={setDestMarkerRenderCoords}
-          start={start}
-          end={end}
           setStartCoords={setStartCoords}
           setDestCoords={setDestCoords}
         />
       ) : null}
 
-      {uploaz === "points" ? <GenAndDownloadButtons /> : null}
+      {mainMode === "id" ? <GenAndDownloadButtons /> : null}
 
-      {uploaz === "upld" ? (
+      {mainMode === "eval" ? (
         <EvalMode
           evaluateCorridor={evaluateCorridor}
           handleMultipleChange={handleMultipleChange}

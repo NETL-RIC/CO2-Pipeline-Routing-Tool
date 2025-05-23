@@ -1,19 +1,13 @@
 /**
  * Component for the logic in 'Identify Route' mode
  */
-import { React } from 'react';
+import { React, useState } from 'react';
 import axios from "axios";
 import Button from 'react-bootstrap/Button';
 import { DropdownList } from "react-widgets";
 
 import RouteOrRailButtons from './RouteOrRailButtons';
 
-let prevstart = 'Select known CCS project as start location'
-let prevend = 'Select known CCS project as destination location'
-let a = true;
-const LIME_OPTIONS = { color: 'lime' }
-const PURPLE_OPTIONS = { color: 'purple' }
-let shptyp = ''
 let ccsSitesLarge = [
 { id: [39.87, -88.89], name: 'Illinois Industrial Carbon Capture and Storage Project'},
 { id: [45, -85], name: 'MRCSP Development Phase - Michigan Basin Project' },
@@ -98,6 +92,12 @@ let ccsSitesSmall = [
 { id: [31, -102], name: 'Yates Oil Field EOR Operations'},
 ];
 
+/**
+ * 
+ * @param {string} location - Whether we're setting the point for start or destination ("start" or "end")
+ * @param {function} setLocation - Setter function for location
+ * @returns {JSX.element} - The radio buttons to select whether you're setting the start or end point
+ */
 function StartEndButtons( {location, setLocation} ){
 
   const onOptionChange = e => {
@@ -127,19 +127,40 @@ function StartEndButtons( {location, setLocation} ){
     )
 }
 
-function StartEndDetails( {value1, setValue1, value2, setValue2, 
-  setShowloc, setEndloc, srcLat, 
-  srcLon, destLat, destLon, setUpdateSrcLat, 
-  setupdateSrcLon, setupdateDestLat, setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon,
+/**
+ * 
+ * @param {function} setInvalidPoint - Sets the invalid point boolean if selected area is outside the US or Alaska
+ * @param {function} setStartLandmass - Saves the landmass (main USA or Alaska) as a string for selected start coordinates
+ * @param {function} setEndLandmass - Saves the landmass (main USA or Alaska) as a string for selected dest coordinates
+ * @param {function} setStartMarkerRenderCoords - Sets start coords for marker's location
+ * @param {function} setDestMarkerRenderCoords - Sets dest coords for marker's location 
+ * @param {function} setStartCoords - Sets start coords for passing to ML backend
+ * @param {function} setDestCoords - Sets dest coords for passing to ML backend
+ * @returns  {JSX.element} All react components for setting Start and Dest data
+ */
+function StartEndDetails( { 
+  setInvalidPoint,
+  setStartLandmass, setEndLandmass,
   setStartMarkerRenderCoords, setDestMarkerRenderCoords,
-  setStartCoords, setDestCoords,
-  start,
-  end, laststart, lastend
+  setStartCoords, setDestCoords
   } ){
 
-  // Dropdown component for start point
+  const [value1, setValue1] = useState(
+    "Select known CCS project as start location"
+  );
+  const [value2, setValue2] = useState(
+    "Select known CCS project as destination location"
+  );
+  const [srcLat, setSrcLat] = useState("");
+  const [srcLon, setSrcLon] = useState("");
+  const [destLat, setDestLat] = useState("");
+  const [destLon, setDestLon] = useState("");
+
+  /**
+   * Component to set start marker via dropdown
+   * @returns {JSX.element} - JSX code for the dropdown
+   */
   function DropdownStart() {
-    laststart = 1
     function onChange(ccsSite){
       setStartMarkerRenderCoords(ccsSite.id)
       setValue1(ccsSite)
@@ -157,12 +178,13 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
     )
   }
 
-  // Dropdown component for end point
+  /**
+   * Component to set dest marker via dropdown
+   * @returns {JSX.element} JSX code for the dropdown
+   */
   function DropdownEnd() {
-    lastend = 1
     function onChange(ccsSite){
       setDestMarkerRenderCoords(ccsSite.id)
-      debugger;
       setValue2(ccsSite)
       setDestCoords(ccsSite.id)
     }
@@ -178,10 +200,11 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
     )
   }
 
-  // Handler for clicking on the map to set the Start marker
+  /**
+   * Handler for setting the start marker data when user clicks on the map
+   */
   const saveStartBtnClick = () => {
     console.log('Save Start clicked')
-    laststart = 0
     let stlat = Number(srcLat)
     let stlon = Number(srcLon)
 
@@ -202,29 +225,26 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
       } else {
         console.log(response.data)
       }
+
       // if invalid point
       if((pointAddress === undefined) || (pointAddress["state"] === "Hawaii") || (pointAddress["country"] !== "United States")){
         // brings up the 'select a valid point in the US' modal
-        setShowloc(true)
+        setInvalidPoint(true)
+
       // if valid point
       }else{
 
         // State for checking that both points are in the same landmass
         if(pointAddress['state'] === "Alaska"){
-          setEndloc('Alaska')
+          setStartLandmass('Alaska')
         }else{
-          setEndloc('US')
+          setStartLandmass('US')
         }
-        setUpdateSrcLat(srcLat)
-        setupdateSrcLon(srcLon)
 
         const newStartCoords = [Number(srcLat), Number(srcLon)]
         console.log(newStartCoords)
         setStartMarkerRenderCoords(newStartCoords)
-        // 'start' and 'end' are the data actually send to the backend
         setStartCoords([Number(srcLat), Number(srcLon)])
-        start[0] = Number(srcLat)
-        start[1] = Number(srcLon)
       }
 
     }).catch((error) => {
@@ -236,9 +256,10 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
     })
   }
 
-  // Handler for setting the End/Dest point by clicking on the map
+  /**
+   * Handler for setting the dest marker data when user clicks on the map
+   */
   const saveDestBtnClick = () =>{
-    lastend = 0
     let dtlat = Number(destLat)
     let dtlon = Number(destLon)
 
@@ -252,21 +273,16 @@ function StartEndDetails( {value1, setValue1, value2, setValue2,
       let enddata = response.data['address']
 
       if((enddata === undefined) || (enddata["state"] === "Hawaii") || (enddata["country"] !== "United States")){
-        setShowloc(true)
+        setInvalidPoint(true);
 
       }else{
 
         // State for checking that both points are in the same landmass
         if(enddata['state'] === "Alaska"){
-          setEndloc('Alaska')
+          setEndLandmass('Alaska')
         }else{
-          setEndloc('US')
+          setEndLandmass('US')
         }
-        setupdateDestLat(destLat)
-        setupdateDestLon(destLon)
-        // 'start' and 'end' are the data actually send to the backend
-        end[0] = Number(destLat)
-        end[1] = Number(destLon)
         const newDestCoords = [Number(destLat), Number(destLon)]
         console.log(newDestCoords)
         setDestMarkerRenderCoords(newDestCoords)
@@ -324,34 +340,38 @@ return(
 )
 }
 
-export default function IdMode( {location, setLocation, value1, setValue1, value2, 
-  setValue2, setShowLoc, setEndLoc, setBtnGroupState, 
-  btntxt1, btntxt2, toolMode, srcLat, srcLon, destLat, 
-  destLon, setUpdateSrcLat, setupdateSrcLon, setupdateDestLat, 
-  setupdateDestLon, setSrcLat, setSrcLon, setDestLat, setDestLon,
-  setStartMarkerRenderCoords, start, end, laststart, lastend,
-  setStartCoords, setDestCoords, setDestMarkerRenderCoords} ){
+/**
+ * All the code for Identify Route mode contained in one React Component, for organization and clarity 
+ * @param {string} location - Whether we're setting the point for start or destination ("start" or "end")
+ * @param {function} setLocation - setter for location string
+ * @param {function} setInvalidPoint - Sets the invalid point boolean if selected area is outside the US or Alaska
+ * @param {function} setBtnGroupState - Sets the current main mode for the tool ("id" or "eval") as a string
+ * @param {function} setStartLandmass - Saves the landmass (main USA or Alaska) as a string for selected start coordinates
+ * @param {function} setEndLandmass - Saves the landmass (main USA or Alaska) as a string for selected dest coordinates
+ * @param {string} btntxt1 - The string for the Pipeline Mode button, set as "route"
+ * @param {string} btntxt2 - The string for the Railway Mode button set as "rail"
+ * @param {function} setStartMarkerRenderCoords - Sets start coords for marker's location
+ * @param {function} setDestMarkerRenderCoords - Sets dest coords for marker's location 
+ * @param {function} setStartCoords - Sets start coords for passing to ML backend
+ * @param {function} setDestCoords - Sets dest coords for passing to ML backend
+ * @returns {JSX.element} React components that abstract the Id Mode UI
+ */
+export default function IdMode( {location, setLocation, 
+  setInvalidPoint, setBtnGroupState, 
+  setStartLandmass, setEndLandmass,
+  btntxt1, btntxt2, toolMode, 
+  setStartMarkerRenderCoords, setDestMarkerRenderCoords, 
+  setStartCoords, setDestCoords}  ){
     return(
         <div>
             <RouteOrRailButtons setBtnGroupState={setBtnGroupState} btntxt1={btntxt1} btntxt2={btntxt2} toolMode={toolMode}/>
             <StartEndButtons location={location} setLocation={setLocation}/>
             <StartEndDetails 
-              value1={value1} setValue1={setValue1} 
-              value2={value2} setValue2={setValue2} 
-              srcLat={ srcLat } setSrcLat={ setSrcLat }
-              setShowloc={setShowLoc} setEndloc={setEndLoc}
-              srcLon={srcLon} setSrcLon={setSrcLon} 
-              destLat={destLat} setDestLat={ setDestLat }
-              destLon={destLon} setDestLon={setDestLon} 
-              setUpdateSrcLat={setUpdateSrcLat} 
-              setupdateSrcLon={setupdateSrcLon} 
-              setupdateDestLat={setupdateDestLat} 
-              setupdateDestLon={setupdateDestLon} 
+              setInvalidPoint={setInvalidPoint}
+              setStartLandmass={setStartLandmass}
+              setEndLandmass={setEndLandmass}
               setStartMarkerRenderCoords = { setStartMarkerRenderCoords }
               setDestMarkerRenderCoords = { setDestMarkerRenderCoords }
-              start={start}
-              end={end}
-              laststart={ laststart } lastend={ lastend }
               setStartCoords={ setStartCoords } setDestCoords = { setDestCoords }
             />
             <br></br>

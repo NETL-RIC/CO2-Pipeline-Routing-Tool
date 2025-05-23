@@ -7,6 +7,14 @@ import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
+/**
+ * The two exclusive selection buttons controlling "Pipeline Mode" and "Railway Mode" as a submode of Id Mode
+ * @param {function} setBtnGroupState - Sets the submode of Id to "route" or "rail" for Pipeline and Railway respectively
+ * @param {string} btntext1 - Button string for "Pipeline Mode"
+ * @param {string} btntext2 - Button string for "Railway Mode"
+ * @param {string} toolMode - String for whether the tool's main currently selected mode is Id, for conditional rendering
+ * @returns {JSX.element} - React component code for the two buttons
+ */
 export default function RouteOrRailButtons( {setBtnGroupState, btntxt1, btntxt2, toolMode} ) {
   const [mode, setMode] = React.useState('route');
 
@@ -46,7 +54,7 @@ export default function RouteOrRailButtons( {setBtnGroupState, btntxt1, btntxt2,
         paddingBottom: '10px',
       }}
     >
-      <ToggleButtonGroup color='secondary' size="small" {...control} aria-label="IdModeButtons" disabled={toolMode !== 'points'}>
+      <ToggleButtonGroup color='secondary' size="small" {...control} aria-label="IdModeButtons" disabled={toolMode !== 'id'}>
         {children}
       </ToggleButtonGroup>
     </Stack>

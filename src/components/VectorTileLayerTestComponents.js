@@ -5,7 +5,6 @@
 
     To re-enable, Vector...Wrapper will need to be instantiated inside the MapContainer component in App.js, as well as
     Vector...TestInputs will need to be instantiated anywhere inside the main UI section of App.js, like above <MainModeButtons/> for example
-
 */
 
 import { React, useState } from 'react';
