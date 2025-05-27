@@ -1,10 +1,12 @@
 # ML-Integrated Pipeline Webapp
 Flask and React webapp migrated from the original Pipeline PyQT standalone Desktop app.
+## How To Run As Bundle
+Download and run via https://github.com/NETL-RIC/pipeline-routing-tool-release
 
 # Developer Notes
-## How To Run
-In a terminal window, enter python -m flask run in ./Flask, with the appropriate virtual environment.
-In a different terminal window, enter npm start in the root project dir, ensuring that npm and node.js have been installed.
+## How To Run From Source
+In a terminal window, enter `python -m flask run` in ./Flask, with the appropriate virtual environment.
+In a different terminal window, enter `npm start` in the root project dir, ensuring that npm and node.js have been installed.
 
 ## Dependencies
 ### Backend Dependencies (Flask)
