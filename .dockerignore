@@ -1,0 +1,18 @@
+# .dockerignore
+
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.egg-info
+dist/
+node_modules/
+# PyInstaller specific files
+*.spec
+# Zip files from package target
+*.zip
