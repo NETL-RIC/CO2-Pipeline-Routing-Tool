@@ -1,3 +1,6 @@
+/**
+ *  Main entrypoint file for all React code for the tool
+ */
 import { React, useState, useEffect } from "react";
 import {
   MapContainer,
