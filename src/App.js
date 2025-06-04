@@ -15,6 +15,8 @@ import { Icon } from "leaflet";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Button from "react-bootstrap/Button";
+import 'mapbox-gl/dist/mapbox-gl.css';
+
 
 // Local Components
 import MainToolModeButtons from "./components/MainToolModeButtons";
@@ -531,22 +533,22 @@ export default function MyApp() {
 
 
   const overlays = {
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Intermodal facilities</p>': (
+    '<img class="layers" src=intermodal.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Intermodal facilities</p>': (
       <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer' /> 
     ),
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Public infrastructure/HCAs</p>': (
+    '<img class="layers" src=public.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Public infrastructure/HCAs</p>': (
       <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Public_Infrastructure_Vector_Tile_Flat/VectorTileServer' /> 
     ),
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Natural gas pipelines</p>': (
+    '<img class="layers" src=natural.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Natural gas pipelines</p>': (
       <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Natural_Gas_Pipelines/VectorTileServer' /> 
     ),
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Hydrocarbon pipelines</p>': (
+    '<img class="layers" src=hydrocarbon.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Hydrocarbon pipelines</p>': (
       <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Hydrocarbon_Pipelines_Flat/VectorTileServer' /> 
     ),
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Frost Action Potential (High)</p>': (
+    '<img class="layers" src=frost.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Frost Action Potential (High)</p>': (
       <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat_v2/VectorTileServer' /> 
     ),
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Corrosion Potential</p>': (
+    '<img class="layers" src=corrosion.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Corrosion Potential</p>': (
       <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Soil_Steel_Corrosion_Potential_v2/VectorTileServer' /> 
     ),
   };
