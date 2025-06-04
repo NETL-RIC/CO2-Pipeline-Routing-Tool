@@ -1,6 +1,3 @@
-import sys
-sys.path.append("../Flask") # set working directory to parent folder so imports work
-
 import unittest
 import numpy as np
 from unittest.mock import patch, MagicMock
