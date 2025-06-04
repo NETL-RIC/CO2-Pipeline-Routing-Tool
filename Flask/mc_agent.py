@@ -48,8 +48,14 @@ def normalize(arr, high=1, low=0):
         low (float): The minimum value of the output array.
 
     Returns:
-        np.ndarray: The normalized array.
+        np.ndarray: The normalized array. If all values in the input array are the same,
+            returns an array of the same shape filled with the average of high and low.
     """
+    # Check if all values are the same
+    if arr.max() == arr.min():
+        return np.full_like(arr, (high + low) / 2)
+    
+    # Normalize the array
     norm = (high-low)*(arr - arr.min())/(arr.max() - arr.min()) + low
     return norm
 
