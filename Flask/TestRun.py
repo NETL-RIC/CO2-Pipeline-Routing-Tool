@@ -1,2 +1,2 @@
-from agent import MLWrapper, PPOAgent, CostSurface, CustomTorchModel
+from mc_agent import MLWrapper, PPOAgent, CostSurface, CustomTorchModel
 
