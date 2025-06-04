@@ -10,6 +10,7 @@ PYINSTALLER_SPEC_FILE 	?= packCO2PRT.spec
 PACKAGE_BASENAME 		?= Smart_CO2_Transport
 PYINSTALLER_DIST_DIR 	?= .\dist
 VENV_DIR 				?= .\.venv
+NODE_MODULES_DIR		?= .\node_modules
 
 NPM         = npm
 XCOPY       = xcopy
@@ -50,3 +51,4 @@ clean:
 	-$(RMDIR) "$(REACT_IN_FLASK_DIR)"
 	-$(RMDIR) "$(REACT_BUILD_OUTPUT_DIR)"
 	-$(RMDIR) "$(PYINSTALLER_DIST_DIR)"
+	-$(RMDIR) "$(NODE_MODULES_DIR)"
