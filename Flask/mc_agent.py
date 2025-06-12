@@ -27,16 +27,12 @@ def least_cost_path_ml(start, dest, mode):
     # error checking .tifs
     try:
         wrapper = MLWrapper(mode=mode)
-        print("Starting least cost path in " + mode + " mode")
     except FileNotFoundError as e:
         print(e.args)
 
     # Get route and only return the optimized path
     res = wrapper.route(start, dest)
     return res[0]
-    # lucy_route_cntr = res[0]
-    # lucy_route = lucy_route_cntr['route']
-    # return lucy_route
 
 def normalize(arr, high=1, low=0):
     """

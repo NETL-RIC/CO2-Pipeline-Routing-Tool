@@ -21,11 +21,10 @@ api = Flask(__name__,
             static_url_path='', 
             static_folder=resource_path('build'), 
             template_folder=resource_path('build'))
-# APP_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 if getattr(sys, 'frozen', False):
     APP_ROOT = os.path.dirname(sys.executable)
-elif __file__:
+elif __file__: #If tool is in bundled/exe mode
     APP_ROOT = os.path.dirname(__file__)
 UPLOAD_FOLDER = os.path.join(APP_ROOT, 'user_uploads')
 
@@ -39,13 +38,11 @@ def my_profile():
         "name": "CO2 Pipeline Routing App",
         "about": "Web app to generate CO2 Pipelines across the USA and Alaska"
     }
-
     return response_body
 
 @api.route('/help', methods = ['POST'])
 def open_help():
     h_path = resource_path("documentation/_build/html/index.html")
-    print(os.path.exists(h_path))
     webbrowser.open(f"file://{h_path}")
     return(h_path)
 
@@ -55,10 +52,9 @@ def uploads_file():
     try:
         delete_dir_contents(resource_path('user_uploads'))     #clear out stuff from a previous tool run
     except PermissionError as e:
-        print("Got permission error from locked file:", e)
+        api.logger.error("Permission Error,", e)
     name = ''
     file = request.files
-    print(file)
     for i in file:
         name = file[i].filename
         # file[i].save(os.path.join(UPLOAD_FOLDER, name))
@@ -89,15 +85,15 @@ def uploads_file():
 
     pdf_path = None
     if shptype == "LineString":
-        print("Creating PDF report for LineString shapefile...")
+        api.logger.info("Creating PDF report for LineString shapefile...")
         # first_point = v['array'][0] # unnessecary right now, but in case it's needed later
         # last_point = v['array'][-1] # unnessecary right now, but in case it's needed later
         pdf_path = run_line_eval_mode()
     elif shptype == "Polygon":
-        print("Creating PDF report for Polygon shapefile...")
+        api.logger.info("Creating PDF report for Polygon shapefile...")
         pdf_path = run_line_eval_mode()
     else:
-        print("Uploaded shapefile is neither a polygon or a line. Please upload an appropriate shapefile.")
+        api.logger.error("Uploaded shapefile is neither a polygon or a line. Please upload an appropriate shapefile")
     
     v['pdf'] = pdf_path
 
@@ -114,10 +110,8 @@ def run_line_eval_mode():
     for file in os.listdir(resource_path("user_uploads")):
         if file.endswith(".shp"):
             shp_extension_file = file
-            print(f"Using user-uploaded file: {shp_extension_file}")
     if shp_extension_file == None:
-        print('No .shp file found in user_uploads')
-
+        api.logger.error("No .shp file found in user_uploads")
         return None
     else:
         output_shp_abspath = os.path.join(resource_path("user_uploads"), shp_extension_file)
@@ -125,9 +119,9 @@ def run_line_eval_mode():
         public_abspath = resource_path('public')
         if not os.path.exists(public_abspath):
             os.mkdir(public_abspath)
-            print(f"Created public folder at {public_abspath} (none existed)")
+            api.logger.info(f"Created public folder at {public_abspath} (none existed)")
         pdfname = report_builder(shapefile=output_shp_abspath, out_path=public_abspath)    # create pdf report in '../public' so front-end can grab it easily
-        print("Created pdf report")
+        api.logger.info("Created pdf report")
         new_pdf_path = os.path.join(public_abspath, "route_report.pdf")
         os.rename(os.path.join(public_abspath, pdfname), new_pdf_path)
         
@@ -178,7 +172,8 @@ def create_output_zip(zipname):
     # copy the reference sheet pdf into the folder that will be zipped up
     shutil.copy(resource_path('other_assets/reference_sheet.pdf'), resource_path('output'))
     shutil.make_archive(dest_path, 'zip', resource_path('output'))
-    print(f"\tcreate_output_shp_zip: created zipfile at f{dest_path}")
+
+    api.logger.info(f"\tcreate_output_shp_zip: created zipfile at f{dest_path}")
     return dest_path + '.zip'
 
 @api.route('/download_report', methods=['POST'])
@@ -187,10 +182,7 @@ def send_report():
     """
     public_f = resource_path('public')
     if request.method == 'POST':
-        print("Request for file download recieved")
-        print(request.json)
         ext = request.json.get("extension", None)
-        print(ext)
         try:
             if ext == '.pdf':
                 file_path = os.path.join(public_f, 'route_report.pdf')  
@@ -201,10 +193,10 @@ def send_report():
                 os.path.exists(file_path)
                 return send_file(file_path, as_attachment=True, download_name='route_shapefile_and_report.zip')
             else:
-                print(f"file extension provided: {ext} is not handled.")
+                api.logger.warning(f"file extension provided: {ext} is not handled.")
                 return "Invalid file extension provided", 404
         except FileNotFoundError:
-            print("unable to locate requested filetype")
+            api.logger.error("unable to locate requested filetype")
             return f"{ext} file not found", 404
 
 @api.route('/token', methods=['GET', 'POST'])
@@ -218,15 +210,13 @@ def a():
 
         start = request.json.get("s", None)
         end = request.json.get("e", None)
-        print('Start')
-        print(start)
-        print('End')
-        print(end)
-        # print('Got start ' + start[0] + ", " + start[1] + " and end " + end[0] + ", " + end[1] + "from backend")
-        # rail or route mode
+        api.logger.info(
+            f"Start: {start}"
+            f"End: {end}"
+        )
         mode = request.json.get("mode", None)
         route = generate_line_ml(start, end, mode)    # calculate line with ML
-        print("Pipeline generated")
+        api.logger.info("Pipeline generated")
 
         first_point = route[0]
         last_point = route[-1]  
@@ -240,7 +230,7 @@ def a():
         pdf_name = report_builder(output_shp_abspath, first_point, last_point, "output")    # create pdf report in './output
         # delete_prev_zips_pdfs()                   # delete zip from last run if exist
         zip_path = create_output_zip(output_shp_filename) # create zip of pdf/shp files in ../public so front-end can easily grab
-        print('Output zip created')
+        api.logger.info("Output zip created")
 
         route_correct_swap = []
         for coord in route:
@@ -248,92 +238,6 @@ def a():
             
         return {'route': route_correct_swap, 'zip':zip_path}
 
-def translateLine_old(raster_wgs84, routelist):
-    """ Translates provided line from local ml coord (raster indices) system to WGS84.
-    Modified from IndicesToCoords.
-    Destructively changes routelist in place.
-
-    Paramters: 
-        raster_wgs84: string, relative or abs path to raster location
-        routelist: list, collection of points that form a line
-
-    Returns:
-        wgsList: list, original coordinate list translated from local coords to wgs84
-    """
-
-    ds = gdal.Open(raster_wgs84)
-
-    (upper_left_x, x_size, x_rotation, upper_left_y, y_rotation, y_size) = ds.GetGeoTransform()
-
-    srs = osr.SpatialReference()
-    srs.ImportFromWkt(ds.GetProjection())
-
-    for i, coord in enumerate(routelist):
-        coord = (coord[-1], coord[0])
-        x = coord[0] * x_size + upper_left_x + (x_size / 2)  # add half the cell size
-        y = coord[1] * y_size + upper_left_y + (y_size / 2)  # to centre the point
-        routelist[i] = (y,x)
-
-    return routelist
-
-def CoordinatesToIndices_old(raster_wgs84, coordinates):
-    """
-    Converts spatial coordinates to indexed raster locations
-
-    Parameters:
-        raster_wgs84 - path to raster location
-        coordinates - tuple of longitude, latitude
-
-    returns:
-        (x, y) as indexed locations
-    """
-
-    coordinates = (coordinates[-1], coordinates[0])
-
-    ds = gdal.Open(raster_wgs84)
-
-    geotransform = ds.GetGeoTransform()
-
-    originX = geotransform[0]
-    originY = geotransform[3]
-    pixelWidth = geotransform[1]
-    pixelHeight = geotransform[5]
-
-    xOffset = int((coordinates[0] - originX)/pixelWidth)
-    yOffset = int((coordinates[1] - originY)/pixelHeight)
-
-    return((yOffset, xOffset))
-
-def IndicesToCoordinates_old(raster_wgs84, indices):
-    """
-    Converts indexed raster locations into spatial coordinates.
-
-    Parameters:
-        raster_wgs84 - path to raster location
-        index - tuple of x,y indices
-
-    returns:
-        (longitude, latitude) in same spatial reference system as input raster
-    """
-
-    # indices = (indices[-1], indices[0])
-
-    ds = gdal.Open(raster_wgs84)
-
-    (upper_left_x, x_size, x_rotation, upper_left_y, y_rotation, y_size) = ds.GetGeoTransform()
-
-    srs = osr.SpatialReference()
-    srs.ImportFromWkt(ds.GetProjection())
-
-    x = indices[0] * x_size + upper_left_x + (x_size / 2)  # add half the cell size
-    y = indices[1] * y_size + upper_left_y + (y_size / 2)  # to centre the point
-
-    # note: this is actually returning in (x, y)
-    return(y,x)
-
-
-
-#Slightly modified
 def CoordinatesToIndices(raster, coordinates):
     """
     Converts spatial coordinates to indexed raster locations
@@ -343,8 +247,6 @@ def CoordinatesToIndices(raster, coordinates):
     returns:
         (x, y) as indexed locations
     """
-    print(coordinates)
-
     coordinates = (coordinates[-1], coordinates[0])
     # Convert coordinates from WGS 84 to Albers Equal Area to work with raster
     aea_coordinates = Wgs84ToAea(coordinates) #Stephen, added this line here so function works same
@@ -361,8 +263,6 @@ def CoordinatesToIndices(raster, coordinates):
     ds = None
     return ((yOffset, xOffset))
 
-
-#Slightly modified
 def IndicesToCoordinates(raster, indices):
     """
     Converts indexed raster locations into spatial coordinates.
@@ -388,8 +288,6 @@ def IndicesToCoordinates(raster, indices):
     ds = None
     return (y, x)
 
-
-#Slightly modified
 def translateLine(raster, routelist):
     """ Translates provided line from local ml coord (raster indices) system to raster coordinate system
      (North America Albers Equal Area).
@@ -418,15 +316,13 @@ def translateLine(raster, routelist):
         routelist[i] = (wgs84_coordinates[1], wgs84_coordinates[0])
     return routelist
 
-
-#Edited line 89
 def generate_line_ml(start, dest, mode):
     """ Call machine learning functions to generate line between parameter points
        Paramters: start, dest: tuple, the start and end points of the line that will be generated, passed in as WGS84 coords
        Returns: route: list, the list of coordinates that composes the line
        """
 
-    print('Generating Pipeline...')
+    api.logger.info("Generating pipeline...")
 
     raspath = resource_path('raster/cost_10km_aea.tif' )
 
@@ -440,8 +336,6 @@ def generate_line_ml(start, dest, mode):
 
     return route_wgs
 
-
-#NEW FUNCTION
 def AeaToWgs84(aea_coords):
     """
     Apply geotransformation to reproject coordinates from North America Albers Equal Area Conic (WKT 102008) in NAD 83
@@ -486,8 +380,6 @@ def AeaToWgs84(aea_coords):
 
     return wgs84_coords
 
-
-#NEW FUNCTION
 def Wgs84ToAea(wgs84_coords):
     """
     Apply geotransformation to reproject coordinates from WGS 84 to North America Albers Equal Area Conic (WKT 102008)
@@ -526,6 +418,60 @@ def Wgs84ToAea(wgs84_coords):
 
     return aea_coords
 
+#----Logging------
+def before_request_logging():
+    """Logging function for request info before sending
+    """
+    if not (request.url.endswith('_reload-hash')): # skip dash's refresh
+        user_agent = request.user_agent.string
+        api.logger.info(f"Request: {request.method}, {request.url} from IP: {get_client_ip()}, User-Agent: {user_agent}")
+
+def after_request_logging(response):
+    """Logging function for request responses
+    :param response: The response from the server to the request
+    :return: The response from the server to the request
+    """
+    httpcode = response.status_code
+    if httpcode < 200: # informational responses
+        user_agent = request.user_agent.string
+        api.logger.info(f"IP: {get_client_ip()}, User-Agent: {user_agent}, Status: {response.status}")
+
+    elif httpcode >= 200 and httpcode < 300: #successful responses
+        api.logger.info(f"Successful response, {httpcode}. IP: {get_client_ip()}, Status: {response.status}")
+
+    elif httpcode >= 300 and httpcode < 400: #Redirection responses
+        api.logger.warning(f"Redirection response, {httpcode}. IP: {get_client_ip()}, Status: {response.status}")
+
+    elif response.status_code >= 400: # Error responses
+        api.logger.error(f"Error response, {httpcode}, IP: {get_client_ip()}, Status: {response.status}")
+        api.logger.debug(f"Response body: {response.get_data}")
+    return response
+
+def exception_logging(e):
+    """Logging function for errors
+    :param e: The error message to log
+    """
+    api.logger.error(
+        f"Exception:"
+        f"IP: {get_client_ip()}"
+        f"Method: {request.method}"
+        f"Path: {request.path}"
+        f"Error: {str(e)}"
+        f"User-Agent: {request.user_agent}"
+        f"Response Headers: {request.get_wgsi_headers}"
+    )
+    raise e
+
+def get_client_ip():
+    """ Supporting function that gets client IP for other logging functions
+    :return: The IP that the request came from
+    """
+    return request.headers.get('X-Forwarded For', request.remote_addr)
+
+# Register logging functions
+api.before_request(before_request_logging)
+api.after_request(after_request_logging)
+api.errorhandler(exception_logging)
 
 if __name__ == "__main__":
 

@@ -1,3 +1,7 @@
+import sys
+sys.path.append("../Flask")
+print(sys.path)
+
 import unittest
 import numpy as np
 from unittest.mock import patch, MagicMock

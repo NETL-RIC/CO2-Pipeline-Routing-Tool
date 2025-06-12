@@ -161,7 +161,6 @@ def calculateCostDistance(raster_ds, tmp):
 
     # TODO: only complete for one point, not both
     dst_ds.FlushCache()
-    # print(dist_raster)
     return(dst_ds)
 
 
