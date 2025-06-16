@@ -1,18 +1,22 @@
 /**
  *  Main entrypoint file for all React code for the tool
  */
-import { React, useState, useEffect } from "react";
+import { React, useState, useEffect, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
-  LayersControl,
   useMapEvents,
   ScaleControl,
   Polyline,
   Polygon,
+  useMap,
 } from "react-leaflet";
+import ReactDOM from 'react-dom/client';
+import L from 'leaflet';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import VectorTileLayer from "react-esri-leaflet/plugins/VectorTileLayer";
 import { Icon } from "leaflet";
 import { Link } from "react-router-dom";
@@ -534,27 +538,113 @@ export default function MyApp() {
     );
   }
 
+ function InteractiveLegend({ state, setState }) {
+  const map = useMap();
+  const containerRef = useRef(null);
 
-  const overlays = {
-    '<img class="layers" src=intermodal.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Intermodal facilities</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer' /> 
-    ),
-    '<img class="layers" src=public.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Public infrastructure/HCAs</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Public_Infrastructure_Vector_Tile_Flat/VectorTileServer' /> 
-    ),
-    '<img class="layers" src=natural.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Natural gas pipelines</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Natural_Gas_Pipelines/VectorTileServer' /> 
-    ),
-    '<img class="layers" src=hydrocarbon.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Hydrocarbon pipelines</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Hydrocarbon_Pipelines_Flat/VectorTileServer' /> 
-    ),
-    '<img class="layers" src=frost.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Frost Action Potential (High)</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat_v2/VectorTileServer' /> 
-    ),
-    '<img class="layers" src=corrosion.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Corrosion Potential</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Soil_Steel_Corrosion_Potential_v2/VectorTileServer' /> 
-    ),
-  };
+  useEffect(() => {
+    const legend = L.control({ position: 'bottomleft' });
+
+    legend.onAdd = () => {
+      const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar map-legend');
+      containerRef.current = div;
+
+      // Prevent map from eating the events
+      L.DomEvent.disableClickPropagation(div);
+      L.DomEvent.disableScrollPropagation(div);
+
+      return div;
+    };
+
+    legend.addTo(map);
+
+    return () => {
+      legend.remove();
+    };
+  }, [map]);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const root = ReactDOM.createRoot(containerRef.current);
+      root.render(
+        <div style={{ padding: '10px' }}>
+          <strong>Toggle Layers</strong>
+          <div style={{ display: 'flex', flexDirection: 'column', marginTop:'8px'}}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={state.layer1}
+                  onChange={() => setState(prev => ({ ...prev, layer1: !prev.layer1 }))}
+                />
+              }
+              label={<span><img className="layers" alt="intermodal" src="intermodal.png"/>Intermodal facilities</span>}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={state.layer2}
+                  onChange={() => setState(prev => ({ ...prev, layer2: !prev.layer2 }))}
+                />
+              }
+
+              label={<span><img className="layers" alt="public" src="public.png"/>Public infrastructure/HCAs</span>}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={state.layer3}
+                  onChange={() => setState(prev => ({ ...prev, layer3: !prev.layer3 }))}
+                />
+              }
+               label={<span><img className="layers" alt="natural" src="natural.png"/>Natural gas pipelines</span>}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={state.layer4}
+                  onChange={() => setState(prev => ({ ...prev, layer4: !prev.layer4 }))}
+                />
+              }
+              label={<span><img className="layers" alt="hydrocarbon" src="hydrocarbon.png"/>Hydrocarbon pipelines</span>}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={state.layer5}
+                  onChange={() => setState(prev => ({ ...prev, layer5: !prev.layer5 }))}
+                />
+              }
+              label={<span><img className="layers" alt="frost" src="frost.png"/>Frost Action Potential (High)</span>}
+
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={state.layer6}
+                  onChange={() => setState(prev => ({ ...prev, layer6: !prev.layer6 }))}
+                />
+              }
+              label={<span><img className="layers" alt="corrosion" src="corrosion.png"/>Corrosion Potential</span>}
+            />
+          </div>
+        </div>
+      );
+    }
+  }, [state, setState]);
+
+  return null;
+}
+
+  
+
+ const [layerState, setLayerState] = useState({
+    layer1: false,
+    layer2: false,
+    layer3: false,
+    layer4: false,
+    layer5: false,
+    layer6: false,
+  });
 
   // Main return block for App
   return (
@@ -579,15 +669,27 @@ export default function MyApp() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <LayersControl position="topright">
 
-        {Object.entries(overlays).map(([name, layer]) => (
-          <LayersControl.Overlay key={name} name={name}>
-            {layer}
-          </LayersControl.Overlay>
-        ))}
-        
-        </LayersControl>
+        {layerState.layer1 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer' />
+        )}
+        {layerState.layer2 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Public_Infrastructure_Vector_Tile_Flat/VectorTileServer' />
+        )}
+        {layerState.layer3 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Natural_Gas_Pipelines/VectorTileServer' />
+        )}
+        {layerState.layer4 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Hydrocarbon_Pipelines_Flat/VectorTileServer' />
+        )}
+        {layerState.layer5 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat_v2/VectorTileServer' />
+        )}
+        {layerState.layer6 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Soil_Steel_Corrosion_Potential_v2/VectorTileServer' />
+        )}
+
+        <InteractiveLegend state={layerState} setState={setLayerState} />
 
         <StartMarkers />
         <EndMarkers />

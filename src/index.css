@@ -18,9 +18,15 @@ h4 {
 }
 
 .layers {
-  margin-right: 0px;
-  margin-bottom: 5px;
+  margin-right: 10px;
+  margin-bottom: 0px;
 }
+
+.map-legend {
+  pointer-events: auto;
+  background: white;
+}
+
 
 .layerstext {
   display:inline;
