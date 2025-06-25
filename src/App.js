@@ -103,6 +103,16 @@ export default function MyApp() {
     iconSize: [30, 30],
   });
 
+  // Layers for tool legend
+  const [layerState, setLayerState] = useState({
+      layer1: false,
+      layer2: false,
+      layer3: false,
+      layer4: false,
+      layer5: false,
+      layer6: false,
+    });
+
   /**
    * The main functionality of Eval Mode, run an uploaded polygon through the ml analyzation code, draw it on the map, and generate a pdf report.
    * 
@@ -538,113 +548,102 @@ export default function MyApp() {
     );
   }
 
- function InteractiveLegend({ state, setState }) {
-  const map = useMap();
-  const containerRef = useRef(null);
+  function InteractiveLegend({ state, setState }) {
+    const map = useMap();
+    const containerRef = useRef(null);
 
-  useEffect(() => {
-    const legend = L.control({ position: 'bottomleft' });
+    useEffect(() => {
+      const legend = L.control({ position: 'bottomleft' });
 
-    legend.onAdd = () => {
-      const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar map-legend');
-      containerRef.current = div;
+      legend.onAdd = () => {
+        const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar map-legend');
+        containerRef.current = div;
 
-      // Prevent map from eating the events
-      L.DomEvent.disableClickPropagation(div);
-      L.DomEvent.disableScrollPropagation(div);
+        // Prevent map from eating the events
+        L.DomEvent.disableClickPropagation(div);
+        L.DomEvent.disableScrollPropagation(div);
 
-      return div;
-    };
+        return div;
+      };
 
-    legend.addTo(map);
+      legend.addTo(map);
 
-    return () => {
-      legend.remove();
-    };
-  }, [map]);
+      return () => {
+        legend.remove();
+      };
+    }, [map]);
 
-  useEffect(() => {
-    if (containerRef.current) {
-      const root = ReactDOM.createRoot(containerRef.current);
-      root.render(
-        <div style={{ padding: '10px' }}>
-          <strong>Toggle Layers</strong>
-          <div style={{ display: 'flex', flexDirection: 'column', marginTop:'8px'}}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={state.layer1}
-                  onChange={() => setState(prev => ({ ...prev, layer1: !prev.layer1 }))}
-                />
-              }
-              label={<span><img className="layers" alt="intermodal" src="intermodal.png"/>Intermodal facilities</span>}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={state.layer2}
-                  onChange={() => setState(prev => ({ ...prev, layer2: !prev.layer2 }))}
-                />
-              }
+    useEffect(() => {
+      if (containerRef.current) {
+        const root = ReactDOM.createRoot(containerRef.current);
+        root.render(
+          <div style={{ padding: '10px' }}>
+            <strong>Toggle Layers</strong>
+            <div style={{ display: 'flex', flexDirection: 'column', marginTop:'8px'}}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer1}
+                    onChange={() => setState(prev => ({ ...prev, layer1: !prev.layer1 }))}
+                  />
+                }
+                label={<span><img className="layers" alt="intermodal" src="intermodal.png"/>Intermodal facilities</span>}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer2}
+                    onChange={() => setState(prev => ({ ...prev, layer2: !prev.layer2 }))}
+                  />
+                }
 
-              label={<span><img className="layers" alt="public" src="public.png"/>Public infrastructure/HCAs</span>}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={state.layer3}
-                  onChange={() => setState(prev => ({ ...prev, layer3: !prev.layer3 }))}
-                />
-              }
-               label={<span><img className="layers" alt="natural" src="natural.png"/>Natural gas pipelines</span>}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={state.layer4}
-                  onChange={() => setState(prev => ({ ...prev, layer4: !prev.layer4 }))}
-                />
-              }
-              label={<span><img className="layers" alt="hydrocarbon" src="hydrocarbon.png"/>Hydrocarbon pipelines</span>}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={state.layer5}
-                  onChange={() => setState(prev => ({ ...prev, layer5: !prev.layer5 }))}
-                />
-              }
-              label={<span><img className="layers" alt="frost" src="frost.png"/>Frost Action Potential (High)</span>}
+                label={<span><img className="layers" alt="public" src="public.png"/>Public infrastructure/HCAs</span>}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer3}
+                    onChange={() => setState(prev => ({ ...prev, layer3: !prev.layer3 }))}
+                  />
+                }
+                label={<span><img className="layers" alt="natural" src="natural.png"/>Natural gas pipelines</span>}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer4}
+                    onChange={() => setState(prev => ({ ...prev, layer4: !prev.layer4 }))}
+                  />
+                }
+                label={<span><img className="layers" alt="hydrocarbon" src="hydrocarbon.png"/>Hydrocarbon pipelines</span>}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer5}
+                    onChange={() => setState(prev => ({ ...prev, layer5: !prev.layer5 }))}
+                  />
+                }
+                label={<span><img className="layers" alt="frost" src="frost.png"/>Frost Action Potential (High)</span>}
 
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={state.layer6}
-                  onChange={() => setState(prev => ({ ...prev, layer6: !prev.layer6 }))}
-                />
-              }
-              label={<span><img className="layers" alt="corrosion" src="corrosion.png"/>Corrosion Potential</span>}
-            />
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer6}
+                    onChange={() => setState(prev => ({ ...prev, layer6: !prev.layer6 }))}
+                  />
+                }
+                label={<span><img className="layers" alt="corrosion" src="corrosion.png"/>Corrosion Potential</span>}
+              />
+            </div>
           </div>
-        </div>
-      );
-    }
-  }, [state, setState]);
+        );
+      }
+    }, [state, setState]);
 
-  return null;
-}
-
-  
-
- const [layerState, setLayerState] = useState({
-    layer1: false,
-    layer2: false,
-    layer3: false,
-    layer4: false,
-    layer5: false,
-    layer6: false,
-  });
+    return null;
+  }
 
   // Main return block for App
   return (
@@ -663,12 +662,17 @@ export default function MyApp() {
       <Header />
 
       <MapContainer center={[39.8283, -98.5795]} zoom={5}>
-        {/* <VectorTileLayerTestWrapper tileLayer={ tileLayer } showTileLayer={ showTileLayer }/> */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+
+
+      {/*
+
+        // These layers are for the tool legend, InteractiveLegend. As of 06/25/25, these are not hosted on ESRI anymore due to a migration error.
+        // When they are re-enabled they can be uncommented. They give a really vague error message: about loading defaultStyles as null so be aware of that when testing.
 
         {layerState.layer1 && (
           <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer' />
@@ -690,6 +694,7 @@ export default function MyApp() {
         )}
 
         <InteractiveLegend state={layerState} setState={setLayerState} />
+      */}
 
         <StartMarkers />
         <EndMarkers />
