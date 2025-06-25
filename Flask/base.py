@@ -3,10 +3,11 @@ import os
 import sys
 import webbrowser
 from pathlib import Path
+from datetime import timedelta
 
 import shutil
 import glob
-from flask import Flask, request, render_template, send_file
+from flask import Flask, request, render_template, send_file, session
 import fiona
 import torch
 from osgeo import gdal, ogr, osr
@@ -21,6 +22,11 @@ api = Flask(__name__,
             static_url_path='', 
             static_folder=resource_path('build'), 
             template_folder=resource_path('build'))
+
+# Session config
+api.config['SESSION_TYPE'] = 'filesystem'
+api.secret_key = "cool_secret_key"
+api.permanent_session_lifetime = timedelta(120) #sessions expire after two hours
 
 if getattr(sys, 'frozen', False):
     APP_ROOT = os.path.dirname(sys.executable)

@@ -1,29 +1,24 @@
 /**
  *  Main entrypoint file for all React code for the tool
  */
-import { React, useState, useEffect, useRef } from "react";
+import { React, useState, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
+  LayersControl,
   useMapEvents,
   ScaleControl,
   Polyline,
   Polygon,
-  useMap,
 } from "react-leaflet";
-import ReactDOM from 'react-dom/client';
-import L from 'leaflet';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import VectorTileLayer from "react-esri-leaflet/plugins/VectorTileLayer";
 import { Icon } from "leaflet";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Button from "react-bootstrap/Button";
 import 'mapbox-gl/dist/mapbox-gl.css';
-
 
 // Local Components
 import MainToolModeButtons from "./components/MainToolModeButtons";
@@ -42,7 +37,7 @@ let shptyp = "";
 
 /**
  * Primary App component that renders all other components and contains topmost level of state
- * @returns {JSX.element} Entire main page functionality 
+ * @returns {JSX.element} Main page in JSX
  */
 export default function MyApp() {
   // the polygons / lines that are drawn on the map for each mode, stored as a list of coords
