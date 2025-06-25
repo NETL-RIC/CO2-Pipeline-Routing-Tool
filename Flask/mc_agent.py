@@ -1,3 +1,7 @@
+"""
+Module for most of the machine learning code.
+"""
+
 import multiprocessing as mp
 from multiprocessing import Pool
 from pathlib import Path
