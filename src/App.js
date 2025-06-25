@@ -669,6 +669,9 @@ export default function MyApp() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+      {/*
+
+        Disabled because hosted layers are broken via arcgis migration. In progress to re-host
 
         {layerState.layer1 && (
           <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer' />
@@ -690,6 +693,7 @@ export default function MyApp() {
         )}
 
         <InteractiveLegend state={layerState} setState={setLayerState} />
+        */}
 
         <StartMarkers />
         <EndMarkers />
