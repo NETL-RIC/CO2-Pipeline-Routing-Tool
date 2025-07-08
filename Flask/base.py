@@ -62,9 +62,6 @@ def delete_old_folders():
         except OSError as e:
             api.logger.error("\tError clearing contents of sessions folder")
 
-
-
-
 @api.route('/token', methods=['GET', 'POST'])
 def a():
     """Endpoint for generating line shapefiles and report
@@ -131,6 +128,10 @@ def send_report():
             return f"{ext} file not found", 404
 
 def create_output_zip(zipname):
+    """ Creates a zip file in the uid-specific sessions directory
+    Params: zipname - the name of the zip file to be created
+    Returns: dest_path - the full path of where the new zip was placed
+    """
     def zipdir(path, ziph, zipname):
         for root, dirs, files, in os.walk(path):
             files.remove(zipname)  # remove the zip from the files to be included in the zip lol
@@ -160,6 +161,9 @@ def create_output_zip(zipname):
 
 @api.route('/gen_uid')
 def index():
+    """ Generate a user id unique to the user's session and send it back to the browser
+    Returns: 204 code (success, nothing to return) for the browser
+    """
     if 'uid' not in session:
         session['uid'] = str(uuid.uuid4())
     print(session['uid'])
@@ -168,6 +172,10 @@ def index():
 
 @api.route('/profile')
 def my_profile():
+    """ Returns profile information of the tool 
+    Returns:
+        response_body - returns an object with the tool's name and a very brief 'about' section
+    """
     response_body = {
         "name": "CO2 Pipeline Routing App",
         "about": "Web app to generate CO2 Pipelines across the USA and Alaska"
@@ -176,6 +184,9 @@ def my_profile():
 
 @api.route('/help', methods = ['POST'])
 def open_help():
+    """ Open the help docs in the user's native browser
+    Returns: h_path: the path where the help docs are
+    """
     h_path = resource_path("documentation/_build/html/index.html")
     webbrowser.open(f"file://{h_path}")
     return(h_path)
@@ -183,6 +194,9 @@ def open_help():
 # Evaluate button 
 @api.route('/uploads', methods = ['POST'])
 def uploads_file():
+    """ Runs the 'evaluate' mode of the tool, generating a pdf report based on user-uploaded shapefiles of an area or route (polygon or line)
+    Returns: path to the generated report
+    """
     try:
         delete_dir_contents(resource_path('user_uploads'))     #clear out stuff from a previous tool run
     except PermissionError as e:
