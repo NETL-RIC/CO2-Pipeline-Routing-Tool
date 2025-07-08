@@ -3,14 +3,18 @@ import os
 import sys
 import webbrowser
 from pathlib import Path
+from datetime import timedelta
 
 import shutil
 import glob
-from flask import Flask, request, render_template, send_file
+from flask import Flask, request, render_template, send_file, session
+from flask_apscheduler import APScheduler
 import fiona
 import torch
 from osgeo import gdal, ogr, osr
 import numpy as np
+import uuid
+import zipfile
 
 from controller import PipelineController
 from line_builder import line_builder
@@ -22,15 +26,145 @@ api = Flask(__name__,
             static_folder=resource_path('build'), 
             template_folder=resource_path('build'))
 
+api.secret_key = 'BAD_SECRET_KEY'
+api.config["SESSION_PERMANENT"] = False
+api.config["SCHEDULER_API_ENABLED"] = True
+
+# Runs scheduler to remove old session folders ever 24 hours
+scheduler = APScheduler()
+scheduler.init_app(api)
+scheduler.start()
+
+# Differences between bundled (exported as .exe) and webtool mode
 if getattr(sys, 'frozen', False):
     APP_ROOT = os.path.dirname(sys.executable)
 elif __file__: #If tool is in bundled/exe mode
     APP_ROOT = os.path.dirname(__file__)
 UPLOAD_FOLDER = os.path.join(APP_ROOT, 'user_uploads')
 
-@api.route('/')
+# Schedule session folder cleanup to remove stray folders that weren't handled by the window.beforeUnload trigger
+@scheduler.task('interval', id='delete_old_folders', hours=24)
+def delete_old_folders():
+    """ Remove the contents of Flask/sessions every 24 hours
+    """
+    sessions_dir = resource_path('sessions')
+    if not os.path.isdir(sessions_dir):
+        api.logger.info("Sessions folder doesn't exist for daily scheduled deletion")
+    
+    for item in os.listdir(sessions_dir):
+
+        item_path = os.path.join(resource_path(sessions_dir), item)
+        try:
+            if os.path.isfile(item_path) or os.path.islink(item_path):
+                os.unlink(item_path)    # remove files and symlinks
+            elif os.path.isdir(item_path):
+                shutil.rmtree(item_path)    # remove folders recursively
+        except OSError as e:
+            api.logger.error("\tError clearing contents of sessions folder")
+
+
+
+
+@api.route('/token', methods=['GET', 'POST'])
+def a():
+    """Endpoint for generating line shapefiles and report
+    Parameters: none
+    Returns: route: line, the generated line in wgs84 to be plotted in the browser
+    """
+    if request.method == 'POST':
+        start = request.json.get("s", None)
+        end = request.json.get("e", None)
+        api.logger.info(
+            f"Start: {start}"
+            f"End: {end}"
+        )
+        mode = request.json.get("mode", None)
+        route = generate_line_ml(start, end, mode)    # calculate line with ML
+        api.logger.info("Pipeline generated")
+
+        first_point = route[0]
+        last_point = route[-1]  
+
+        out_dir = resource_path("sessions\\" + session.get('uid'))
+
+        delete_dir_contents(out_dir)   # delete output from a previous run in this same session
+
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+
+        shpinfo = line_builder(route, out_dir)  # create shapefile(s) in ./output, based on line, return filename of output .shp file
+        output_shp_abspath = shpinfo[1]
+        output_shp_filename = shpinfo[0]
+       
+        pdf_name = report_builder(output_shp_abspath, first_point, last_point, out_dir)    # create pdf report in './output
+        # delete_prev_zips_pdfs()                   # delete zip from last run if exist
+        zip_path = create_output_zip(output_shp_filename) # create zip of pdf/shp files in session folder
+        api.logger.info("Output zip created")
+
+        route_correct_swap = []
+        for coord in route:
+            route_correct_swap.append((coord[1], coord[0]))
+            
+        return {'route': route_correct_swap, 'zip':zip_path}
+
+@api.route('/download_report', methods=['POST'])
+def send_report():
+    """API Endpoint for sending appropriate file to the front end.
+    """
+    public_f = resource_path('sessions\\' + session.get('uid'))
+    if request.method == 'POST':
+        ext = request.json.get("extension", None)
+        try:
+            if ext == '.pdf':
+                file_path = os.path.join(public_f, 'route_report.pdf')  
+                os.path.exists(file_path)
+                return send_file(file_path, as_attachment=True, download_name='route_report.pdf')
+            elif ext == '.zip':
+                file_path = os.path.join(public_f, 'route_shapefile_and_report.zip')
+                os.path.exists(file_path)
+                return send_file(file_path, as_attachment=True, download_name='route_shapefile_and_report.zip')
+            else:
+                api.logger.error(f"file extension provided: {ext} is not handled.")
+                return "Invalid file extension provided", 404
+        except FileNotFoundError:
+            api.logger.error("unable to locate requested filetype")
+            return f"{ext} file not found", 404
+
+def create_output_zip(zipname):
+    def zipdir(path, ziph, zipname):
+        for root, dirs, files, in os.walk(path):
+            files.remove(zipname)  # remove the zip from the files to be included in the zip lol
+            for file in files:
+
+                if file != zipname:
+                    ziph.write(os.path.join(root, file))
+    
+    zipname = 'route_shapefile_and_report.zip'    
+    try:
+        dl_f = resource_path('sessions\\' + session.get('uid'))
+    except Exception as e:
+        api.logger(e)
+
+    dest_path = os.path.join(dl_f, zipname)
+
+    # copy the reference sheet pdf into the folder that will be zipped up
+    shutil.copy(resource_path('other_assets/reference_sheet.pdf'), dl_f)
+    print(os.getcwd())
+    #shutil.make_archive(dest_path, 'zip', dl_f)
+
+    with zipfile.ZipFile(f"sessions\\{session.get('uid')}\\{zipname}", 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipdir("sessions\\" + session.get('uid'), zipf, zipname)
+
+    api.logger.info(f"\tCreated download zipfile at {dest_path}")
+    return dest_path
+
+@api.route('/gen_uid')
 def index():
-    return render_template('index.html')
+    if 'uid' not in session:
+        session['uid'] = str(uuid.uuid4())
+    print(session['uid'])
+    # Don't need to send uid to client, return 204 (succcess, no content)
+    return ("", 204)
 
 @api.route('/profile')
 def my_profile():
@@ -81,7 +215,6 @@ def uploads_file():
         'array': ret,
         'typ': shptype
     }
-
 
     pdf_path = None
     if shptype == "LineString":
@@ -157,86 +290,14 @@ def delete_prev_zips_pdfs():
         for file in dircontents:
             if file.endswith(".zip") or file.endswith(".pdf"):
                 os.remove(os.path.join(public_path, file))
-
-def create_output_zip(zipname):
-    """ Creates .zip based on contents of output_shapefiles in the proj root dir's /public folder
-    params: zipname: string, the name of the zip to be created
+@api.route('/get_uid', methods=['GET'])
+def send_id():
+    """ Send session id
     """
-    
-    zipname = 'route_shapefile_and_report'    
-    public_f = resource_path('public')
-    dest_path = os.path.join(public_f, zipname)
+    uid = session.get('uid')
+    print(uid)
+    return {'uid': uid}
 
-    if not os.path.exists(public_f):
-        os.mkdir(public_f)
-    # copy the reference sheet pdf into the folder that will be zipped up
-    shutil.copy(resource_path('other_assets/reference_sheet.pdf'), resource_path('output'))
-    shutil.make_archive(dest_path, 'zip', resource_path('output'))
-
-    api.logger.info(f"\tcreate_output_shp_zip: created zipfile at f{dest_path}")
-    return dest_path + '.zip'
-
-@api.route('/download_report', methods=['POST'])
-def send_report():
-    """API Endpoint for sending appropriate file to the front end.
-    """
-    public_f = resource_path('public')
-    if request.method == 'POST':
-        ext = request.json.get("extension", None)
-        try:
-            if ext == '.pdf':
-                file_path = os.path.join(public_f, 'route_report.pdf')  
-                os.path.exists(file_path)
-                return send_file(file_path, as_attachment=True, download_name='route_report.pdf')
-            elif ext == '.zip':
-                file_path = os.path.join(public_f, 'route_shapefile_and_report.zip')
-                os.path.exists(file_path)
-                return send_file(file_path, as_attachment=True, download_name='route_shapefile_and_report.zip')
-            else:
-                api.logger.warning(f"file extension provided: {ext} is not handled.")
-                return "Invalid file extension provided", 404
-        except FileNotFoundError:
-            api.logger.error("unable to locate requested filetype")
-            return f"{ext} file not found", 404
-
-@api.route('/token', methods=['GET', 'POST'])
-def a():
-    """ API endpoint for generating route based on user-specified points. Makes report and sends to .zip in /public in the root project dir.
-    Parameters: none
-    Returns: route: line, the generated line in wgs84 to be plotted in the browser
-    """
-
-    if request.method == 'POST':
-
-        start = request.json.get("s", None)
-        end = request.json.get("e", None)
-        api.logger.info(
-            f"Start: {start}"
-            f"End: {end}"
-        )
-        mode = request.json.get("mode", None)
-        route = generate_line_ml(start, end, mode)    # calculate line with ML
-        api.logger.info("Pipeline generated")
-
-        first_point = route[0]
-        last_point = route[-1]  
-
-        delete_dir_contents(resource_path('output'))   # delete the shapefiles/pdfs from the last tool run
-
-        shpinfo = line_builder(route)  # create shapefile(s) in ./output, based on line, return filename of output .shp file
-        output_shp_abspath = shpinfo[1]
-        output_shp_filename = shpinfo[0]
-       
-        pdf_name = report_builder(output_shp_abspath, first_point, last_point, "output")    # create pdf report in './output
-        # delete_prev_zips_pdfs()                   # delete zip from last run if exist
-        zip_path = create_output_zip(output_shp_filename) # create zip of pdf/shp files in ../public so front-end can easily grab
-        api.logger.info("Output zip created")
-
-        route_correct_swap = []
-        for coord in route:
-            route_correct_swap.append((coord[1], coord[0]))
-            
-        return {'route': route_correct_swap, 'zip':zip_path}
 
 def CoordinatesToIndices(raster, coordinates):
     """
@@ -419,6 +480,7 @@ def Wgs84ToAea(wgs84_coords):
     return aea_coords
 
 #----Logging------
+
 def before_request_logging():
     """Logging function for request info before sending
     """
@@ -467,6 +529,24 @@ def get_client_ip():
     :return: The IP that the request came from
     """
     return request.headers.get('X-Forwarded For', request.remote_addr)
+
+@api.route('/window_close', methods=['GET'])
+def remove_session_state():
+    uid = session.get('uid')
+    if uid is not None:
+            if os.path.exists("sessions/" + uid):
+                try:
+                    shutil.rmtree("sessions/" + uid)
+                except Exception as e:
+                    api.logger.error(f"Error removing folder sessions/{uid}: {e.stderror}")
+            else:
+                api.logger.error(f"Folder sessions/{uid} doesn't exist when attempting to delete")
+    else:
+        api.logger.error("Could not get uid for this session")
+    api.logger.info(f"\n\t Session {uid}  folder removed upon browser close")
+    return ("", 204)
+
+
 
 # Register logging functions
 api.before_request(before_request_logging)

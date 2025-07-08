@@ -23,6 +23,7 @@
 /public/*.zip
 output
 Flask/user_uploads
+Flask/sessions
 
 # pycharm settings folder
 .idea/*

@@ -27,10 +27,11 @@ def CleanDatetime(datestring):
 
     return(datestring)
 
-def line_builder(coords):
+def line_builder(coords, out_dir):
     """
     Creates a line shapefile in WGS84
     :param coords: list of coordinates as tuples in WGS 84
+    :param out_dir: the session-specific output folder to save the shapefiles to
     :return:
     """
     # Set line geometry
@@ -38,7 +39,7 @@ def line_builder(coords):
     for c in coords:
         line.AddPoint(c[0], c[1])
     driver = ogr.GetDriverByName('Esri Shapefile')
-    out_shp = resource_path("output")     # name of dir to save shapefiles to
+    out_shp = resource_path(out_dir)     # name of dir to save shapefiles to
     out_shp = os.path.join(out_shp, f"route_{CleanDatetime(str(datetime.now()))}.shp")
     ds = driver.CreateDataSource(out_shp)
     srs = osr.SpatialReference()
