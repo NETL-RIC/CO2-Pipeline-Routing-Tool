@@ -23,13 +23,14 @@
 /public/*.zip
 output
 Flask/user_uploads
-Flask/sessions
+local_scripts
+# Flask/sessions is ignored with its own gitignore in the folder, to only ignore contents 
 
 # pycharm settings folder
 .idea/*
 
-# rasters
-*.tif
+# rasters - commented out for now, all rasters are under 50MiB
+# *.tif 
 
 # dependencies
 /node_modules

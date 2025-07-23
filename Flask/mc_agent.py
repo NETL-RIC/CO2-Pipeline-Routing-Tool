@@ -282,7 +282,7 @@ class CostSurface:
         """
 
         path = Path(path)
-        assert path.exists(), 'The raw raster file path does not exist'
+        assert path.exists(), f'The raw raster file path does not exist at path ${path}'
 
         ds = rasterio.open(path)
         arr = ds.read(1)
