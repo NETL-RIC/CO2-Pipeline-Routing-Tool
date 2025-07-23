@@ -84,9 +84,9 @@ def a():
 
         out_dir = resource_path("sessions\\" + session.get('uid'))
 
-        delete_dir_contents(out_dir)   # delete output from a previous run in this same session
-
-        if not os.path.exists(out_dir):
+        if os.path.exists(out_dir):
+            delete_dir_contents(out_dir)   # delete output from a previous run in this same session
+        else:
             os.mkdir(out_dir)
 
         shpinfo = line_builder(route, out_dir)  # create shapefile(s) in ./output, based on line, return filename of output .shp file

@@ -1,9 +1,16 @@
 # ML-Integrated Pipeline Webapp
 Flask and React webapp migrated from the original Pipeline PyQT standalone Desktop app.
+
 ## How To Run As Bundle
 Download and run via https://github.com/NETL-RIC/pipeline-routing-tool-release
 
 # Developer Notes
+## Download Assets
+If you're a member of EDX, pass your EDX API key as an argument to the install_edx_assets.py in the root folder.
+This will pull a few assets that are too large to be uploaded to a git repo, from a public EDX workspace, and place them in the right local folder.
+
+    python install_edx_assets.py <edx api key>
+
 ## How To Run From Source
 In a terminal window, enter `python -m flask run` in ./Flask, with the appropriate virtual environment.
 In a different terminal window, enter `npm start` in the root project dir, ensuring that npm and node.js have been installed.
