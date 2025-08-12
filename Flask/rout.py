@@ -1,5 +1,5 @@
 """
-Author: Lucy Romeo
+rout
 Given raster grid, run the least cost paths between points
 https://pcjericks.github.io/py-gdalogr-cookbook/raster_layers.html
 """

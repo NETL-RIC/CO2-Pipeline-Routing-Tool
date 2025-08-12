@@ -1,3 +1,8 @@
+"""
+mc_agent
+Contains all the machine learning code, used to generate a prospective pipeline given a start and endpoint from the user
+"""
+
 import multiprocessing as mp
 from multiprocessing import Pool
 from pathlib import Path

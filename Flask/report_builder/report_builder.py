@@ -1,5 +1,6 @@
 """
-Script that runs evaluation mode and creates output PDF report for the Smart CO2 Transport-Route Planning Tool
+report_builder
+Runs evaluation mode and creates output PDF report for the Smart CO2 Transport-Route Planning Tool
 """
 
 import os

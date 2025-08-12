@@ -1,3 +1,7 @@
+"""
+base
+Contains all major endpoints for the server, and the Flask() object that controls them
+"""
 import os.path
 import os
 import sys

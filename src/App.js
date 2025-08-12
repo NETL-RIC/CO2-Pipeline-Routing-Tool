@@ -17,7 +17,6 @@ import ReactDOM from 'react-dom/client';
 import L from 'leaflet';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import VectorTileLayer from "react-esri-leaflet/plugins/VectorTileLayer";
 import { Icon } from "leaflet";
 import { Link } from "react-router-dom";
 import axios from "axios";

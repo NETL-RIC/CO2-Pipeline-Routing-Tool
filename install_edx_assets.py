@@ -1,6 +1,8 @@
-""" Pass EDX API key as 'apikey' argument in CLI to pull down files stored on the EDX Workspace.
+""" 
+install_edx_assets
+Pass EDX API key as 'apikey' argument in CLI to pull down files stored on the EDX Workspace.
 Example:
-    python install_edx_assets.py xxxx-xxxxx-xxxxx-xxxxx
+    python install_edx_assets.py -apikey xxxx-xxxxx-xxxxx-xxxxx
 Downloads:
     Flask/report_builder/inputs/tract_base.shp
     Flask/report_buidler/inputs/data_by_10km_grid.csv

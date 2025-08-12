@@ -1,3 +1,7 @@
+"""
+controller
+Controller class for executing the machine learning code
+"""
 import sys
 import fiona
 
@@ -16,8 +20,3 @@ class PipelineController():
         """Machine-learning informed routing logic
         """
         return least_cost_path_ml(self.start, self.dest, self.mode)
-
-    def run(self):
-        """Old routing logic - not machine learning
-        """
-        leastCostPath(self.start[0], self.start[1], self.end[0], self.end[1], 'ras_071323_4alpha.tif', 'result.tif')
