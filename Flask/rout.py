@@ -1,5 +1,5 @@
 """
-Author: Lucy Romeo
+rout
 Given raster grid, run the least cost paths between points
 https://pcjericks.github.io/py-gdalogr-cookbook/raster_layers.html
 """
@@ -161,7 +161,6 @@ def calculateCostDistance(raster_ds, tmp):
 
     # TODO: only complete for one point, not both
     dst_ds.FlushCache()
-    # print(dist_raster)
     return(dst_ds)
 
 

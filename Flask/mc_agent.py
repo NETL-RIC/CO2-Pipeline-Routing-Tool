@@ -1,3 +1,8 @@
+"""
+mc_agent
+Contains all the machine learning code, used to generate a prospective pipeline given a start and endpoint from the user
+"""
+
 import multiprocessing as mp
 from multiprocessing import Pool
 from pathlib import Path
@@ -27,16 +32,12 @@ def least_cost_path_ml(start, dest, mode):
     # error checking .tifs
     try:
         wrapper = MLWrapper(mode=mode)
-        print("Starting least cost path in " + mode + " mode")
     except FileNotFoundError as e:
         print(e.args)
 
     # Get route and only return the optimized path
     res = wrapper.route(start, dest)
     return res[0]
-    # lucy_route_cntr = res[0]
-    # lucy_route = lucy_route_cntr['route']
-    # return lucy_route
 
 def normalize(arr, high=1, low=0):
     """
@@ -48,8 +49,14 @@ def normalize(arr, high=1, low=0):
         low (float): The minimum value of the output array.
 
     Returns:
-        np.ndarray: The normalized array.
+        np.ndarray: The normalized array. If all values in the input array are the same,
+            returns an array of the same shape filled with the average of high and low.
     """
+    # Check if all values are the same
+    if arr.max() == arr.min():
+        return np.full_like(arr, (high + low) / 2)
+    
+    # Normalize the array
     norm = (high-low)*(arr - arr.min())/(arr.max() - arr.min()) + low
     return norm
 
@@ -280,7 +287,7 @@ class CostSurface:
         """
 
         path = Path(path)
-        assert path.exists(), 'The raw raster file path does not exist'
+        assert path.exists(), f'The raw raster file path does not exist at path ${path}'
 
         ds = rasterio.open(path)
         arr = ds.read(1)

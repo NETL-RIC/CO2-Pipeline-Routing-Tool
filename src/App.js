@@ -1,20 +1,28 @@
-import { React, useState, useEffect } from "react";
+/**
+ *  Main entrypoint file for all React code for the tool
+ */
+import { React, useState, useEffect, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
-  LayersControl,
   useMapEvents,
   ScaleControl,
   Polyline,
   Polygon,
+  useMap,
 } from "react-leaflet";
-import VectorTileLayer from "react-esri-leaflet/plugins/VectorTileLayer";
+import ReactDOM from 'react-dom/client';
+import L from 'leaflet';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import { Icon } from "leaflet";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Button from "react-bootstrap/Button";
+import 'mapbox-gl/dist/mapbox-gl.css';
+
 
 // Local Components
 import MainToolModeButtons from "./components/MainToolModeButtons";
@@ -92,6 +100,16 @@ export default function MyApp() {
   const destMarkerIcon = new Icon({
     iconUrl: require("./media/red_marker.png"),
     iconSize: [30, 30],
+  });
+
+  // Layers for map legend (disabled until arcgis fixes their migration)
+  const [layerState, setLayerState] = useState({
+    layer1: false,
+    layer2: false,
+    layer3: false,
+    layer4: false,
+    layer5: false,
+    layer6: false,
   });
 
   /**
@@ -220,13 +238,7 @@ export default function MyApp() {
    * @param {string} extension - The file extension you want the handler to consider
    */
   function handleDownload(extension) {
-    let url_dl = "";
-    if (global.electronmode === true) {
-      url_dl = "http://127.0.0.1:5000/download_report";
-    } else {
-      url_dl = "/download_report";
-    }
-    // const response = await axios.post(url_dl, { extension }, { responseType: 'blob' });
+    const url_dl = "/download_report";
 
     axios({
       method: "POST",
@@ -257,6 +269,7 @@ export default function MyApp() {
       .catch((error) => {
         if (error.response) {
           console.log("Error downloading file");
+          console.log(error.response)
         }
       });
   }
@@ -306,8 +319,13 @@ export default function MyApp() {
     };
   }, []);
   const alertUser = (e) => {
-    e.preventDefault();
-    e.returnValue = "";
+    fetch('http://localhost:3000/window_close', {
+      method: 'get',
+      headers: {
+        'Content-Type': 'applicaton/json'
+      },
+      keepalive: true
+    })
   };
 
   /**
@@ -506,13 +524,13 @@ export default function MyApp() {
   const Header = () => {
     return (
       <div className="header">
-        <img src={netlLogo} width={50} height={50} alt="NETL Logo" />
-        <img src={doeLogo} height={50} alt="DOE Logo" />
-        <img src={discoverLogo} width={120} height={50} alt="Discover Logo" />
-        <h1>Smart CO2 Transport-Routing Tool</h1>
-        <div id="docButton">
-          <Button onClick={openDocs}>Help Documentation</Button>
-        </div>
+          <img src={netlLogo} width={50} height={50} alt="NETL Logo" />
+          <img src={doeLogo} height={50} alt="DOE Logo" />
+          <img src={discoverLogo} width={120} height={50} alt="Discover Logo" />
+          <h1>Smart CO2 Transport-Routing Tool</h1>
+          <div id="docButton">
+            <Button onClick={openDocs}>Help Documentation</Button>
+          </div>
       </div>
     );
   };
@@ -529,27 +547,136 @@ export default function MyApp() {
     );
   }
 
+  /**
+   * React component for the map legend
+   * @param {object} state - object of booleans layer1 through layer6 
+   * @param {function} setState - setter function for state
+   * @returns 
+   */
+  function InteractiveLegend({ state, setState }) {
+    const map = useMap();
+    const containerRef = useRef(null);
 
-  const overlays = {
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Intermodal facilities</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer' /> 
-    ),
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Public infrastructure/HCAs</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Public_Infrastructure_Vector_Tile_Flat/VectorTileServer' /> 
-    ),
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Natural gas pipelines</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Natural_Gas_Pipelines/VectorTileServer' /> 
-    ),
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Hydrocarbon pipelines</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Hydrocarbon_Pipelines_Flat/VectorTileServer' /> 
-    ),
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Frost Action Potential (High)</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat_v2/VectorTileServer' /> 
-    ),
-    '<img class="layers" src=Untitled.png  width={10} height={10} alt="Discover Logo" /><p class="layerstext">Corrosion Potential</p>': (
-      <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Soil_Steel_Corrosion_Potential_v2/VectorTileServer' /> 
-    ),
-  };
+    useEffect(() => {
+      const legend = L.control({ position: 'bottomleft' });
+
+      legend.onAdd = () => {
+        const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar map-legend');
+        containerRef.current = div;
+
+        // Prevent map from eating the events
+        L.DomEvent.disableClickPropagation(div);
+        L.DomEvent.disableScrollPropagation(div);
+
+        return div;
+      };
+
+      legend.addTo(map);
+
+      return () => {
+        legend.remove();
+      };
+    }, [map]);
+
+    useEffect(() => {
+      if (containerRef.current) {
+        const root = ReactDOM.createRoot(containerRef.current);
+        root.render(
+          <div style={{ padding: '10px' }}>
+            <strong>Toggle Layers</strong>
+            <div style={{ display: 'flex', flexDirection: 'column', marginTop:'8px'}}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer1}
+                    onChange={() => setState(prev => ({ ...prev, layer1: !prev.layer1 }))}
+                  />
+                }
+                label={<span><img className="layers" alt="intermodal" src="intermodal.png"/>Intermodal facilities</span>}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer2}
+                    onChange={() => setState(prev => ({ ...prev, layer2: !prev.layer2 }))}
+                  />
+                }
+
+                label={<span><img className="layers" alt="public" src="public.png"/>Public infrastructure/HCAs</span>}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer3}
+                    onChange={() => setState(prev => ({ ...prev, layer3: !prev.layer3 }))}
+                  />
+                }
+                label={<span><img className="layers" alt="natural" src="natural.png"/>Natural gas pipelines</span>}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer4}
+                    onChange={() => setState(prev => ({ ...prev, layer4: !prev.layer4 }))}
+                  />
+                }
+                label={<span><img className="layers" alt="hydrocarbon" src="hydrocarbon.png"/>Hydrocarbon pipelines</span>}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer5}
+                    onChange={() => setState(prev => ({ ...prev, layer5: !prev.layer5 }))}
+                  />
+                }
+                label={<span><img className="layers" alt="frost" src="frost.png"/>Frost Action Potential (High)</span>}
+
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.layer6}
+                    onChange={() => setState(prev => ({ ...prev, layer6: !prev.layer6 }))}
+                  />
+                }
+                label={<span><img className="layers" alt="corrosion" src="corrosion.png"/>Corrosion Potential</span>}
+              />
+            </div>
+          </div>
+        );
+      }
+    }, [state, setState]);
+
+    return null;
+  }
+
+  /**
+   * React Component for a button that gets and displays current session ID 
+   * @returns {JSX.element} JSX code for the button and the <p> element with the id
+   */
+  function SessionInfo() {
+    const [id, setId] = useState(null)
+
+      axios({
+        method: "GET",
+        url: "/get_uid",
+      })
+      .then((response) => {
+        console.log(response.data["uid"])
+        const sessionId= response.data["uid"];
+        console.log("Session ID: " + sessionId);
+        setId(sessionId)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    return(
+      <>
+        {id ? <p style={{color: 'lightGray'}}>Session ID: {id}</p> : null}
+      </>
+    ) 
+
+  }
 
   // Main return block for App
   return (
@@ -574,15 +701,31 @@ export default function MyApp() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <LayersControl position="topright">
+      {/*
 
-        {Object.entries(overlays).map(([name, layer]) => (
-          <LayersControl.Overlay key={name} name={name}>
-            {layer}
-          </LayersControl.Overlay>
-        ))}
-        
-        </LayersControl>
+        Disabled because hosted layers are broken via arcgis migration. In progress to re-host
+
+        {layerState.layer1 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer' />
+        )}
+        {layerState.layer2 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Public_Infrastructure_Vector_Tile_Flat/VectorTileServer' />
+        )}
+        {layerState.layer3 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Natural_Gas_Pipelines/VectorTileServer' />
+        )}
+        {layerState.layer4 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Hydrocarbon_Pipelines_Flat/VectorTileServer' />
+        )}
+        {layerState.layer5 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat_v2/VectorTileServer' />
+        )}
+        {layerState.layer6 && (
+          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Soil_Steel_Corrosion_Potential_v2/VectorTileServer' />
+        )}
+
+        <InteractiveLegend state={layerState} setState={setLayerState} />
+        */}
 
         <StartMarkers />
         <EndMarkers />
@@ -590,6 +733,8 @@ export default function MyApp() {
         <ShowIdModeLine />
         <ShowEvalModeShape />
       </MapContainer>
+
+      <SessionInfo/>
 
       <MainToolModeButtons
         setBtnGroupState={setMainMode}

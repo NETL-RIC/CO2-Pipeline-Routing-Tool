@@ -7,7 +7,6 @@ WORKDIR /app/frontend
 COPY public/package.json ./
 COPY public/package-lock.json ./
 
-
 # Install npm dependencies
 RUN npm install --legacy-peer-deps
 

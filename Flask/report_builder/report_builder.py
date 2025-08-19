@@ -1,5 +1,6 @@
 """
-Script that runs evaluation mode and creates output PDF report for the Smart CO2 Transport-Route Planning Tool
+report_builder
+Runs evaluation mode and creates output PDF report for the Smart CO2 Transport-Route Planning Tool
 """
 
 import os
@@ -345,9 +346,6 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     :param out_path: output location to save report
     :return: output_file_name - output report PDF file
     """
-
-    print(f"Running evaluation on: {shapefile}, {start_coordinates}, {end_coordinates}")
-
     curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
 
     # Point to built in vector grid spatial data (shp) and table (csv)
@@ -390,12 +388,10 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     vg_ids, tract_ids, statistic, geometry_type = GetIDsAndLengthOrArea(shapefile, vg_shp, tract_shp)
     # Pull data by FID into dataframe for report
     vg_df = CleanDF(pd.read_csv(vg_table), null_list, vg_id, vg_ids)
-    print(vg_df.shape)
 
     # Pull in data where intersections occur and clean it for writing into report
     if tract_ids:
         tract_df = CleanDF(pd.read_csv(tract_table), null_list, tract_id, tract_ids)
-        print(tract_df.shape)
     else:
         # This should error out the tool. This means GetIDsAndLengthOrArea found no intersections. Check data and
         #   spatial reference systems if this occurs.
@@ -443,9 +439,8 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     multiple_measurements = list()
     # Categories based on feature datasets as listed in the database and paper (Schooley et al. 2024)
     for c in categories:
-        print(c)
         # Get list of datasets from category where variables were identified to have intersections with shapefile,
-        #   count and point to where multiple measurement types were flagged for future writing
+        # Count and point to where multiple measurement types were flagged for future writing
         datasets_by_orig = list([cd[orig_dataset_name] for cd in [dd for dd in def_dicts if dd[category] == c]])
         count_datasets = collections.Counter(datasets_by_orig)
         for k, v in count_datasets.items():
@@ -718,10 +713,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     output_file_name = f"Report_{curr_date.replace('/', '').replace(' ','_').replace(':','')}.pdf"
     out_pdf = resource_path(os.path.join(out_path, output_file_name))
     pdf.output(out_pdf, 'F')
-    print("PDF created.")
-
     return output_file_name
-
 
 if __name__ == "__main__" :
     # IN-SCRIPT TESTING 

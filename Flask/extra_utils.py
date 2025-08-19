@@ -1,3 +1,7 @@
+"""
+extra_utils
+Contains extra functions that are used in multiple modules
+"""
 import sys, os
 
 def resource_path(relative_path):
