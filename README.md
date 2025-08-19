@@ -1,10 +1,11 @@
 # ML-Integrated Pipeline Webapp
-Flask and React webapp migrated from the original Pipeline PyQT standalone Desktop app.
+Webapp to generate pipeline route coordinates and corresponding report and shapefile based on user-input start and destination points.
 
 ## How To Run As Bundle
 Download and run via https://github.com/NETL-RIC/pipeline-routing-tool-release
 
 # Developer Notes
+
 ## Download Assets
 If you're a member of EDX, pass your EDX API key as an argument to the install_edx_assets.py in the root folder.
 This will pull a few assets that are too large to be uploaded to a git repo, from a public EDX workspace, and place them in the right local folder.
@@ -34,10 +35,6 @@ in the root project folder where the file is (not in ~/src). If that command yie
 If 'module not found, can't resolve: examplepackage' errors occur, try installing the package manually via:
 
     npm install examplepackage --legacy-peer-deps
-
-## Missing Large Files
-Some crucial large files (.tifs) are missing from the repo because they exceed Github's 100MB file size limit without using Github LFS, which
-we cannot do. There is a solution for this that uses EDX that is not yet implemented.
 
 ## Desktop Packaging
 ### Flask

@@ -15,6 +15,7 @@
     "axios": "^1.5.1",
     "bootstrap": "^5.3.2",
     "buffer": "^6.0.3",
+    "chai": "^5.3.1",
     "concurrently": "^8.2.2",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
@@ -46,7 +47,7 @@
     "start": "react-scripts start",
     "start-backend": "cd Flask && flask run --no-debugger",
     "build": "react-scripts build",
-    "test": "mocha --require @babel/register --require jsdom-global/register \"test/**/*test.js\"",
+    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!CO2PipelineRouteTool)/\" --env=jsdom",
     "eject": "react-scripts eject",
     "electron:start": "concurrently -k \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electronmon .\"",
     "electron:package:win": "npm run build && electron-builder -w -c.extraMetadata.main=build/electron.js"
@@ -89,20 +90,22 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.27.4",
+    "@babel/core": "^7.28.0",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-env": "^7.28.3",
     "@babel/preset-react": "^7.27.1",
     "@babel/register": "^7.27.1",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
-    "chai": "^5.2.0",
+    "babel-jest": "^30.0.5",
     "electron": "^31.0.0",
     "electron-builder": "^24.6.3",
+    "jest": "^30.0.5",
     "jsdom": "26.1.0",
     "jsdom-global": "3.0.2",
     "leaflet": "^1.9.4",
-    "mocha": "^11.6.0",
+    "react-test-renderer": "^19.1.1",
     "sinon": "^21.0.0"
   },
   "husky": {
