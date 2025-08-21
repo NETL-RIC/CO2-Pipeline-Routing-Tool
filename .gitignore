@@ -5,11 +5,8 @@
 !.vscode/settings.json
 
 # the inputs for the pdfreader include some large tables and shapefile
-/Flask/report_builder/inputs/*.csv
-/Flask/report_builder/inputs/*.shp
-
-# General outputs
-*.pdf
+/Flask/report_builder/inputs/tract_base.shp
+/Flask/report_builder/inputs/data_by_10km_grid.csv
 
 # tool output
 /route_*.*
@@ -26,9 +23,6 @@ Flask/user_uploads
 
 # pycharm settings folder
 .idea/*
-
-# rasters
-*.tif
 
 # dependencies
 /node_modules
@@ -58,5 +52,4 @@ yarn-error.log*
 # added by anti-lfs script
 node_modules/.cache/default-development/0.pack
 Flask/report_builder/inputs/10km_SpatialJoin_42_51_55_59_28.csv
-Flask/report_builder/inputs/tract_base.shp
 /Flask/build
