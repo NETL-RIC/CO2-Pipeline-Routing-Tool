@@ -1,5 +1,5 @@
 ---
-title: A Geospatial Machine Learning Tool for Strategic CO2 Transport Planning  
+title: 'A Geospatial Machine Learning Tool for Strategic CO2 Transport Planning'
 tags:
     - Python
     - Javascript
@@ -8,26 +8,29 @@ tags:
     - Carbon Storage
     - Carbon Capture
     - CO2 Pipelines
-authors:   
+authors:
     - name: Stephen Leveckis
-    affiliation: "1, 2"
+      orcid: 0009-0000-5505-6886
+      affiliation: "1, 2"
     - name:  Benjamin Houghton
-    - affiliation: "1, 2"
+      affiliation: "1, 2"
     - name: Dakota Zaengle
-    - affiliation: "1, 2"
+      affiliation: "1, 2"
     - name: Michael C. Gao
-    affiliation: "1, 2"
+      affiliation: "1, 2"
     - name: Catherine Schooley
-    affiliation: "1, 2"
+      affiliation: "1, 2"
     - name: Jennifer R. Bauer
-    affiliation: 1
+      affiliation: 1
     - name: Lucy Romeo
-    affiliation: 1
-affiliations:  
-    -name: National Energy Technology Laboratory, 1450 Queen Avenue SW, Albany, OR 97321, USA  
-    index: 1
+      affiliation: 1
+affiliations:
+    - name: National Energy Technology Laboratory, 1450 Queen Avenue SW, Albany, OR 97321, USA  
+      index: 1
     - name: NETL Support Contractor, 1450 Queen Avenue SW, Albany, OR 97321, USA  
-    index: 2
+      index: 2
+date: 27 August 2025
+bibliography: paper.bib
 ---
 
 # Summary  
@@ -59,17 +62,3 @@ Electron was unnecessary for packaging the UI as running React code in the brows
 This project was funded by the United States Department of Energy, National Energy Technology Laboratory, in part, through a site support contract. Neither the United States Government nor any agency thereof, nor any of their employees, nor the support contractor, nor any of their employees, makes any warranty, express or implied, or assumes any legal liability or responsibility for the accuracy, completeness, or usefulness of any information, apparatus, product, or process disclosed, or represents that its use would not infringe privately owned rights. Reference herein to any specific commercial product, process, or service by trade name, trademark, manufacturer, or otherwise does not necessarily constitute or imply its endorsement, recommendation, or favoring by the United States Government or any agency thereof. The views and opinions of authors expressed herein do not necessarily state or reflect those of the United States Government or any agency thereof. 
 
 # References  
-
-Ho, A., Giannopoulos, D., Pilorgé, H. and Psarras, P., 2024. Opportunities for rail in the transport of carbon dioxide in the United States. Frontiers in Energy Research, 11, p.1343085. https://link.springer.com/referenceworkentry/10.1007/978-3-031-33328-6_23   
-
-Larson, E., Greig, C., Jenkins, J., Mayfield, E., Pascale, A., Zhang, C., Drossman, J., Williams, R., Pacala, S., Socolow, R., Baik, E., Birdsey, R., Duke, R., Jones, R., Haley, B., Leslie, E., Paustian, K., and Swan A., 2020. NetZero America: Potential Pathways, Infrastructure, and Impacts Report, Princeton University.  
-
-Leveckis, S., Houghton, B., Gao, M.C., Zaengle, D., Bauer, J., Rose, K., and Romeo, L., Smart CO2 Transport-Route Planning Tool, 7/31/2024, https://edx.netl.doe.gov/dataset/smart-co2-transport-route-planning-tool, DOI: 10.18141/2505034    
-
-Ma, Z., B. Chen, and R. J. Pawar. "Reuse of Existing CO2 Pipeline and Pipeline Rights-Of-Way for Large-Scale CCS Deployments." In SPE Annual Technical Conference and Exhibition?, p. D021S030R001. SPE, 2024.  
-
-Morgan, D., Sheriff, A. and Shih, C.Y., 2024. FECM/NETL CO2 Transport Cost Model (2024): Description and User’s Manual (No. DOE/NETL-2024/4860). National Energy Technology Laboratory (NETL), Pittsburgh, PA, Morgantown, WV, and Albany, OR (United States).  
-
-Muhlbauer, W.K. and Murray, J., 2024. Pipeline Risk Management. In Handbook of Pipeline Engineering (pp. 939-957). Cham: Springer International Publishing. https://link.springer.com/referenceworkentry/10.1007/978-3-031-33328-6_23   
-
-Schooley, C., Romeo, L., Pfander, I., Sharma, M., Justman, D., Bauer, J. and Rose, K., 2024. A curated data resource to support safe carbon dioxide transport-route planning. Data in Brief, 52, p.109984.  
