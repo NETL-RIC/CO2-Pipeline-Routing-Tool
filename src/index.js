@@ -16,7 +16,6 @@ axios("/gen_uid")
 root.render(
 
   <BrowserRouter>
-
     <App />
   </BrowserRouter>
 );

@@ -25,16 +25,29 @@ Install the python dependencies to a python virtual env file:
 ## Frontend Dependencies (React/JS)
 All project dependencies are listed in the package.json. You can install them all by entering
 
-    npm install
-
-in the root project folder where the file is (not in ~/src). If that command yields errors, try adding the following flag to the command:
-
     npm install --legacy-peer-deps
+
+in the root project folder where the file is (not in ~/src).
 
 ### Javascript Dependency Errors
 If 'module not found, can't resolve: examplepackage' errors occur, try installing the package manually via:
 
     npm install examplepackage --legacy-peer-deps
+
+## Running Tests
+### React.js
+To run the frontend tests, run 
+
+    npm test
+
+in the project root dir. The tests file is ~/src/App.test.js
+
+### Flask
+To run the backend tests, run
+
+    python -m unittest tests/tect_mc_agent.py -v
+
+in the FLASK directory (~/Flask). The flask tests file is ~/Flask/tests/test_mc_agent.py
 
 ## Desktop Packaging
 ### Flask

@@ -685,8 +685,10 @@ export default function MyApp() {
       <DisclaimerPopup/>
 
       {/*Hidden by default popups*/}
-      <InvalidLandmassPopup invalidLandmass={invalidLandmass} setInvalidLandmass={setInvalidLandmass} />
-      <InvalidLocationPopup invalidPoint={invalidPoint} setInvalidPoint={setInvalidPoint}/> 
+      <div data-testid="invalid-popups">
+        <InvalidLandmassPopup invalidLandmass={invalidLandmass} setInvalidLandmass={setInvalidLandmass} />
+        <InvalidLocationPopup invalidPoint={invalidPoint} setInvalidPoint={setInvalidPoint}/> 
+      </div>
       <ServerErrorPopup showServerError={showServerError} setShowServerError={setShowServerError} />
       <LoadingMessageEvalMode isLoadingEvalMode={isLoadingEvalMode}/>
       <LoadingMessageIdMode isLoadingIdMode={isLoadingIdMode}/>
@@ -694,47 +696,22 @@ export default function MyApp() {
       {/*Regular page*/}
       <Header />
 
-      <MapContainer center={[39.8283, -98.5795]} zoom={5}>
-        {/* <VectorTileLayerTestWrapper tileLayer={ tileLayer } showTileLayer={ showTileLayer }/> */}
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
 
-      {/*
+      <div data-testid="map-container">
+        <MapContainer center={[39.8283, -98.5795]} zoom={5}>
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <StartMarkers />
+          <EndMarkers />
+          <ScaleControl position="bottomright" />
+          <ShowIdModeLine />
+          <ShowEvalModeShape />
+        </MapContainer>
+      </div>
 
-        Disabled because hosted layers are broken via arcgis migration. In progress to re-host
-
-        {layerState.layer1 && (
-          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Intermodal_Freight_Facilities_Flat/VectorTileServer' />
-        )}
-        {layerState.layer2 && (
-          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Public_Infrastructure_Vector_Tile_Flat/VectorTileServer' />
-        )}
-        {layerState.layer3 && (
-          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Natural_Gas_Pipelines/VectorTileServer' />
-        )}
-        {layerState.layer4 && (
-          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Hydrocarbon_Pipelines_Flat/VectorTileServer' />
-        )}
-        {layerState.layer5 && (
-          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Frost_Action_High_Flat_v2/VectorTileServer' />
-        )}
-        {layerState.layer6 && (
-          <VectorTileLayer url='https://arcgis.netl.doe.gov/server/rest/services/Hosted/Dissolved_Soil_Steel_Corrosion_Potential_v2/VectorTileServer' />
-        )}
-
-        <InteractiveLegend state={layerState} setState={setLayerState} />
-        */}
-
-        <StartMarkers />
-        <EndMarkers />
-        <ScaleControl position="bottomright" />
-        <ShowIdModeLine />
-        <ShowEvalModeShape />
-      </MapContainer>
-
-      <SessionInfo/>
+      { /*<SessionInfo/> */}
 
       <MainToolModeButtons
         setBtnGroupState={setMainMode}

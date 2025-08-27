@@ -1,4 +1,0 @@
-# Ignore everything in this directory, but still add the directory
-*
-# Except this file itself
-!.gitignore 

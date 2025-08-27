@@ -138,7 +138,7 @@ function StartEndButtons( {location, setLocation} ){
  * @param {function} setDestCoords - Sets dest coords for passing to ML backend
  * @returns  {JSX.element} All react components for setting Start and Dest data
  */
-function StartEndDetails( { 
+export function StartEndDetails( { 
   setInvalidPoint,
   setStartLandmass, setEndLandmass,
   setStartMarkerRenderCoords, setDestMarkerRenderCoords,
@@ -210,18 +210,18 @@ function StartEndDetails( {
 
     let pt2 = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+stlat+"&lon="+stlon;
 
-    axios({
-      method: "GET",
-      url: pt2,
-    })
+    console.log('Sending axios.get to: ' + pt2)
+    axios.get(pt2)
 
     .then((response) => {
 
       let pointAddress = response.data['address']
+
       // error catch for 200 from serer (resopnse, not error) but error is contained in response
       if(response.data.error){
         console.error('Bad response from axios request with start data with Lat ' + stlat + ' and Lon ' + stlon)
         console.error(response.data.error)
+        setInvalidPoint(true)
       } else {
         console.log(response.data)
       }
@@ -230,6 +230,7 @@ function StartEndDetails( {
       if((pointAddress === undefined) || (pointAddress["state"] === "Hawaii") || (pointAddress["country"] !== "United States")){
         // brings up the 'select a valid point in the US' modal
         setInvalidPoint(true)
+        console.log('Selected point is on a landmass but not in the continental US')
 
       // if valid point
       }else{
@@ -320,8 +321,8 @@ return(
     <div>
         <h4>Add Start Location in World Geodetic System WGS 1984 (WGS 84)</h4>
         <p> 
-        Latitude:   <input type="number" name="myInput1"  onChange={handleChangeSrcLat} value={srcLat}/> 
-        Longitude:  <input type="number" name="myInput2"  onChange={handleChangeSrcLon} value={srcLon}/>  
+        Latitude:   <input type="number" name="myInput1"  aria-label="start-lat" onChange={handleChangeSrcLat} value={srcLat}/> 
+        Longitude:  <input type="number" name="myInput2"   aria-label="start-lon" onChange={handleChangeSrcLon} value={srcLon}/>  
         <Button size="sm" onClick={saveStartBtnClick}> Save Start </Button >                      
         </p> 
         <div><DropdownStart/></div>

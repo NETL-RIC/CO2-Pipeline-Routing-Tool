@@ -11,6 +11,9 @@
 # General outputs
 *.pdf
 
+# cache stuff
+Flask/__pycache__
+
 # tool output
 /route_*.*
 /Flask/route_*.*
