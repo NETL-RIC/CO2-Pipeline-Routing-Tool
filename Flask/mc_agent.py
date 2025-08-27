@@ -2,7 +2,6 @@
 mc_agent
 Contains all the machine learning code, used to generate a prospective pipeline given a start and endpoint from the user
 """
-
 import multiprocessing as mp
 from multiprocessing import Pool
 from pathlib import Path
@@ -368,7 +367,6 @@ class CostSurface:
 
             plt.show()
 
-
 class Node:
     """
     Node class for the Monte Carlo Tree Search algorithm.
@@ -557,8 +555,6 @@ class Node:
 
     # def rollout(self, num_moves=100):
     #     for move in num_moves:
-
-
 
 class MCTree:
     """
@@ -763,7 +759,6 @@ def search(root, target, num_trajectories, cost_surface, c=np.sqrt(2)):
         
     return root, next_node
 
-
 class MCAgent:
     """
     Agent that utilizes multiple Monte Carlo Tree Search instances to find an optimal path.
@@ -883,7 +878,6 @@ class MCAgent:
                 tree.select_root(next_location_str)  # Use select_root instead of prune
 
         return path
-
 
 class MLWrapper:
     """
