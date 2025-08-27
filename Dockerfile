@@ -71,3 +71,9 @@ EXPOSE 5000
 # Using host='0.0.0.0' makes the server accessible from outside the container.
 # We will need to use a production server down the road. Testing with flasks development server is OK for now
 CMD ["uv", "run", "python", "-c", "from Flask import base; base.api.run(host='0.0.0.0', port=5000)"]
+
+# Alternate to uv run is to activate the environment:
+# ENV PATH="/app/.venv/bin:$PATH"
+
+# https://docs.astral.sh/uv/guides/integration/docker/
+# Need to look into using the distroless docker images to copy uv binaries.
