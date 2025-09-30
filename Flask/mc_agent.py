@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from IPython import display
 
-from extra_utils import resource_path
+from .extra_utils import resource_path
 
 def least_cost_path_ml(start, dest, mode):
     """

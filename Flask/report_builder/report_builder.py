@@ -16,7 +16,7 @@ import shapely.ops as sp_ops
 from shapely import wkt
 
 # TODO: uncomment for testing locally
-from extra_utils import resource_path
+from ..extra_utils import resource_path
 
 # List of sub_titles to hold and write subtitles in the table of contents (TOC) for the report.
 global sub_title

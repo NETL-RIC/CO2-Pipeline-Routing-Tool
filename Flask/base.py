@@ -20,15 +20,15 @@ import numpy as np
 import uuid
 import zipfile
 
-from controller import PipelineController
-from line_builder import line_builder
-from report_builder.report_builder import report_builder
-from extra_utils import resource_path
+from .controller import PipelineController
+from .line_builder import line_builder
+from .report_builder.report_builder import report_builder
+from .extra_utils import resource_path
 
 api = Flask(__name__, 
             static_url_path='', 
-            static_folder=resource_path('build'), 
-            template_folder=resource_path('build'))
+            static_folder=resource_path('../build'), 
+            template_folder=resource_path('../build'))
 
 api.secret_key = 'BAD_SECRET_KEY'
 api.config["SESSION_PERMANENT"] = False
@@ -65,6 +65,10 @@ def delete_old_folders():
                 shutil.rmtree(item_path)    # remove folders recursively
         except OSError as e:
             api.logger.error("\tError clearing contents of sessions folder")
+
+@api.route('/')
+def home():
+    return render_template('index.html')
 
 @api.route('/token', methods=['GET', 'POST'])
 def a():

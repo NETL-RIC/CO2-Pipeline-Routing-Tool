@@ -6,7 +6,7 @@ Creates an output shapefile for the generated pipeline data
 import os
 from osgeo import ogr, osr
 from datetime import datetime
-from extra_utils import resource_path
+from .extra_utils import resource_path
 
 def get_file_name(file_path):
     """ Gets filename (no extension) from path with \\ not /

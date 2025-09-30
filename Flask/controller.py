@@ -5,8 +5,8 @@ Controller class for executing the machine learning code
 import sys
 import fiona
 
-from rout import leastCostPath
-from mc_agent import least_cost_path_ml
+from .rout import leastCostPath
+from .mc_agent import least_cost_path_ml
 
 class PipelineController():
     """ Passes line data between processing modules and the api module
