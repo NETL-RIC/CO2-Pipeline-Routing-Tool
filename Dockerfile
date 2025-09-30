@@ -32,6 +32,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
  && rm -rf /var/lib/apt/lists/*
 
+ # Install requirements for opencv-python
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
+
 # Set environment variables for GDAL/PROJ data
 ENV GDAL_DATA=/usr/share/gdal
 ENV PROJ_LIB=/usr/share/proj
@@ -55,7 +58,7 @@ RUN uv sync
 COPY Flask/ ./Flask/
 
 # Copy the built React frontend from the builder stage to where Flask expects it
-COPY --from=frontend-builder /app/build ./Flask/build/
+COPY --from=frontend-builder /app/build ./build/
 
 # Ensure these paths are relative to the Dockerfile context
 # COPY Flask/cost_surfaces ./Flask/cost_surfaces/
@@ -71,7 +74,8 @@ EXPOSE 5000
 # This is mirroring how we run the flask app in CO2PRT.py which is the pyinstaller main entry point
 # Using host='0.0.0.0' makes the server accessible from outside the container.
 # We will need to use a production server down the road. Testing with flasks development server is OK for now
-CMD ["uv", "run", "python", "-c", "from Flask import base; base.api.run(host='0.0.0.0', port=5000)"]
+# CMD ["uv", "run", "python", "-c", "from Flask import base; base.api.run(host='0.0.0.0', port=5000)"]
+CMD ["uv", "run", "flask", "--app", "Flask.base", "run", "--host", "0.0.0.0", "--port", "5000"]
 
 # Alternate to uv run is to activate the environment:
 # ENV PATH="/app/.venv/bin:$PATH"
