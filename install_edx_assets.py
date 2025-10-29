@@ -2,7 +2,7 @@
 install_edx_assets
 Pass EDX API key as 'apikey' argument in CLI to pull down files stored on the EDX Workspace.
 Example:
-    python install_edx_assets.py -apikey xxxx-xxxxx-xxxxx-xxxxx
+    python install_edx_assets.py --api-key xxxx-xxxxx-xxxxx-xxxxx
 Downloads:
     Flask/report_builder/inputs/tract_base.shp
     Flask/report_buidler/inputs/data_by_10km_grid.csv
@@ -13,7 +13,7 @@ import argparse
 import os
 
 parser = argparse.ArgumentParser(description="Script to download files to local with EDX API Key")
-parser.add_argument('apikey', help='Your personal edx api key connected to your edx account')
+parser.add_argument('-a', '--api-key', help='Your personal edx api key connected to your edx account')
 args = parser.parse_args()
 
 DOWNLOAD_FOLDER='./Flask/report_builder/inputs/'
@@ -23,7 +23,7 @@ file_ids = ['005768b9-0809-403a-a3e6-5860d4ee09a0','756a1ea7-4057-46dc-b657-8729
 
 for file_id in file_ids:
     headers = {
-        "EDX-API-Key": args.apikey,
+        "EDX-API-Key": args.api_key,
         "User-Agent": 'EDX-USER',
     }
 
