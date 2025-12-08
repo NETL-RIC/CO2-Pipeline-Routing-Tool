@@ -22,6 +22,10 @@ Install the python dependencies to a python virtual env file:
     uv sync --locked
     source ./venv/bin/activate
 
+The command to activate the venv may also be
+
+    source ./venv/Scripts/activate
+
 ## Frontend Dependencies (React/JS)
 All project dependencies are listed in the package.json. You can install them all by entering
 
