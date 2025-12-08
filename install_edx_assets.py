@@ -19,7 +19,12 @@ args = parser.parse_args()
 DOWNLOAD_FOLDER='./Flask/report_builder/inputs/'
 
 # The file id's for the edx files we want to download. From resource details
-file_ids = ['005768b9-0809-403a-a3e6-5860d4ee09a0','756a1ea7-4057-46dc-b657-8729be0f478f']
+file_ids = [
+    '005768b9-0809-403a-a3e6-5860d4ee09a0',
+    '756a1ea7-4057-46dc-b657-8729be0f478f',
+    '462b28ad-ad1f-430e-9180-40804c172467',
+    'ece88996-9b89-4422-bd62-cc228ada324f'
+]
 
 for file_id in file_ids:
     headers = {

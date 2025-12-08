@@ -28,7 +28,10 @@ __pycache__
 output
 Flask/user_uploads
 local_scripts
-# Flask/sessions is ignored with its own gitignore in the folder, to only ignore contents 
+
+# Cant have empty folders in git, so add empty file
+Flask/sessions/*
+!Flask/sessions/.gitkeep
 
 # pycharm settings folder
 .idea/*
