@@ -348,6 +348,19 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     """
     curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
 
+    errors = []
+    critical_files = ['report_base.csv', 'vg_base.shp', 'data_by_10km_grid.csv', 'tract_base.shp', 'data_by_cencus_tract.csv']
+    for f in critical_files:
+        try:
+            os.path.exists(os.path.join(report_input, f))
+        except FileNotFoundError as e:
+            errors.append("Missing file " + f + " in report_builder directory. Ensure files have been downloaded by install_edx_assets.py script in root. Full message: " + e)
+
+    if errors:
+        print('Missing file errors:')
+        print(errors)
+
+    
     # Point to built in vector grid spatial data (shp) and table (csv)
     report_input = resource_path('report_builder\inputs')
     vg_shp = os.path.join(report_input, "vg_base.shp")
@@ -391,7 +404,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
 
     # Pull in data where intersections occur and clean it for writing into report
     if tract_ids:
-        tract_df = CleanDF(pd.read_csv(tract_table), null_list, tract_id, tract_ids)
+        tract_df = CleanDF(pd.read_csv(tract_table, low_memory=False), null_list, tract_id, tract_ids)
     else:
         # This should error out the tool. This means GetIDsAndLengthOrArea found no intersections. Check data and
         #   spatial reference systems if this occurs.

@@ -13,7 +13,7 @@ This will pull a few assets that are too large to be uploaded to a git repo, fro
     python install_edx_assets.py --api-key <edx api key>
 
 ## How To Run From Source
-In a terminal window, enter `python -m flask run` in ./Flask, with the appropriate virtual environment.
+In a terminal window, enter `flask --app base.py run` in ./Flask (or `python -m flask run`), with the appropriate virtual environment.
 In a different terminal window, enter `npm start` in the root project dir, ensuring that npm and node.js have been installed.
 
 ## Backend Dependencies (Flask/Python)

@@ -90,11 +90,15 @@ def a():
         first_point = route[0]
         last_point = route[-1]  
 
-        out_dir = resource_path("sessions\\" + session.get('uid'))
+        session_uid = session.get('uid')
+        out_dir = resource_path("sessions\\" + session_uid)
+        api.logger.info("Session uid is: " + session_uid)
 
         if os.path.exists(out_dir):
+            api.logger.info("Deleting contents of [" + session_uid + "] for repopulation with another run.")
             delete_dir_contents(out_dir)   # delete output from a previous run in this same session
         else:
+            api.logger.info("Making directory for uid  [" + session_uid + "].")
             os.mkdir(out_dir)
 
         shpinfo = line_builder(route, out_dir)  # create shapefile(s) in ./output, based on line, return filename of output .shp file
@@ -102,7 +106,9 @@ def a():
         output_shp_filename = shpinfo[0]
        
         pdf_name = report_builder(output_shp_abspath, first_point, last_point, out_dir)    # create pdf report in './output
+
         # delete_prev_zips_pdfs()                   # delete zip from last run if exist
+
         zip_path = create_output_zip(output_shp_filename) # create zip of pdf/shp files in session folder
         api.logger.info("Output zip created")
 
@@ -174,7 +180,7 @@ def index():
     """
     if 'uid' not in session:
         session['uid'] = str(uuid.uuid4())
-    print(session['uid'])
+    api.logger.info('Session uid: '+ session['uid'])
     # Don't need to send uid to client, return 204 (succcess, no content)
     return ("", 204)
 

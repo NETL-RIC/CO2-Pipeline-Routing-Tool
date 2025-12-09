@@ -711,7 +711,7 @@ export default function MyApp() {
         </MapContainer>
       </div>
 
-      { /*<SessionInfo/> */}
+      <SessionInfo/>
 
       <MainToolModeButtons
         setBtnGroupState={setMainMode}
