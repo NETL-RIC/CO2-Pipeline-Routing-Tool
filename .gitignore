@@ -12,6 +12,7 @@
 
 # General outputs
 *.pdf
+!Flask/report_builder/inputs/reference_sheet.pdf
 
 # cache stuff
 Flask/__pycache__
