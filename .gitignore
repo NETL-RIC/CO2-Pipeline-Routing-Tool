@@ -4,9 +4,11 @@
 .vscode/*
 !.vscode/settings.json
 
-# the inputs for the pdfreader include some large tables and shapefile
-/Flask/report_builder/inputs/*.csv
-/Flask/report_builder/inputs/*.shp
+# the inputs for the pdfreader include some large tables and shapefile, in order of size
+/Flask/report_builder/inputs/tract_base.shp
+/Flask/report_builder/inputs/data_by_10km_grid.csv
+/Flask/report_builder/inputs/data_by_census_tract.csv
+/Flask/report_builder/inputs/vg_base.shp
 
 # General outputs
 *.pdf
@@ -65,7 +67,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 # added by anti-lfs script
-node_modules/.cache/default-development/0.pack
 Flask/report_builder/inputs/10km_SpatialJoin_42_51_55_59_28.csv
 Flask/report_builder/inputs/tract_base.shp
 /Flask/build
