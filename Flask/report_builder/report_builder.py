@@ -346,6 +346,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     :param out_path: output location to save report
     :return: output_file_name - output report PDF file
     """
+    report_input = resource_path('report_builder\inputs')
     curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
 
     errors = []
@@ -362,7 +363,6 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
 
     
     # Point to built in vector grid spatial data (shp) and table (csv)
-    report_input = resource_path('report_builder\inputs')
     vg_shp = os.path.join(report_input, "vg_base.shp")
     vg_id = 'OID_' # Field that joins shp and csv
     vg_table = os.path.join(report_input, "data_by_10km_grid.csv")

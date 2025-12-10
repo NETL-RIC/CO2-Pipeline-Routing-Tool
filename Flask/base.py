@@ -157,18 +157,21 @@ def create_output_zip(zipname):
     zipname = 'route_shapefile_and_report.zip'    
     try:
         dl_f = resource_path('sessions\\' + session.get('uid'))
-    except Exception as e:
+    except FileNotFoundError as e:
         api.logger(e)
 
     dest_path = os.path.join(dl_f, zipname)
 
     # copy the reference sheet pdf into the folder that will be zipped up
-    shutil.copy(resource_path('other_assets/reference_sheet.pdf'), dl_f)
-    print(os.getcwd())
-    #shutil.make_archive(dest_path, 'zip', dl_f)
+    shutil.copy(resource_path('report_builder/inputs/reference_sheet.pdf'), dl_f)
+    # shutil.make_archive(dest_path, 'zip', dl_f)
 
-    with zipfile.ZipFile(f"sessions\\{session.get('uid')}\\{zipname}", 'w', zipfile.ZIP_DEFLATED) as zipf:
-        zipdir("sessions\\" + session.get('uid'), zipf, zipname)
+
+    #with zipfile.ZipFile(f"sessions\\{session.get('uid')}\\{zipname}", 'w', zipfile.ZIP_DEFLATED) as zipf:
+        #zipdir("sessions\\" + session.get('uid'), zipf, zipname)
+
+    with zipfile.ZipFile(os.path.relpath(dest_path), 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipdir(os.path.relpath(dl_f), zipf, zipname)
 
     api.logger.info(f"\tCreated download zipfile at {dest_path}")
     return dest_path
