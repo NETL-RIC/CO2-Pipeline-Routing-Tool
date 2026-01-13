@@ -16,6 +16,7 @@ from flask_apscheduler import APScheduler
 import fiona
 import torch
 from osgeo import gdal, ogr, osr
+from os import getenv
 import numpy as np
 import uuid
 import zipfile
@@ -25,8 +26,12 @@ from .line_builder import line_builder
 from .report_builder.report_builder import report_builder
 from .extra_utils import resource_path
 
+static = getenv('PREFIX_PATH')
+if static is None:
+    static = ''
+
 api = Flask(__name__, 
-            static_url_path='', 
+            static_url_path=static, 
             static_folder=resource_path('../build'), 
             template_folder=resource_path('../build'))
 
