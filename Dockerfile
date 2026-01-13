@@ -20,6 +20,11 @@ RUN npm run build
 # Stage 2: Python Runtime Environment
 FROM python:3.10-slim AS runtime
 
+ENV hosturl="0.0.0.0"
+ENV nthreads=10
+ENV port=5000
+ENV PREFIX_PATH="/co2-pipeline-routing-tool/"
+
 WORKDIR /app
 
 # Install system dependencies required by GDAL
@@ -42,9 +47,6 @@ ENV PROJ_LIB=/usr/share/proj
 # Install uv, could use Conda but conda commands are a pain in containers, and uv has a workaround for GDAL
 RUN pip install uv
 
-# Copy pyproject.toml to install dependencies
-# COPY pyproject.toml ./
-
 # Copy uv.lock to install dependencies
 # Ideally this is a better solution because it uses exact resolved versions that we know
 #  will work. If this doesn't work within the container we can fall back on the pyproject.toml
@@ -53,7 +55,8 @@ COPY pyproject.toml ./
 
 # Install Python dependencies using uv
 RUN uv sync
-RUN uv add waitress
+# RUN uv add waitress
+RUN uv add gunicorn
 
 # Copy the Flask backend code
 COPY Flask/ ./Flask/
@@ -77,7 +80,10 @@ EXPOSE 5000
 # We will need to use a production server down the road. Testing with flasks development server is OK for now
 # CMD ["uv", "run", "python", "-c", "from Flask import base; base.api.run(host='0.0.0.0', port=5000)"]
 #CMD ["uv", "run", "flask", "--app", "Flask.base", "run", "--host", "0.0.0.0", "--port", "5000"]
-CMD ["uv", "run", "waitress-serve", "--host", "0.0.0.0", "--port", "5000", "Flask.base:api"]
+# CMD ["uv", "run", "waitress-serve", "--host", "0.0.0.0", "--port", "5000", "Flask.base:api"] # waitress
+
+# gunicorn
+CMD ["uv", "run", "gunicorn", "--bind=${hosturl}:${port}", "--workers=${nthreads}", "Flask.base:api"] 
 # Alternate to uv run is to activate the environment:
 # ENV PATH="/app/.venv/bin:$PATH"
 
