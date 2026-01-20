@@ -4,6 +4,10 @@
 .vscode/*
 !.vscode/settings.json
 
+# Secrets
+/Flask/.env
+.env
+
 # the inputs for the pdfreader include some large tables and shapefile, in order of size
 /Flask/report_builder/inputs/tract_base.shp
 /Flask/report_builder/inputs/data_by_10km_grid.csv

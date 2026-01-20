@@ -14,7 +14,6 @@ import glob
 from flask import Flask, request, render_template, send_file, session
 from flask_apscheduler import APScheduler
 import fiona
-import torch
 from osgeo import gdal, ogr, osr
 from os import getenv
 import numpy as np
@@ -25,6 +24,7 @@ from .controller import PipelineController
 from .line_builder import line_builder
 from .report_builder.report_builder import report_builder
 from .extra_utils import resource_path
+from .config import Config
 
 static = getenv('PREFIX_PATH')
 if static is None:
@@ -35,9 +35,8 @@ api = Flask(__name__,
             static_folder=resource_path('../build'), 
             template_folder=resource_path('../build'))
 
-api.secret_key = 'BAD_SECRET_KEY'
-api.config["SESSION_PERMANENT"] = False
-api.config["SCHEDULER_API_ENABLED"] = True
+
+api.config.from_object(Config)
 
 # Runs scheduler to remove old session folders ever 24 hours
 scheduler = APScheduler()

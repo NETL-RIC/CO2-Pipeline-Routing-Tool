@@ -26,6 +26,16 @@ The command to activate the venv may also be
 
     source ./venv/Scripts/activate
 
+### .env files
+You'll also need to set a flask secret key in an .env file you create in the Flask folder. Generate a key with
+
+    python -c 'import secrets; print(secrets.token_urlsafe(32))'
+
+directly in your shell, and assign the results to a SECRET_KEY variable in the .env file you created.
+
+Note that the .env file is local only, but the .flaskenv file is in source control.
+Both are ignored by production, and for developer convinience. 
+
 ## Frontend Dependencies (React/JS)
 All project dependencies are listed in the package.json. You can install them all by entering
 
