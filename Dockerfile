@@ -56,7 +56,7 @@ COPY pyproject.toml ./
 # Install Python dependencies using uv
 RUN uv sync
 # RUN uv add waitress
-RUN uv add gunicorn
+RUN uv add gunicorn tqdm
 
 # Copy the Flask backend code
 COPY Flask/ ./Flask/
@@ -72,18 +72,10 @@ COPY --from=frontend-builder /app/build ./build/
 COPY public/documentation ./Flask/build/documentation/
 
 # Expose the port Flask will run on
-EXPOSE 5000
+EXPOSE ${port}
 
 # Command to run the Flask application
-# This is mirroring how we run the flask app in CO2PRT.py which is the pyinstaller main entry point
-# Using host='0.0.0.0' makes the server accessible from outside the container.
-# We will need to use a production server down the road. Testing with flasks development server is OK for now
-# CMD ["uv", "run", "python", "-c", "from Flask import base; base.api.run(host='0.0.0.0', port=5000)"]
-#CMD ["uv", "run", "flask", "--app", "Flask.base", "run", "--host", "0.0.0.0", "--port", "5000"]
-# CMD ["uv", "run", "waitress-serve", "--host", "0.0.0.0", "--port", "5000", "Flask.base:api"] # waitress
-
-# gunicorn
-CMD ["uv", "run", "gunicorn", "--bind=${hosturl}:${port}", "--workers=${nthreads}", "Flask.base:api"] 
+CMD ["sh", "-c", "exec uv run gunicorn --bind=${hosturl}:${port} --workers=${nthreads} Flask.base:api"] 
 # Alternate to uv run is to activate the environment:
 # ENV PATH="/app/.venv/bin:$PATH"
 

@@ -34,6 +34,9 @@ api = Flask(__name__,
             static_url_path=static, 
             static_folder=resource_path('../build'), 
             template_folder=resource_path('../build'))
+            
+from flask import Blueprint
+bp = Blueprint('main', __name__)
 
 
 api.config.from_object(Config)
@@ -70,11 +73,11 @@ def delete_old_folders():
         except OSError as e:
             api.logger.error("\tError clearing contents of sessions folder")
 
-@api.route('/')
+@bp.route('/')
 def home():
     return render_template('index.html')
 
-@api.route('/token', methods=['GET', 'POST'])
+@bp.route('/token', methods=['GET', 'POST'])
 def a():
     """Endpoint for generating line shapefiles and report
     Parameters: none
@@ -122,7 +125,7 @@ def a():
             
         return {'route': route_correct_swap, 'zip':zip_path}
 
-@api.route('/download_report', methods=['POST'])
+@bp.route('/download_report', methods=['POST'])
 def send_report():
     """API Endpoint for sending appropriate file to the front end.
     """
@@ -180,7 +183,7 @@ def create_output_zip(zipname):
     api.logger.info(f"\tCreated download zipfile at {dest_path}")
     return dest_path
 
-@api.route('/gen_uid')
+@bp.route('/gen_uid')
 def index():
     """ Generate a user id unique to the user's session and send it back to the browser
     Returns: 204 code (success, nothing to return) for the browser
@@ -191,7 +194,7 @@ def index():
     # Don't need to send uid to client, return 204 (succcess, no content)
     return ("", 204)
 
-@api.route('/profile')
+@bp.route('/profile')
 def my_profile():
     """ Returns profile information of the tool 
     Returns:
@@ -203,7 +206,7 @@ def my_profile():
     }
     return response_body
 
-@api.route('/help', methods = ['POST'])
+@bp.route('/help', methods = ['POST'])
 def open_help():
     """ Open the help docs in the user's native browser
     Returns: h_path: the path where the help docs are
@@ -213,7 +216,7 @@ def open_help():
     return(h_path)
 
 # Evaluate button 
-@api.route('/uploads', methods = ['POST'])
+@bp.route('/uploads', methods = ['POST'])
 def uploads_file():
     """ Runs the 'evaluate' mode of the tool, generating a pdf report based on user-uploaded shapefiles of an area or route (polygon or line)
     Returns: path to the generated report
@@ -325,7 +328,7 @@ def delete_prev_zips_pdfs():
         for file in dircontents:
             if file.endswith(".zip") or file.endswith(".pdf"):
                 os.remove(os.path.join(public_path, file))
-@api.route('/get_uid', methods=['GET'])
+@bp.route('/get_uid', methods=['GET'])
 def send_id():
     """ Send session id
     """
@@ -565,7 +568,7 @@ def get_client_ip():
     """
     return request.headers.get('X-Forwarded For', request.remote_addr)
 
-@api.route('/window_close', methods=['GET'])
+@bp.route('/window_close', methods=['GET'])
 def remove_session_state():
     uid = session.get('uid')
     if uid is not None:
@@ -587,3 +590,8 @@ def remove_session_state():
 api.before_request(before_request_logging)
 api.after_request(after_request_logging)
 api.errorhandler(exception_logging)
+
+# Register the blueprint with the static prefix
+# If static is empty string or None, url_prefix can be None or '/'
+prefix = static if static else '/'
+api.register_blueprint(bp, url_prefix=prefix)
