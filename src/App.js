@@ -36,7 +36,7 @@ import doeLogo from "./media/DOE_Logo_Color.png";
 import discoverLogo from "./media/discover.jpg";
 
 global.Buffer = require("buffer").Buffer;
-let end=[0,0]
+let end = [0, 0]
 let shptyp = "";
 
 /**
@@ -131,7 +131,7 @@ export default function MyApp() {
     if (global.electronmode === true) {
       urlfile = "http://127.0.0.1:5000/uploads";
     } else {
-      urlfile = "/uploads";
+      urlfile = "uploads";
     }
     axios
       .post(urlfile, formData)
@@ -167,19 +167,19 @@ export default function MyApp() {
       if (global.electronmode === true) {
         urlpipe = "http://127.0.0.1:5000/token";
       } else {
-        urlpipe = "/token";
+        urlpipe = "token";
       }
 
       console.log(
         "Sending start " +
-          startCoords[0] +
-          ", " +
-          startCoords[1] +
-          " and end " +
-          destCoords[0] +
-          ", " +
-          destCoords[1] +
-          " to backend"
+        startCoords[0] +
+        ", " +
+        startCoords[1] +
+        " and end " +
+        destCoords[0] +
+        ", " +
+        destCoords[1] +
+        " to backend"
       );
       axios({
         method: "POST",
@@ -216,7 +216,7 @@ export default function MyApp() {
     if (global.electronmode === true) {
       urldoc = "http://127.0.0.1:5000/help";
     } else {
-      urldoc = "/help";
+      urldoc = "help";
     }
     axios({
       method: "POST",
@@ -238,7 +238,7 @@ export default function MyApp() {
    * @param {string} extension - The file extension you want the handler to consider
    */
   function handleDownload(extension) {
-    const url_dl = "/download_report";
+    const url_dl = "download_report";
 
     axios({
       method: "POST",
@@ -319,7 +319,7 @@ export default function MyApp() {
     };
   }, []);
   const alertUser = (e) => {
-    fetch('http://localhost:3000/window_close', {
+    fetch('window_close', {
       method: 'get',
       headers: {
         'Content-Type': 'applicaton/json'
@@ -524,13 +524,13 @@ export default function MyApp() {
   const Header = () => {
     return (
       <div className="header">
-          <img src={netlLogo} width={50} height={50} alt="NETL Logo" />
-          <img src={doeLogo} height={50} alt="DOE Logo" />
-          <img src={discoverLogo} width={120} height={50} alt="Discover Logo" />
-          <h1>Smart CO2 Transport-Routing Tool</h1>
-          <div id="docButton">
-            <Button onClick={openDocs}>Help Documentation</Button>
-          </div>
+        <img src={netlLogo} width={50} height={50} alt="NETL Logo" />
+        <img src={doeLogo} height={50} alt="DOE Logo" />
+        <img src={discoverLogo} width={120} height={50} alt="Discover Logo" />
+        <h1>Smart CO2 Transport-Routing Tool</h1>
+        <div id="docButton">
+          <Button onClick={openDocs}>Help Documentation</Button>
+        </div>
       </div>
     );
   };
@@ -584,7 +584,7 @@ export default function MyApp() {
         root.render(
           <div style={{ padding: '10px' }}>
             <strong>Toggle Layers</strong>
-            <div style={{ display: 'flex', flexDirection: 'column', marginTop:'8px'}}>
+            <div style={{ display: 'flex', flexDirection: 'column', marginTop: '8px' }}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -592,7 +592,7 @@ export default function MyApp() {
                     onChange={() => setState(prev => ({ ...prev, layer1: !prev.layer1 }))}
                   />
                 }
-                label={<span><img className="layers" alt="intermodal" src="intermodal.png"/>Intermodal facilities</span>}
+                label={<span><img className="layers" alt="intermodal" src="intermodal.png" />Intermodal facilities</span>}
               />
               <FormControlLabel
                 control={
@@ -602,7 +602,7 @@ export default function MyApp() {
                   />
                 }
 
-                label={<span><img className="layers" alt="public" src="public.png"/>Public infrastructure/HCAs</span>}
+                label={<span><img className="layers" alt="public" src="public.png" />Public infrastructure/HCAs</span>}
               />
               <FormControlLabel
                 control={
@@ -611,7 +611,7 @@ export default function MyApp() {
                     onChange={() => setState(prev => ({ ...prev, layer3: !prev.layer3 }))}
                   />
                 }
-                label={<span><img className="layers" alt="natural" src="natural.png"/>Natural gas pipelines</span>}
+                label={<span><img className="layers" alt="natural" src="natural.png" />Natural gas pipelines</span>}
               />
               <FormControlLabel
                 control={
@@ -620,7 +620,7 @@ export default function MyApp() {
                     onChange={() => setState(prev => ({ ...prev, layer4: !prev.layer4 }))}
                   />
                 }
-                label={<span><img className="layers" alt="hydrocarbon" src="hydrocarbon.png"/>Hydrocarbon pipelines</span>}
+                label={<span><img className="layers" alt="hydrocarbon" src="hydrocarbon.png" />Hydrocarbon pipelines</span>}
               />
               <FormControlLabel
                 control={
@@ -629,7 +629,7 @@ export default function MyApp() {
                     onChange={() => setState(prev => ({ ...prev, layer5: !prev.layer5 }))}
                   />
                 }
-                label={<span><img className="layers" alt="frost" src="frost.png"/>Frost Action Potential (High)</span>}
+                label={<span><img className="layers" alt="frost" src="frost.png" />Frost Action Potential (High)</span>}
 
               />
               <FormControlLabel
@@ -639,7 +639,7 @@ export default function MyApp() {
                     onChange={() => setState(prev => ({ ...prev, layer6: !prev.layer6 }))}
                   />
                 }
-                label={<span><img className="layers" alt="corrosion" src="corrosion.png"/>Corrosion Potential</span>}
+                label={<span><img className="layers" alt="corrosion" src="corrosion.png" />Corrosion Potential</span>}
               />
             </div>
           </div>
@@ -657,24 +657,24 @@ export default function MyApp() {
   function SessionInfo() {
     const [id, setId] = useState(null)
 
-      axios({
-        method: "GET",
-        url: "/get_uid",
-      })
+    axios({
+      method: "GET",
+      url: "get_uid",
+    })
       .then((response) => {
         console.log(response.data["uid"])
-        const sessionId= response.data["uid"];
+        const sessionId = response.data["uid"];
         console.log("Session ID: " + sessionId);
         setId(sessionId)
       })
       .catch((error) => {
         console.log(error)
       })
-    return(
+    return (
       <>
-        {id ? <p style={{color: 'lightGray'}}>Session ID: {id}</p> : null}
+        {id ? <p style={{ color: 'lightGray' }}>Session ID: {id}</p> : null}
       </>
-    ) 
+    )
 
   }
 
@@ -682,16 +682,16 @@ export default function MyApp() {
   return (
     <div>
       {/*Initial popup */}
-      <DisclaimerPopup/>
+      <DisclaimerPopup />
 
       {/*Hidden by default popups*/}
       <div data-testid="invalid-popups">
         <InvalidLandmassPopup invalidLandmass={invalidLandmass} setInvalidLandmass={setInvalidLandmass} />
-        <InvalidLocationPopup invalidPoint={invalidPoint} setInvalidPoint={setInvalidPoint}/> 
+        <InvalidLocationPopup invalidPoint={invalidPoint} setInvalidPoint={setInvalidPoint} />
       </div>
       <ServerErrorPopup showServerError={showServerError} setShowServerError={setShowServerError} />
-      <LoadingMessageEvalMode isLoadingEvalMode={isLoadingEvalMode}/>
-      <LoadingMessageIdMode isLoadingIdMode={isLoadingIdMode}/>
+      <LoadingMessageEvalMode isLoadingEvalMode={isLoadingEvalMode} />
+      <LoadingMessageIdMode isLoadingIdMode={isLoadingIdMode} />
 
       {/*Regular page*/}
       <Header />
@@ -711,7 +711,7 @@ export default function MyApp() {
         </MapContainer>
       </div>
 
-      <SessionInfo/>
+      <SessionInfo />
 
       <MainToolModeButtons
         setBtnGroupState={setMainMode}
