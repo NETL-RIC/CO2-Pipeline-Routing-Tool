@@ -50,13 +50,14 @@ RUN pip install uv
 # Copy uv.lock to install dependencies
 # Ideally this is a better solution because it uses exact resolved versions that we know
 #  will work. If this doesn't work within the container we can fall back on the pyproject.toml
-COPY uv.lock ./
+# COPY uv.lock ./
 COPY pyproject.toml ./
 
 # Install Python dependencies using uv
-RUN uv sync
+RUN uv sync --no-dev
 # RUN uv add waitress
 RUN uv add gunicorn tqdm
+RUN uv cache clean
 
 # Copy the Flask backend code
 COPY Flask/ ./Flask/
@@ -75,7 +76,7 @@ COPY public/documentation ./Flask/build/documentation/
 EXPOSE ${port}
 
 # Command to run the Flask application
-CMD ["sh", "-c", "exec uv run gunicorn --bind=${hosturl}:${port} --workers=${nthreads} --timeout=0 Flask.base:api"] 
+CMD ["sh", "-c", "exec uv run --no-dev gunicorn --bind=${hosturl}:${port} --workers=${nthreads} --timeout=0 Flask.base:api"] 
 # Alternate to uv run is to activate the environment:
 # ENV PATH="/app/.venv/bin:$PATH"
 
