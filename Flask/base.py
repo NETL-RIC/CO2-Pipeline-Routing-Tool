@@ -98,7 +98,7 @@ def a():
         last_point = route[-1]  
 
         session_uid = session.get('uid')
-        out_dir = resource_path("sessions\\" + session_uid)
+        out_dir = resource_path(os.path.join("sessions", session_uid))
         api.logger.info("Session uid is: " + session_uid)
 
         if os.path.exists(out_dir):
@@ -129,7 +129,7 @@ def a():
 def send_report():
     """API Endpoint for sending appropriate file to the front end.
     """
-    public_f = resource_path('sessions\\' + session.get('uid'))
+    public_f = resource_path(os.path.join('sessions', session.get('uid')))
     if request.method == 'POST':
         ext = request.json.get("extension", None)
         try:
@@ -155,15 +155,18 @@ def create_output_zip(zipname):
     """
     def zipdir(path, ziph, zipname):
         for root, dirs, files, in os.walk(path):
-            files.remove(zipname)  # remove the zip from the files to be included in the zip lol
+            if zipname in files:
+                files.remove(zipname)  # remove the zip from the files to be included in the zip lol
             for file in files:
 
                 if file != zipname:
-                    ziph.write(os.path.join(root, file))
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, start=path)
+                    ziph.write(file_path, arcname=arcname)
     
     zipname = 'route_shapefile_and_report.zip'    
     try:
-        dl_f = resource_path('sessions\\' + session.get('uid'))
+        dl_f = resource_path(os.path.join('sessions', session.get('uid')))
     except FileNotFoundError as e:
         api.logger(e)
 

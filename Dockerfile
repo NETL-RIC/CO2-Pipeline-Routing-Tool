@@ -21,7 +21,7 @@ RUN npm run build
 FROM python:3.10-slim AS runtime
 
 ENV hosturl="0.0.0.0"
-ENV nthreads=10
+ENV nthreads=4
 ENV port=5000
 ENV PREFIX_PATH="/co2-pipeline-routing-tool/"
 
@@ -65,17 +65,17 @@ COPY Flask/ ./Flask/
 COPY --from=frontend-builder /app/build ./build/
 
 # Ensure these paths are relative to the Dockerfile context
-# COPY Flask/cost_surfaces ./Flask/cost_surfaces/
-# COPY Flask/raster ./Flask/raster/
-# COPY Flask/report_builder/inputs ./Flask/report_builder/inputs/
-# COPY Flask/report_builder/images ./Flask/report_builder/images/
+COPY Flask/cost_surfaces ./Flask/cost_surfaces/
+COPY Flask/raster ./Flask/raster/
+COPY Flask/report_builder/inputs ./Flask/report_builder/inputs/
+COPY Flask/report_builder/images ./Flask/report_builder/images/
 COPY public/documentation ./Flask/build/documentation/
 
 # Expose the port Flask will run on
 EXPOSE ${port}
 
 # Command to run the Flask application
-CMD ["sh", "-c", "exec uv run gunicorn --bind=${hosturl}:${port} --workers=${nthreads} Flask.base:api"] 
+CMD ["sh", "-c", "exec uv run gunicorn --bind=${hosturl}:${port} --workers=${nthreads} --timeout=0 Flask.base:api"] 
 # Alternate to uv run is to activate the environment:
 # ENV PATH="/app/.venv/bin:$PATH"
 

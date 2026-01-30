@@ -56,12 +56,12 @@ def GetIDsAndLengthOrArea(new_shp, grid_shp, tracts_shp):
     input_lyr = ds.GetLayer()
     geometry_type = input_lyr.GetGeomType()
 
-    # Open vector grid shapefile as ogr layer (resource_path('report_builder\inputs\vg_base.shp')) - this shapefile
+    # Open vector grid shapefile as ogr layer (resource_path('report_builder/inputs/vg_base.shp')) - this shapefile
     #       only contains ids by geometry
     vg_ds = driver.Open(grid_shp, 0)
     vg_lyr = vg_ds.GetLayer()
 
-    # Open tract base grid shapefile as ogr layer (resource_path('report_builder\inputs\tract_base.shp')) - this
+    # Open tract base grid shapefile as ogr layer (resource_path('report_builder/inputs/tract_base.shp')) - this
     #       shapefile only contains ids by geometry
     tract_ds = driver.Open(tracts_shp, 0)
     tract_lyr = tract_ds.GetLayer()
@@ -346,7 +346,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     :param out_path: output location to save report
     :return: output_file_name - output report PDF file
     """
-    report_input = resource_path('report_builder\inputs')
+    report_input = resource_path(os.path.join('report_builder', 'inputs'))
     curr_date = datetime.now().strftime("%m/%d/%y %H:%M")
 
     errors = []
@@ -725,7 +725,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
     # Write output file pdf name
     output_file_name = f"Report_{curr_date.replace('/', '').replace(' ','_').replace(':','')}.pdf"
     out_pdf = resource_path(os.path.join(out_path, output_file_name))
-    pdf.output(out_pdf, 'F')
+    pdf.output(out_pdf)
     return output_file_name
 
 if __name__ == "__main__" :

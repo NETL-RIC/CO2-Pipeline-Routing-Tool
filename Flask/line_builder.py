@@ -11,8 +11,7 @@ from .extra_utils import resource_path
 def get_file_name(file_path):
     """ Gets filename (no extension) from path with \\ not /
     """
-    file_path_split = file_path.split('\\')
-    file_name_and_extension = file_path_split[-1].rsplit('.', 1)
+    file_name_and_extension = os.path.splitext(os.path.basename(file_path))
     return file_name_and_extension[0]
 
 def CleanDatetime(datestring):
