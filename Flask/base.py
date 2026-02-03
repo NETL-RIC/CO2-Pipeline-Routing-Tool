@@ -30,8 +30,12 @@ static = getenv('PREFIX_PATH')
 if static is None:
     static = ''
 
+template_prefix = getenv('TEMPLATE_PREFIX')
+if template_prefix is None:
+    template_prefix = static
+
 api = Flask(__name__, 
-            static_url_path=static, 
+            static_url_path=template_prefix, 
             static_folder=resource_path('../build'), 
             template_folder=resource_path('../build'))
             
@@ -75,7 +79,7 @@ def delete_old_folders():
 
 @bp.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html', template_prefix=template_prefix)
 
 @bp.route('/token', methods=['GET', 'POST'])
 def a():
