@@ -1,0 +1,1 @@
+curl -X POST --json '{"s": [39.594529, -78.745292] ,"e": [30, -101], "mode": "route"}' http://localhost:5000/token
