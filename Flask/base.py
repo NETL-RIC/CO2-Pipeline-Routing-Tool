@@ -19,7 +19,8 @@ from os import getenv
 import numpy as np
 import uuid
 import zipfile
-
+import logging
+import sys
 from .controller import PipelineController
 from .line_builder import line_builder
 from .report_builder.report_builder import report_builder
@@ -38,7 +39,12 @@ api = Flask(__name__,
             static_url_path=template_prefix, 
             static_folder=resource_path('../build'), 
             template_folder=resource_path('../build'))
-            
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',handlers=[logging.StreamHandler(sys.stderr)])
+
+
+# Configure Flask logger to output to stderr for compatibility with Docker logging and GCP logging
+
 from flask import Blueprint
 bp = Blueprint('main', __name__)
 
@@ -95,9 +101,12 @@ def a():
             f"End: {end}"
         )
         mode = request.json.get("mode", None)
-        route = generate_line_ml(start, end, mode)    # calculate line with ML
-        api.logger.info("Pipeline generated")
-
+        try:
+            route = generate_line_ml(start, end, mode)    # calculate line with ML
+            api.logger.info("Pipeline generated")
+        except Exception as e:    
+            api.logger.error(f"Error generating pipeline: {e}, from start: {start} to end: {end} with mode: {mode}")
+            raise e
         first_point = route[0]
         last_point = route[-1]  
 
@@ -340,7 +349,7 @@ def send_id():
     """ Send session id
     """
     uid = session.get('uid')
-    print(uid)
+
     return {'uid': uid}
 
 

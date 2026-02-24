@@ -21,9 +21,9 @@ RUN npm run build
 FROM python:3.10-slim AS runtime
 
 ENV hosturl="0.0.0.0"
-ENV nthreads=4
+ENV nthreads=8
 ENV port=5000
-ENV PREFIX_PATH="/co2-pipeline-routing-tool/"
+ENV PREFIX_PATH="/researcher-apps/co2-pipeline-routing-tool/"
 
 WORKDIR /app
 
@@ -76,7 +76,7 @@ COPY public/documentation ./Flask/build/documentation/
 EXPOSE ${port}
 
 # Command to run the Flask application
-CMD ["sh", "-c", "exec uv run --no-dev gunicorn --bind=${hosturl}:${port} --workers=${nthreads} --timeout=0 Flask.base:api"] 
+CMD ["sh", "-c", "exec uv run --no-dev gunicorn --bind=${hosturl}:${port} --workers=${nthreads} --timeout=4000 Flask.base:api"] 
 # Alternate to uv run is to activate the environment:
 # ENV PATH="/app/.venv/bin:$PATH"
 
