@@ -82,8 +82,8 @@ let ccsSitesLarge = [
 ];
 let ccsSitesSmall = [
 { id: [39.87, -88.89], name: 'Illinois Industrial Carbon Capture and Storage Project'},
-{ id: [43, -106], name: 'LINC Energy - Wyoming EOR'},
 { id: [45, -85], name: 'MRCSP Development Phase - Michigan Basin Project' },
+{ id: [43, -106], name: 'LINC Energy - Wyoming EOR'},
 { id: [35, -98], name: 'PurdySho-Vel-Tum EOR Project'},
 { id: [40, -109], name: 'Rangely-Webber EOR'},
 { id: [42, -109], name: 'Salt CreekMonellSussex Unit EOR'},
