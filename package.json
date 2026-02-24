@@ -4,7 +4,7 @@
   "private": true,
   "author": "NETL",
   "description": "CO2 Pipeline Electron App",
-  "homepage": "researcher-apps/co2-pipeline-routing-tool/",
+  "homepage": "/researcher-apps/co2-pipeline-routing-tool/",
   "proxy": "http://127.0.0.1:5000/",
   "main": "./public/electron.js",
   "dependencies": {
