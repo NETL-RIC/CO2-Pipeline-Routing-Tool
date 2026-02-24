@@ -23,7 +23,8 @@ from os import getenv
 import numpy as np
 import uuid
 import zipfile
-
+import logging
+import sys
 from .controller import PipelineController
 from .line_builder import line_builder
 from .report_builder.report_builder import report_builder
@@ -427,7 +428,7 @@ def send_id():
     """ Send session id
     """
     uid = session.get('uid')
-    print(uid)
+
     return {'uid': uid}
 
 
