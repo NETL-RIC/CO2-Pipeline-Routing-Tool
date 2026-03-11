@@ -139,7 +139,25 @@ def a():
         mode = request.json.get("mode", None)
         session_uid = session.get('uid')
         FUTURE['mljob'] = EXECUTOR.submit(ml_processing_and_output_generation, start, end, mode, session_uid)
-        return getMLThreadResult()
+        # return getMLThreadResult()
+        return {'msg': 'Initiated ML run cycle on new thread.'}
+
+@bp.route('/check', methods=['GET', 'POST'])
+def check_completion():
+    session_uid = session.get('uid')
+    session_folder = resource_path(os.path.join('sessions', session_uid))
+    zip_path = Path(os.path.join(session_folder, f'route_shapefile_and_report.zip'))
+    if zip_path.is_file():
+        payload = getMLThreadResult()
+        done_status = 'complete'
+        print('Pinged server for results, run cycle is complete and results are ready.')
+    else:
+        payload = None
+        done_status = 'incomplete'
+        print('Pinged server for ml code completion but not done yet.')
+
+    return {'status': done_status, 'payload': payload}
+
 
 @bp.route('/download_report', methods=['POST'])
 def send_report():
@@ -180,7 +198,7 @@ def create_output_zip(zipname, session_uid):
                     arcname = os.path.relpath(file_path, start=path)
                     ziph.write(file_path, arcname=arcname)
     
-    zipname = 'route_shapefile_and_report.zip'    
+    zipname = f'route_shapefile_and_report.zip'
     try:
         dl_f = resource_path(os.path.join('sessions', session_uid))
     except FileNotFoundError as e:
