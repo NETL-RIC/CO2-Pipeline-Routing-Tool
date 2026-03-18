@@ -6,6 +6,8 @@ import os.path
 import os
 import sys
 import webbrowser
+import traceback
+import json
 from pathlib import Path
 from datetime import timedelta
 
@@ -34,7 +36,50 @@ api = Flask(__name__,
             static_url_path=static, 
             static_folder=resource_path('../build'), 
             template_folder=resource_path('../build'))
-            
+
+# --- Logging Setup ---
+# TraceFilter: attaches GCP trace ID to log records when running on Cloud Run
+import flask
+class TraceFilter(logging.Filter):
+    def filter(self, record):
+        trace_header = flask.request.headers.get("X-Cloud-Trace-Context", "") if flask.has_request_context() else ""
+        if trace_header:
+            trace_id = trace_header.split("/")[0]
+            project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "")
+            if project_id:
+                record.trace = f"projects/{project_id}/traces/{trace_id}"
+            else:
+                record.trace = trace_id
+        else:
+            record.trace = ""
+        return True
+
+# JsonFormatter: produces structured JSON log lines that GCP Cloud Logging can parse
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        entry = {
+            "severity": record.levelname,
+            "message": record.getMessage(),
+            "logger": record.name,
+        }
+        if hasattr(record, "trace") and record.trace:
+            entry["logging.googleapis.com/trace"] = record.trace
+        if record.exc_info:
+            entry["traceback"] = self.formatException(record.exc_info)
+        return json.dumps(entry)
+
+# Configure logging: JSON for Cloud Run, plain text for desktop/PyInstaller
+log_handler = logging.StreamHandler(sys.stderr)
+log_handler.addFilter(TraceFilter())
+if getattr(sys, 'frozen', False):
+    # Desktop/PyInstaller mode: human-readable text logs
+    log_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+else:
+    # Cloud Run mode: structured JSON for GCP Logs Explorer
+    log_handler.setFormatter(JsonFormatter())
+
+logging.basicConfig(level=logging.INFO, handlers=[log_handler])
+
 from flask import Blueprint
 bp = Blueprint('main', __name__)
 
@@ -91,9 +136,16 @@ def a():
             f"End: {end}"
         )
         mode = request.json.get("mode", None)
-        route = generate_line_ml(start, end, mode)    # calculate line with ML
-        api.logger.info("Pipeline generated")
-
+        try:
+            route = generate_line_ml(start, end, mode)    # calculate line with ML
+            api.logger.info("Pipeline generated")
+        except Exception as e:
+            api.logger.error(
+                f"Error generating pipeline: {e}\n"
+                f"  Start: {start}, End: {end}, Mode: {mode}\n"
+                f"  Traceback:\n{traceback.format_exc()}"
+            )
+            return {"error": str(e)}, 500
         first_point = route[0]
         last_point = route[-1]  
 
@@ -168,7 +220,7 @@ def create_output_zip(zipname):
     try:
         dl_f = resource_path(os.path.join('sessions', session.get('uid')))
     except FileNotFoundError as e:
-        api.logger(e)
+        api.logger.error(f"FileNotFoundError in create_output_zip: {e}")
 
     dest_path = os.path.join(dl_f, zipname)
 
@@ -547,23 +599,24 @@ def after_request_logging(response):
 
     elif response.status_code >= 400: # Error responses
         api.logger.error(f"Error response, {httpcode}, IP: {get_client_ip()}, Status: {response.status}")
-        api.logger.debug(f"Response body: {response.get_data}")
+        api.logger.info(f"Response body: {response.get_data(as_text=True)[:1000]}")
     return response
 
 def exception_logging(e):
-    """Logging function for errors
-    :param e: The error message to log
+    """Global error handler for unhandled exceptions.
+    :param e: The exception that was raised
+    :return: JSON error response with 500 status code
     """
     api.logger.error(
-        f"Exception:"
-        f"IP: {get_client_ip()}"
-        f"Method: {request.method}"
-        f"Path: {request.path}"
-        f"Error: {str(e)}"
-        f"User-Agent: {request.user_agent}"
-        f"Response Headers: {request.get_wgsi_headers}"
+        f"Unhandled Exception:\n"
+        f"  IP: {get_client_ip()}\n"
+        f"  Method: {request.method}\n"
+        f"  Path: {request.path}\n"
+        f"  Error: {str(e)}\n"
+        f"  User-Agent: {request.user_agent}\n"
+        f"  Traceback:\n{traceback.format_exc()}"
     )
-    raise e
+    return {"error": "Internal server error"}, 500
 
 def get_client_ip():
     """ Supporting function that gets client IP for other logging functions
@@ -579,7 +632,7 @@ def remove_session_state():
                 try:
                     shutil.rmtree("sessions/" + uid)
                 except Exception as e:
-                    api.logger.error(f"Error removing folder sessions/{uid}: {e.stderror}")
+                    api.logger.error(f"Error removing folder sessions/{uid}: {e}")
             else:
                 api.logger.error(f"Folder sessions/{uid} doesn't exist when attempting to delete")
     else:
@@ -592,7 +645,7 @@ def remove_session_state():
 # Register logging functions
 api.before_request(before_request_logging)
 api.after_request(after_request_logging)
-api.errorhandler(exception_logging)
+api.register_error_handler(Exception, exception_logging)
 
 # Register the blueprint with the static prefix
 # If static is empty string or None, url_prefix can be None or '/'

@@ -51,19 +51,27 @@ def GetIDsAndLengthOrArea(new_shp, grid_shp, tracts_shp):
     print(f"In GetIDs... {new_shp}, {grid_shp}, {tracts_shp}")
 
     # Open new_shp shapefile as ogr layer and get geometry
+    # Note: driver.Open() returns None silently on failure rather than raising,
+    # so we check explicitly to produce a useful error message.
     driver = ogr.GetDriverByName("ESRI Shapefile")
     ds = driver.Open(new_shp, 0)
+    if ds is None:
+        raise FileNotFoundError(f"OGR failed to open input shapefile — file missing or corrupt: '{new_shp}'")
     input_lyr = ds.GetLayer()
     geometry_type = input_lyr.GetGeomType()
 
     # Open vector grid shapefile as ogr layer (resource_path('report_builder/inputs/vg_base.shp')) - this shapefile
     #       only contains ids by geometry
     vg_ds = driver.Open(grid_shp, 0)
+    if vg_ds is None:
+        raise FileNotFoundError(f"OGR failed to open vector grid shapefile — file missing or corrupt: '{grid_shp}'")
     vg_lyr = vg_ds.GetLayer()
 
     # Open tract base grid shapefile as ogr layer (resource_path('report_builder/inputs/tract_base.shp')) - this
     #       shapefile only contains ids by geometry
     tract_ds = driver.Open(tracts_shp, 0)
+    if tract_ds is None:
+        raise FileNotFoundError(f"OGR failed to open census tract shapefile — file missing or corrupt: '{tracts_shp}'")
     tract_lyr = tract_ds.GetLayer()
 
     print("Shapes and layers loaded")
@@ -355,7 +363,7 @@ def report_builder(shapefile, start_coordinates=None, end_coordinates=None, out_
         try:
             os.path.exists(os.path.join(report_input, f))
         except FileNotFoundError as e:
-            errors.append("Missing file " + f + " in report_builder directory. Ensure files have been downloaded by install_edx_assets.py script in root. Full message: " + e)
+            errors.append("Missing file " + f + " in report_builder directory. Ensure files have been downloaded by install_edx_assets.py script in root. Full message: " + str(e))
 
     if errors:
         print('Missing file errors:')
