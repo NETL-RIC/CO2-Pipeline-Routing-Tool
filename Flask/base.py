@@ -8,8 +8,10 @@ import sys
 import webbrowser
 import traceback
 import json
+import logging
 from pathlib import Path
 from datetime import timedelta
+from concurrent.futures import ThreadPoolExecutor
 
 import shutil
 import glob
@@ -86,10 +88,16 @@ bp = Blueprint('main', __name__)
 
 api.config.from_object(Config)
 
+
 # Runs scheduler to remove old session folders ever 24 hours
 scheduler = APScheduler()
 scheduler.init_app(api)
 scheduler.start()
+
+# will hold the promise from the parallel ML thread
+FUTURE = {}
+# muiltithreader for running ML processing in background
+EXECUTOR = ThreadPoolExecutor(2)
 
 # Differences between bundled (exported as .exe) and webtool mode
 if getattr(sys, 'frozen', False):
@@ -122,6 +130,52 @@ def delete_old_folders():
 def home():
     return render_template('index.html')
 
+def getMLThreadResult():
+    # check if its done
+    # return the result from the future object if it is
+    return FUTURE['mljob'].result()
+
+def ml_processing_and_output_generation(start, end, mode, session_uid):
+    try:
+        route = generate_line_ml(start, end, mode)    # calculate line with ML
+        api.logger.info("Pipeline generated")
+    except Exception as e:
+        api.logger.error(
+            f"Error generating pipeline: {e}\n"
+            f"  Start: {start}, End: {end}, Mode: {mode}\n"
+            f"  Traceback:\n{traceback.format_exc()}"
+        )
+        raise
+
+    first_point = route[0]
+    last_point = route[-1]  
+
+    out_dir = resource_path(os.path.join("sessions", session_uid))
+    api.logger.info("Session uid is: " + session_uid)
+
+    if os.path.exists(out_dir):
+        api.logger.info("Deleting contents of [" + session_uid + "] for repopulation with another run.")
+        delete_dir_contents(out_dir)   # delete output from a previous run in this same session
+    else:
+        api.logger.info("Making directory for uid  [" + session_uid + "].")
+        os.mkdir(out_dir)
+
+    shpinfo = line_builder(route, out_dir)  # create shapefile(s) in ./output, based on line, return filename of output .shp file
+    output_shp_abspath = shpinfo[1]
+    output_shp_filename = shpinfo[0]
+    
+    pdf_name = report_builder(output_shp_abspath, first_point, last_point, out_dir)    # create pdf report in './output
+
+    # delete_prev_zips_pdfs()                   # delete zip from last run if exist
+
+    zip_path = create_output_zip(output_shp_filename, session_uid) # create zip of pdf/shp files in session folder
+    api.logger.info("Output zip created")
+
+    route_correct_swap = []
+    for coord in route:
+        route_correct_swap.append((coord[1], coord[0]))
+    return {'route': route_correct_swap, 'zip':zip_path}
+
 @bp.route('/token', methods=['GET', 'POST'])
 def a():
     """Endpoint for generating line shapefiles and report
@@ -136,46 +190,27 @@ def a():
             f"End: {end}"
         )
         mode = request.json.get("mode", None)
-        try:
-            route = generate_line_ml(start, end, mode)    # calculate line with ML
-            api.logger.info("Pipeline generated")
-        except Exception as e:
-            api.logger.error(
-                f"Error generating pipeline: {e}\n"
-                f"  Start: {start}, End: {end}, Mode: {mode}\n"
-                f"  Traceback:\n{traceback.format_exc()}"
-            )
-            return {"error": str(e)}, 500
-        first_point = route[0]
-        last_point = route[-1]  
-
         session_uid = session.get('uid')
-        out_dir = resource_path(os.path.join("sessions", session_uid))
-        api.logger.info("Session uid is: " + session_uid)
+        FUTURE['mljob'] = EXECUTOR.submit(ml_processing_and_output_generation, start, end, mode, session_uid)
+        # return getMLThreadResult()
+        return {'msg': 'Initiated ML run cycle on new thread.'}
 
-        if os.path.exists(out_dir):
-            api.logger.info("Deleting contents of [" + session_uid + "] for repopulation with another run.")
-            delete_dir_contents(out_dir)   # delete output from a previous run in this same session
-        else:
-            api.logger.info("Making directory for uid  [" + session_uid + "].")
-            os.mkdir(out_dir)
+@bp.route('/check', methods=['GET', 'POST'])
+def check_completion():
+    session_uid = session.get('uid')
+    session_folder = resource_path(os.path.join('sessions', session_uid))
+    zip_path = Path(os.path.join(session_folder, f'route_shapefile_and_report.zip'))
+    if zip_path.is_file():
+        payload = getMLThreadResult()
+        done_status = 'complete'
+        print('Pinged server for results, run cycle is complete and results are ready.')
+    else:
+        payload = None
+        done_status = 'incomplete'
+        print('Pinged server for ml code completion but not done yet.')
 
-        shpinfo = line_builder(route, out_dir)  # create shapefile(s) in ./output, based on line, return filename of output .shp file
-        output_shp_abspath = shpinfo[1]
-        output_shp_filename = shpinfo[0]
-       
-        pdf_name = report_builder(output_shp_abspath, first_point, last_point, out_dir)    # create pdf report in './output
+    return {'status': done_status, 'payload': payload}
 
-        # delete_prev_zips_pdfs()                   # delete zip from last run if exist
-
-        zip_path = create_output_zip(output_shp_filename) # create zip of pdf/shp files in session folder
-        api.logger.info("Output zip created")
-
-        route_correct_swap = []
-        for coord in route:
-            route_correct_swap.append((coord[1], coord[0]))
-            
-        return {'route': route_correct_swap, 'zip':zip_path}
 
 @bp.route('/download_report', methods=['POST'])
 def send_report():
@@ -200,7 +235,7 @@ def send_report():
             api.logger.error("unable to locate requested filetype")
             return f"{ext} file not found", 404
 
-def create_output_zip(zipname):
+def create_output_zip(zipname, session_uid):
     """ Creates a zip file in the uid-specific sessions directory
     Params: zipname - the name of the zip file to be created
     Returns: dest_path - the full path of where the new zip was placed
@@ -216,9 +251,9 @@ def create_output_zip(zipname):
                     arcname = os.path.relpath(file_path, start=path)
                     ziph.write(file_path, arcname=arcname)
     
-    zipname = 'route_shapefile_and_report.zip'    
+    zipname = f'route_shapefile_and_report.zip'
     try:
-        dl_f = resource_path(os.path.join('sessions', session.get('uid')))
+        dl_f = resource_path(os.path.join('sessions', session_uid))
     except FileNotFoundError as e:
         api.logger.error(f"FileNotFoundError in create_output_zip: {e}")
 

@@ -1,7 +1,8 @@
 /**
  *  Main entrypoint file for all React code for the tool
  */
-import { React, useState, useEffect, useRef } from "react";
+import { React, useCallback, useState, useEffect, useRef } from "react";
+
 import {
   MapContainer,
   TileLayer,
@@ -92,6 +93,8 @@ export default function MyApp() {
   const [startCoords, setStartCoords] = useState([null, null]);
   const [destCoords, setDestCoords] = useState([null, null]);
 
+  const [isPolling, setIsPolling] = useState(false)
+
   // map markers
   const startMarkerIcon = new Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png",
@@ -149,6 +152,49 @@ export default function MyApp() {
       });
   }
 
+  const PollingComponent = () => {
+
+    useEffect(() => {
+      let intervalId = null;
+      if (isPolling){
+        intervalId = setInterval( () => {
+          console.log('Polling backend for completion status.')
+          checkBackendForCompleteRun()
+        }, 30000)
+      }
+      return () => {
+        if (intervalId) {
+          clearInterval(intervalId)
+        }
+      }
+    }, [])
+  }
+
+  const checkBackendForCompleteRun = useCallback(async () => {
+      axios({
+        method: "GET",
+        url: 'check',
+      })
+        .then((response) => {
+          console.log(response.data["status"])
+          setIdModePolygon(response.data["payload"]["route"]);
+          setIsPolling(false);
+          setIdModeDone(true);
+          setIsLoadingIdMode(false);
+        })
+        .catch((error) => {
+          if (error.response) {
+            console.log(
+              "Error with Generate Pipeline. Points are invalid or other logic error."
+            );
+            console.log(error.response);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+          }
+          setIsLoadingIdMode(false);
+          setShowServerError(true);
+        });
+  }, [])
   /**
    * The main functionality of Id Mode, generate a route based on start and dest user input. 
    * Draw the route on the map, and create a shapefile of it and a corresponding pdf report for user download.
@@ -187,10 +233,8 @@ export default function MyApp() {
         data: { s: startCoords, e: destCoords, mode: idMode },
       })
         .then((response) => {
-          setIdModePolygon(response.data["route"]);
-          console.log("Got line data");
-          setIdModeDone(true);
-          setIsLoadingIdMode(false);
+          console.log(response.data["msg"])
+          setIsPolling(true)
         })
         .catch((error) => {
           if (error.response) {
@@ -712,6 +756,7 @@ export default function MyApp() {
       </div>
 
       <SessionInfo />
+      <PollingComponent/>
 
       <MainToolModeButtons
         setBtnGroupState={setMainMode}
