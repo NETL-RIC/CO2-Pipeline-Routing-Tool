@@ -93,7 +93,8 @@ export default function MyApp() {
   const [startCoords, setStartCoords] = useState([null, null]);
   const [destCoords, setDestCoords] = useState([null, null]);
 
-  const [isPolling, setIsPolling] = useState(false)
+  const [isPolling, setIsPolling] = useState(false);
+  const [lastCheckedTime, setLastCheckedTime] = useState(null);
 
   // map markers
   const startMarkerIcon = new Icon({
@@ -176,11 +177,14 @@ export default function MyApp() {
         url: 'check',
       })
         .then((response) => {
-          console.log(response.data["status"])
-          setIdModePolygon(response.data["payload"]["route"]);
-          setIsPolling(false);
-          setIdModeDone(true);
-          setIsLoadingIdMode(false);
+          console.log(response.data["status"]);
+          setLastCheckedTime(new Date().toLocaleTimeString());
+          if (response.data["status"] === "complete") {
+            setIdModePolygon(response.data["payload"]["route"]);
+            setIsPolling(false);
+            setIdModeDone(true);
+            setIsLoadingIdMode(false);
+          }
         })
         .catch((error) => {
           if (error.response) {
@@ -210,6 +214,7 @@ export default function MyApp() {
       setIdModeDone(false);
       setIsLoadingIdMode(true);
       setIsLoadingEvalMode(false);
+      setLastCheckedTime(null);
       if (global.electronmode === true) {
         urlpipe = "http://127.0.0.1:5000/token";
       } else {
@@ -233,8 +238,9 @@ export default function MyApp() {
         data: { s: startCoords, e: destCoords, mode: idMode },
       })
         .then((response) => {
-          console.log(response.data["msg"])
-          setIsPolling(true)
+          console.log(response.data["msg"]);
+          setLastCheckedTime(new Date().toLocaleTimeString());
+          setIsPolling(true);
         })
         .catch((error) => {
           if (error.response) {
@@ -735,7 +741,7 @@ export default function MyApp() {
       </div>
       <ServerErrorPopup showServerError={showServerError} setShowServerError={setShowServerError} />
       <LoadingMessageEvalMode isLoadingEvalMode={isLoadingEvalMode} />
-      <LoadingMessageIdMode isLoadingIdMode={isLoadingIdMode} />
+      <LoadingMessageIdMode isLoadingIdMode={isLoadingIdMode} lastCheckedTime={lastCheckedTime} />
 
       {/*Regular page*/}
       <Header />

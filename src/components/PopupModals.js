@@ -87,7 +87,7 @@ export function DisclaimerPopup() {
    * @param {boolean} isLoadingIdMode - Controls whether the loading modal for Id Mode is displayed
    * @returns {JSX.element} Component code for the loading message
    */
-  export function LoadingMessageIdMode( {isLoadingIdMode} ) {
+  export function LoadingMessageIdMode( {isLoadingIdMode, lastCheckedTime} ) {
     if (isLoadingIdMode) {
       return (
         <>
@@ -98,8 +98,9 @@ export function DisclaimerPopup() {
             aria-labelledby="contained-modal-title-vcenter"
             centered
           >
-            <Modal.Header>
+            <Modal.Header style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
               <Modal.Title>Loading...</Modal.Title>
+              {lastCheckedTime && <div style={{ color: 'lightgrey', fontSize: 'small' }}>Last checked: {lastCheckedTime}</div>}
             </Modal.Header>
             <Modal.Body>
               Optimizing pipeline corridor, this may take several minutes.
