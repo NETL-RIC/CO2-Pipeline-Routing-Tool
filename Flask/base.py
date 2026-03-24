@@ -306,9 +306,15 @@ def open_help():
     """ Open the help docs in the user's native browser
     Returns: h_path: the path where the help docs are
     """
-    h_path = resource_path("documentation/_build/html/index.html")
-    webbrowser.open(f"file://{h_path}")
-    return(h_path)
+    if getattr(sys, 'frozen', False):
+        # Desktop/PyInstaller mode: open local file in browser
+        h_path = resource_path("documentation/_build/html/index.html")
+        webbrowser.open(f"file://{h_path}")
+        return(h_path)
+    else:
+        # Web/Cloud Run mode: return prefixed URL for the static documentation
+        h_url = f"{static}/documentation/_build/html/index.html"
+        return(h_url)
 
 # Evaluate button 
 @bp.route('/uploads', methods = ['POST'])

@@ -272,6 +272,11 @@ export default function MyApp() {
       method: "POST",
 
       url: urldoc,
+    }).then((response) => {
+      // In web mode, open the returned documentation URL in a new tab
+      if (global.electronmode !== true && response.data) {
+        window.open(response.data, "_blank", "noreferrer");
+      }
     }).catch((error) => {
       if (error.response) {
         console.log("Error requesting help documentation");
