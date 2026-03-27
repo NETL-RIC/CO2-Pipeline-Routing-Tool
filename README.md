@@ -72,3 +72,25 @@ Additional dependencies should be picked up automatically by pyinstaller, if the
 PyInstaller can be asked to copy necessary data via the `more_datas` list of tuples in the spec file. Format is `('<source location>', '<packaged destination>')`.
 
 If the dev environment doesn't agree with pyinstaller there is a `pyinstaller_env.yml` included that should bundle without issue.
+
+## Containerization
+
+**NOTE:** The binary assets for the application are not downloaded during the build process. The user must download them with the `install_edx_assets.py` script before building the container. This will unpack them to the appropriate directories so the build process can pull them into the container.
+
+### Docker Example
+
+    docker build -t co2 .
+    docker run -p 5000:5000 co2
+
+### Build Details
+
+The build process uses two stages. The first stage builds the React frontend and the second stage builds the Python backend. The frontend is built in a container with Node.js and the backend is built in a container with Python. The frontend is copied to the backend container after it is built as static files. The backend is run via gunicorn and both serves the static front end files and the API.
+
+ENV variables are set in the second stage of the build process. The available variables are:
+
+    hosturl: The host URL for the Flask application.
+    nthreads: The number of threads for the Flask application.
+    port: The port for the Flask application.
+    PREFIX_PATH: The prefix path for the Flask application.
+
+These can be overridden by setting the environment variables in the docker run command.
