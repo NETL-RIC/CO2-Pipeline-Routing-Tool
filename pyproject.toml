@@ -25,6 +25,7 @@ dependencies = [
     "shapely>=2.1.0",
     "six>=1.17.0",
     "python-dotenv>=1.0.0",
+    "tdqm>=0.0.1",
 ]
 
 [tool.uv.sources]
