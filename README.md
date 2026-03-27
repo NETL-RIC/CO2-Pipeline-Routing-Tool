@@ -38,7 +38,7 @@ In the project root directory, run the following commands, replacing <edx api ke
     echo "SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_hex(16))')" > .env
     python install_edx_assets.py --api-key <edx api key>
 
-Then start the flask server by cd'ing to the FLask dir and running:
+Then start the flask server by cd'ing to the Flask dir and running:
 
     flask --app base.by run
 
